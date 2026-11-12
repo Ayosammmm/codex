@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/Button';
 import { EmptyState, Spinner } from '@/components/ui/Feedback';
 import { cx } from '@/components/ui/cx';
 import { UniverseAvatar } from '@/components/universe/UniverseAvatar';
+import { useColorModeScope } from '@/theme/ColorModeProvider';
 import { ThemeKeyContext } from '@/theme/themeKey';
 import { universeBackdropStyle, universeThemeProps } from '@/theme/universeTheme';
 import { parseUniverseRef, universeRef } from '@/utils/universe';
@@ -24,6 +25,8 @@ export default function UniverseLayout() {
   const navigate = useNavigate();
   const location = useLocation();
   const [menuOpen, setMenuOpen] = useState(false);
+  // Les univers ont leur propre préférence clair / sombre, distincte de celle de l'Almanach
+  useColorModeScope('universe');
 
   // URL canonique : /univers/<id>-<nom actuel>
   useEffect(() => {

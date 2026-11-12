@@ -59,7 +59,11 @@ export default function UniverseSettingsPage() {
           nameError={nameError}
           beforeAppearance={
             <FormSection id="affichage" title="Affichage global">
-              <ActionRow title="Mode" text="Clair, sombre, ou selon le réglage du système." action={<ColorModeToggle showLabels />} />
+              <ActionRow
+                title="Mode des univers"
+                text="Clair, sombre, ou selon le réglage du système. Indépendant du mode de l’accueil de l’Almanach."
+                action={<ColorModeToggle showLabels scope="universe" />}
+              />
             </FormSection>
           }
           extraSections={

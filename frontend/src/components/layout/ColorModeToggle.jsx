@@ -9,9 +9,12 @@ const OPTIONS = [
   { value: 'system', label: 'Système', icon: Monitor },
 ];
 
-/** Choix clair / sombre / système. `showLabels` affiche le texte à côté des icônes. */
-export function ColorModeToggle({ showLabels = false }) {
-  const { preference, setPreference } = useColorMode();
+/**
+ * Choix clair / sombre / système. `showLabels` affiche le texte à côté des icônes.
+ * `scope` ('app' | 'universe') : préférence modifiée ; par défaut celle de la page affichée.
+ */
+export function ColorModeToggle({ showLabels = false, scope }) {
+  const { preference, setPreference } = useColorMode(scope);
   return (
     <div role="radiogroup" aria-label="Apparence" className={styles.modeToggle}>
       {OPTIONS.map(({ value, label, icon: Icon }) => (

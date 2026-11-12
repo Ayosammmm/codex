@@ -6,9 +6,11 @@
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <title>Almanach</title>
     <script>
-      // Applique le mode clair/sombre avant le rendu pour éviter un flash
+      // Applique le mode clair/sombre avant le rendu pour éviter un flash.
+      // Les univers ont leur propre préférence (voir src/theme/ColorModeProvider.jsx).
       try {
         var m = localStorage.getItem('almanach:color-mode');
+        if (location.pathname.indexOf('/univers/') === 0) m = localStorage.getItem('almanach:color-mode:universe') || m;
         var dark = m === 'dark' || ((!m || m === 'system') && matchMedia('(prefers-color-scheme: dark)').matches);
         document.documentElement.dataset.mode = dark ? 'dark' : 'light';
       } catch (e) {}
