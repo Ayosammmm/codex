@@ -1,0 +1,39 @@
+@use '@/styles/mixins' as *;
+
+.preview {
+  @include card;
+  overflow: hidden;
+}
+
+.previewCover {
+  aspect-ratio: 16 / 8;
+  border-bottom: 3px solid var(--entity-primary, transparent);
+}
+
+.previewBody {
+  display: flex;
+  flex-direction: column;
+  gap: space(1);
+  padding: space(3) space(4) space(4);
+}
+
+.previewName {
+  font-family: var(--font-title);
+  font-weight: var(--title-weight);
+  font-size: 1.125rem;
+  line-height: 1.25;
+  color: color-mix(in oklab, var(--entity-primary, var(--fg)) 55%, var(--fg));
+}
+
+.previewMeta {
+  display: inline-flex;
+  align-items: center;
+  gap: space(1);
+  font-size: 0.8125rem;
+  color: var(--fg-muted);
+
+  svg {
+    width: 0.875rem;
+    height: 0.875rem;
+  }
+}

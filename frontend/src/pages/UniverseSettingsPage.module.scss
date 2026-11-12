@@ -1,0 +1,36 @@
+@use '@/styles/mixins' as *;
+
+.actionRow {
+  display: flex;
+  flex-direction: column;
+  gap: space(3);
+
+  @include up(sm) {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+  }
+}
+
+.actionTitle {
+  font-weight: 500;
+}
+
+.actionText {
+  font-size: 0.875rem;
+  color: var(--fg-muted);
+}
+
+.danger {
+  @include card;
+  padding: space(5);
+  border-color: color-mix(in oklab, var(--danger) 40%, transparent);
+
+  @include up(sm) {
+    padding-inline: space(6);
+  }
+
+  .actionTitle {
+    color: var(--danger);
+  }
+}

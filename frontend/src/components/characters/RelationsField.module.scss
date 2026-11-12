@@ -1,0 +1,212 @@
+@use '@/styles/mixins' as *;
+
+.list {
+  display: flex;
+  flex-direction: column;
+  gap: space(3);
+}
+
+// Une carte par relation, liseré de la couleur de l'archétype
+.row {
+  display: flex;
+  flex-direction: column;
+  gap: space(3);
+  padding: space(3) space(4);
+  border: var(--border-w) solid var(--border);
+  border-left: 3px solid var(--category);
+  border-radius: var(--r);
+  background: var(--surface-2);
+}
+
+.head {
+  display: flex;
+  align-items: center;
+  gap: space(3);
+}
+
+.avatar {
+  width: 2.5rem;
+  height: 2.5rem;
+  font-size: 0.875rem;
+}
+
+.character {
+  flex: 1;
+  min-width: 0;
+}
+
+.categories {
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.label {
+  display: block;
+  margin-bottom: space(1.5);
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--fg-muted);
+}
+
+// --- Archétype : pastilles colorées à choix unique ---
+.pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: space(1.5);
+}
+
+.pill {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: space(1.5);
+  padding: space(1) space(3);
+  border: var(--border-w) solid color-mix(in oklab, var(--pill) 40%, var(--border));
+  border-radius: 999px;
+  background: var(--surface);
+  font-size: 0.8125rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 120ms, border-color 120ms, color 120ms;
+
+  &::before {
+    content: '';
+    width: 0.5rem;
+    height: 0.5rem;
+    border-radius: 50%;
+    background: var(--pill);
+  }
+
+  input {
+    position: absolute;
+    inset: 0;
+    margin: 0;
+    opacity: 0;
+    cursor: pointer;
+  }
+
+  &:hover {
+    border-color: var(--pill);
+  }
+
+  &:has(:focus-visible) {
+    @include focus-ring;
+  }
+}
+
+.pillSelected {
+  border-color: var(--pill);
+  background: color-mix(in oklab, var(--pill) 18%, var(--surface));
+  color: color-mix(in oklab, var(--pill) 60%, var(--fg));
+  font-weight: 600;
+}
+
+.nature {
+  min-width: 0;
+}
+
+.details {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: space(3) space(6);
+}
+
+// --- Échelles (intensité, ton) ---
+.scale {
+  display: flex;
+  flex-direction: column;
+  gap: space(1.5);
+}
+
+.scaleLabel {
+  display: flex;
+  align-items: baseline;
+  gap: space(2);
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--fg-muted);
+}
+
+.scaleValue {
+  font-weight: 400;
+  letter-spacing: 0;
+  text-transform: none;
+  color: var(--fg-subtle);
+}
+
+.scaleOptions {
+  display: flex;
+  gap: space(1);
+}
+
+.scaleOption {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 2.25rem;
+  height: 2rem;
+  padding-inline: space(1.5);
+  border: var(--border-w) solid var(--border);
+  border-radius: var(--r-sm);
+  background: var(--surface);
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: var(--tone, var(--fg-muted));
+  cursor: pointer;
+  transition: background-color 120ms, border-color 120ms, color 120ms;
+
+  input {
+    position: absolute;
+    inset: 0;
+    margin: 0;
+    opacity: 0;
+    cursor: pointer;
+  }
+
+  &:hover {
+    border-color: var(--tone, var(--border-strong));
+  }
+
+  &:has(:focus-visible) {
+    @include focus-ring;
+  }
+}
+
+.scaleLit {
+  border-color: var(--tone, var(--primary));
+  background: var(--tone, var(--primary));
+  color: #fff;
+}
+
+.evolving {
+  display: inline-flex;
+  align-items: center;
+  gap: space(2);
+  min-height: 2rem;
+  font-size: 0.875rem;
+  cursor: pointer;
+}
+
+.error {
+  margin-top: space(1);
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: var(--danger);
+}
+
+.add {
+  align-self: flex-start;
+}
+
+.empty {
+  font-size: 0.875rem;
+  color: var(--fg-muted);
+}

@@ -1,0 +1,66 @@
+@use '@/styles/mixins' as *;
+
+.root {
+  display: flex;
+  flex-direction: column;
+  gap: space(3);
+}
+
+.bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: space(3);
+}
+
+.breadcrumb {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: space(1);
+  font-size: 0.9375rem;
+
+  button {
+    color: var(--fg-muted);
+
+    &:hover {
+      color: var(--fg);
+      text-decoration: underline;
+      text-underline-offset: 2px;
+    }
+  }
+
+  svg {
+    width: 0.875rem;
+    height: 0.875rem;
+    color: var(--fg-subtle);
+  }
+}
+
+.current {
+  font-family: var(--font-title);
+  font-weight: var(--title-weight);
+  font-size: 1.125rem;
+
+  &:hover {
+    text-decoration: underline;
+    text-underline-offset: 2px;
+  }
+}
+
+.select {
+  width: auto;
+  min-width: 12rem;
+}
+
+.hint {
+  font-size: 0.8125rem;
+  color: var(--fg-muted);
+
+  a {
+    color: var(--primary-ink);
+    text-decoration: underline;
+    text-underline-offset: 2px;
+  }
+}

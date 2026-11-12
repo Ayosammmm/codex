@@ -1,0 +1,108 @@
+@use '@/styles/mixins' as *;
+
+// ============================================================================
+//  Arborescence d'entités imbriquées (lieux, espèces...)
+// ============================================================================
+.treeWrap {
+  @include card(var(--r));
+  padding: space(3);
+}
+
+.tree,
+.branch {
+  display: flex;
+  flex-direction: column;
+}
+
+// Branches : retrait et filet vertical qui relie les enfants
+.branch {
+  margin-left: space(5);
+  padding-left: space(3);
+  border-left: var(--border-w, 1px) solid var(--border);
+}
+
+.node {
+  display: flex;
+  align-items: center;
+  gap: space(2.5);
+  min-height: 2.75rem;
+  padding: space(1) space(2);
+  border-radius: var(--r-sm);
+
+  &:hover {
+    background: color-mix(in oklab, var(--entity-primary, var(--fg)) 5%, var(--surface));
+  }
+}
+
+.toggle,
+.toggleSpacer {
+  flex-shrink: 0;
+  width: 1.5rem;
+  height: 1.5rem;
+}
+
+.toggle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--r-sm);
+  color: var(--fg-muted);
+
+  &:hover {
+    background: var(--surface-2);
+    color: var(--fg);
+  }
+
+  svg {
+    width: 1rem;
+    height: 1rem;
+    transition: transform 150ms;
+  }
+}
+
+.toggleOpen svg {
+  transform: rotate(90deg);
+}
+
+.nodeThumb {
+  flex-shrink: 0;
+  width: 2.25rem;
+  height: 1.625rem;
+  border-radius: var(--r-sm);
+}
+
+.nodeName {
+  @include truncate;
+  font-weight: 500;
+  border-left: 3px solid var(--entity-primary, transparent);
+  padding-left: space(2);
+
+  &:hover {
+    text-decoration: underline;
+    text-underline-offset: 2px;
+  }
+
+  &:focus-visible {
+    @include focus-ring;
+  }
+}
+
+.nodeType {
+  flex-shrink: 0;
+  font-size: 0.75rem;
+  color: var(--fg-muted);
+}
+
+.nodeMeta {
+  display: flex;
+  align-items: center;
+  gap: space(3);
+  margin-left: auto;
+  font-size: 0.75rem;
+  color: var(--fg-subtle);
+  white-space: nowrap;
+}
+
+.stack {
+  --stack-size: 1.5rem;
+}

@@ -1,0 +1,72 @@
+@use '@/styles/mixins' as *;
+
+// Logo carré à gauche, bannière à droite (alignée sur la hauteur du logo)
+.imagesGrid {
+  display: grid;
+  gap: space(5);
+
+  @include up(sm) {
+    grid-template-columns: 10rem minmax(0, 1fr);
+  }
+}
+
+.bannerDrop {
+  @include up(sm) {
+    aspect-ratio: auto;
+    height: 10rem;
+  }
+}
+
+// --- Aperçu (colonne latérale) ---
+.preview {
+  @include card;
+  overflow: hidden;
+}
+
+.previewBanner {
+  aspect-ratio: 16 / 6;
+}
+
+.previewBody {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: space(1);
+  padding: 0 space(4) space(4);
+}
+
+.previewLogo {
+  width: 4rem;
+  height: 4rem;
+  margin-top: -2rem;
+  margin-bottom: space(1);
+  font-size: 1.125rem;
+  box-shadow:
+    0 0 0 3px var(--surface),
+    var(--elev-sm);
+}
+
+.previewName {
+  font-family: var(--font-title);
+  font-weight: var(--title-weight);
+  font-size: 1.125rem;
+  line-height: 1.25;
+  color: color-mix(in oklab, var(--entity-primary, var(--fg)) 55%, var(--fg));
+}
+
+.previewType,
+.previewMembers {
+  font-size: 0.8125rem;
+  color: var(--fg-muted);
+}
+
+.previewMembers {
+  display: inline-flex;
+  align-items: center;
+  gap: space(1);
+
+  svg {
+    width: 0.875rem;
+    height: 0.875rem;
+  }
+}

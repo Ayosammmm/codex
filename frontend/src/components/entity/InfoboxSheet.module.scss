@@ -1,0 +1,186 @@
+@use '@/styles/mixins' as *;
+
+// Fiche avec encadré : colonne de gauche (nom, bouton, illustration et informations), contenu à droite.
+// Utilisée par les espèces et les créatures.
+
+.sheet {
+  display: grid;
+  gap: space(8);
+
+  @include up(md) {
+    grid-template-columns: 16rem minmax(0, 1fr);
+    align-items: start;
+  }
+
+  @include up(xl) {
+    grid-template-columns: 18rem minmax(0, 1fr);
+    gap: space(10);
+  }
+}
+
+.aside {
+  @include up(md) {
+    position: sticky;
+    top: var(--sticky-top, 1.5rem);
+  }
+}
+
+.header {
+  display: flex;
+  flex-direction: column;
+  gap: space(4);
+  margin-bottom: space(5);
+}
+
+.name {
+  font-size: 2rem;
+  line-height: 1.15;
+  overflow-wrap: anywhere;
+}
+
+.actions {
+  display: flex;
+  gap: space(2);
+
+  @include up(md) {
+    > * {
+      flex: 1;
+    }
+  }
+}
+
+.infobox {
+  @include card;
+  overflow: hidden;
+  border-top: 4px solid var(--entity-primary, var(--border));
+
+  @media (max-width: 47.99rem) {
+    max-width: 22rem;
+  }
+}
+
+.portrait {
+  aspect-ratio: 4 / 5;
+}
+
+.facts {
+  display: flex;
+  flex-direction: column;
+  padding: space(2) space(4);
+}
+
+.fact {
+  display: grid;
+  grid-template-columns: 6.5rem minmax(0, 1fr);
+  gap: space(3);
+  align-items: baseline;
+  padding-block: space(2.5);
+  font-size: 0.875rem;
+
+  & + & {
+    border-top: var(--border-w, 1px) solid color-mix(in oklab, var(--entity-secondary, var(--border)) 50%, transparent);
+  }
+
+  dt {
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: color-mix(in oklab, var(--entity-secondary, var(--fg-muted)) 55%, var(--fg-muted));
+  }
+
+  dd {
+    min-width: 0;
+    overflow-wrap: anywhere;
+  }
+}
+
+.lineage {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: space(1);
+
+  svg {
+    width: 0.75rem;
+    height: 0.75rem;
+    color: var(--fg-subtle);
+  }
+}
+
+.factLink {
+  text-decoration: underline;
+  text-decoration-color: color-mix(in oklab, currentColor 30%, transparent);
+  text-underline-offset: 2px;
+
+  &:hover {
+    text-decoration-color: currentColor;
+  }
+}
+
+// --- Contenu ---
+.content {
+  display: flex;
+  flex-direction: column;
+  gap: space(8);
+  min-width: 0;
+}
+
+.empty {
+  color: var(--fg-muted);
+}
+
+.subspecies {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(14rem, 1fr));
+  gap: space(3);
+}
+
+.sub {
+  @include card(var(--r));
+  display: flex;
+  align-items: center;
+  gap: space(3);
+  padding: space(2);
+  border-left: 3px solid var(--entity-primary, var(--border));
+  transition: box-shadow 150ms, background-color 150ms;
+
+  &:hover {
+    background: color-mix(in oklab, var(--entity-primary, var(--fg)) 5%, var(--surface));
+    box-shadow: var(--elev);
+  }
+
+  &:focus-visible {
+    @include focus-ring;
+  }
+}
+
+.subThumb {
+  flex-shrink: 0;
+  width: 3rem;
+  height: 3.75rem;
+  border-radius: var(--r-sm);
+}
+
+.subText {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.subName {
+  @include truncate;
+  font-weight: 600;
+}
+
+.subMeta {
+  @include truncate;
+  font-size: 0.75rem;
+  color: var(--fg-muted);
+}
+
+.members {
+  display: flex;
+  flex-wrap: wrap;
+  gap: space(2);
+}

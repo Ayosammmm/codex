@@ -1,0 +1,143 @@
+@use '@/styles/mixins' as *;
+
+// Page d'un référentiel : largeur de lecture
+.page {
+  max-width: 52rem;
+}
+
+.header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: space(4);
+  margin-bottom: space(6);
+}
+
+.icon {
+  @include icon-tile;
+}
+
+.heading {
+  flex: 1;
+  min-width: min(100%, 16rem);
+}
+
+.lead {
+  margin-top: space(1);
+  color: var(--fg-muted);
+}
+
+.count {
+  margin-bottom: space(3);
+  font-size: 0.8125rem;
+  color: var(--fg-subtle);
+}
+
+// --- Liste ordonnée ---
+.list {
+  @include card(var(--r));
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.row {
+  display: flex;
+  align-items: center;
+  gap: space(3);
+  padding: space(2) space(3);
+  border-left: 3px solid var(--item-color, transparent);
+  transition: background-color 120ms;
+
+  & + & {
+    border-top: var(--border-w, 1px) solid var(--border);
+  }
+
+  &:hover {
+    background: var(--surface-2);
+  }
+}
+
+.order {
+  display: flex;
+  flex-shrink: 0;
+  gap: space(0.5);
+}
+
+.body {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: space(1);
+  min-width: 0;
+}
+
+.name {
+  @include truncate;
+  max-width: 100%;
+  font-weight: 500;
+}
+
+.description {
+  @include line-clamp(2);
+  font-size: 0.8125rem;
+  color: var(--fg-muted);
+}
+
+.usage,
+.unused {
+  flex-shrink: 0;
+  font-size: 0.8125rem;
+  white-space: nowrap;
+}
+
+.usage {
+  color: var(--primary-ink);
+  text-decoration: underline;
+  text-decoration-color: color-mix(in oklab, currentColor 30%, transparent);
+  text-underline-offset: 2px;
+
+  &:hover {
+    text-decoration-color: currentColor;
+  }
+}
+
+.unused {
+  color: var(--fg-subtle);
+}
+
+.actions {
+  display: flex;
+  flex-shrink: 0;
+  gap: space(0.5);
+}
+
+// --- Fenêtre d'édition ---
+.dialogForm {
+  display: flex;
+  flex-direction: column;
+  gap: space(4);
+}
+
+.preview {
+  display: flex;
+  align-items: center;
+  gap: space(2);
+  font-size: 0.8125rem;
+  color: var(--fg-muted);
+}
+
+// Petit écran : la description passe sous le nom, l'utilisation reste visible
+@media (max-width: 39.99rem) {
+  .row {
+    flex-wrap: wrap;
+  }
+
+  .usage,
+  .unused {
+    order: 5;
+    width: 100%;
+    padding-left: calc(4rem + #{space(3)});
+  }
+}

@@ -1,0 +1,192 @@
+@use '@/styles/mixins' as *;
+
+.sheet {
+  display: flex;
+  flex-direction: column;
+  gap: space(10);
+  max-width: 56rem;
+}
+
+.note {
+  color: var(--fg-muted);
+}
+
+.header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: space(4) space(5);
+}
+
+.heading {
+  flex: 1;
+  min-width: min(100%, 16rem);
+}
+
+.kicker {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: space(2) space(3);
+  margin-bottom: space(2);
+  font-size: 0.875rem;
+  color: var(--fg-muted);
+
+  a:hover {
+    color: var(--fg);
+    text-decoration: underline;
+    text-underline-offset: 2px;
+  }
+}
+
+.number {
+  padding: 0.125rem space(2.5);
+  border-radius: 999px;
+  background: color-mix(in oklab, var(--entity-primary, var(--fg)) 12%, var(--surface));
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  color: color-mix(in oklab, var(--entity-primary, var(--fg-muted)) 65%, var(--fg));
+}
+
+.title {
+  font-size: 2.25rem;
+  line-height: 1.1;
+  overflow-wrap: anywhere;
+}
+
+.actions {
+  display: flex;
+  gap: space(2);
+}
+
+.group + .group {
+  margin-top: space(5);
+}
+
+.groupLabel {
+  margin-bottom: space(2);
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: color-mix(in oklab, var(--entity-secondary, var(--fg-muted)) 55%, var(--fg-muted));
+
+  span {
+    margin-left: space(1);
+    font-weight: 400;
+    color: var(--fg-subtle);
+  }
+}
+
+.cast,
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: space(2);
+}
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: space(1.5);
+  padding: space(1) space(3);
+  border: var(--border-w, 1px) solid var(--border);
+  border-radius: 999px;
+  background: var(--surface);
+  font-size: 0.875rem;
+
+  &:hover {
+    background: var(--surface-2);
+  }
+
+  svg {
+    width: 0.875rem;
+    height: 0.875rem;
+    color: var(--fg-muted);
+  }
+}
+
+.events {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(16rem, 1fr));
+  gap: space(3);
+}
+
+.event {
+  @include card(var(--r));
+  display: flex;
+  flex-direction: column;
+  gap: space(1.5);
+  padding: space(3) space(4);
+  border-left: 3px solid var(--tone);
+
+  &:hover {
+    box-shadow: var(--elev);
+  }
+}
+
+.eventName {
+  font-weight: 600;
+}
+
+.eventMeta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: space(2);
+  font-size: 0.8125rem;
+  color: var(--fg-muted);
+}
+
+// --- Épisodes voisins ---
+.pager {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: space(3);
+  padding-top: space(6);
+  border-top: var(--border-w, 1px) solid var(--border);
+}
+
+.pagerLink {
+  @include card(var(--r));
+  display: flex;
+  align-items: center;
+  gap: space(3);
+  min-width: 0;
+  padding: space(3) space(4);
+
+  &:hover {
+    border-color: color-mix(in oklab, var(--entity-primary, var(--border-strong)) 50%, transparent);
+  }
+
+  > span {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+  }
+
+  svg {
+    flex-shrink: 0;
+    width: 1.125rem;
+    height: 1.125rem;
+    color: var(--fg-muted);
+  }
+}
+
+.pagerNext {
+  grid-column: 2;
+  justify-content: flex-end;
+  text-align: right;
+}
+
+.pagerLabel {
+  font-size: 0.75rem;
+  color: var(--fg-muted);
+}
+
+.pagerTitle {
+  @include truncate;
+  font-weight: 600;
+}

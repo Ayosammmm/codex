@@ -1,0 +1,66 @@
+@use '@/styles/mixins' as *;
+
+.main {
+  @include container(80rem);
+  padding-block: space(8) space(16);
+}
+
+// Vue tableau : la page fait exactement la hauteur de l'écran (moins la barre mobile),
+// le tableau prend la place restante et défile seul
+.fitScreen {
+  display: flex;
+  flex-direction: column;
+  height: calc(100dvh - 3.5rem);
+  min-height: 32rem;
+  padding-bottom: space(6);
+
+  @include up(lg) {
+    height: 100dvh;
+  }
+
+  .content {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    min-height: 0;
+  }
+}
+
+.header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: space(4);
+  margin-bottom: space(6);
+}
+
+.title {
+  font-size: 1.875rem;
+}
+
+.count {
+  margin-top: space(1);
+  color: var(--fg-muted);
+}
+
+.content {
+  margin-top: space(6);
+}
+
+.noResult {
+  padding-block: space(12);
+  text-align: center;
+  color: var(--fg-muted);
+
+  button {
+    margin-top: space(3);
+  }
+}
+
+// Aide contextuelle sous la barre d'outils
+.hint {
+  margin-top: space(3);
+  font-size: 0.8125rem;
+  color: var(--fg-subtle);
+}

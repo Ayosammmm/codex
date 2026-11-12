@@ -1,0 +1,158 @@
+@use '@/styles/mixins' as *;
+
+.root {
+  position: relative;
+}
+
+// Zone de saisie : puces (sélection multiple) + champ texte
+.control {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: space(1.5);
+  min-height: 2.5rem;
+  padding: space(1) space(2);
+  border: var(--border-w) solid var(--border-strong);
+  border-radius: var(--r);
+  background: var(--surface);
+  box-shadow: var(--elev-sm);
+  cursor: text;
+  transition: border-color 150ms, box-shadow 150ms;
+
+  &:focus-within {
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px var(--ring);
+  }
+}
+
+.input {
+  flex: 1;
+  min-width: 8rem;
+  height: 1.875rem;
+  padding: 0 space(1);
+  border: 0;
+  background: transparent;
+  color: var(--fg);
+  font-size: 0.875rem;
+
+  &::placeholder {
+    color: var(--fg-subtle);
+  }
+
+  &:focus {
+    outline: none;
+  }
+}
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: space(1.5);
+  max-width: 100%;
+  height: 1.75rem;
+  padding: 0 space(1) 0 space(2);
+  border-radius: var(--r-sm);
+  background: var(--primary-soft);
+  color: var(--primary-ink);
+  font-size: 0.8125rem;
+  font-weight: 500;
+}
+
+.chipLabel {
+  @include truncate;
+}
+
+.chipRemove,
+.clear {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.25rem;
+  height: 1.25rem;
+  border-radius: var(--r-sm);
+  color: inherit;
+  opacity: 0.7;
+
+  &:hover {
+    opacity: 1;
+    background: color-mix(in oklab, currentColor 15%, transparent);
+  }
+
+  svg {
+    width: 0.875rem;
+    height: 0.875rem;
+  }
+}
+
+.clear {
+  color: var(--fg-subtle);
+}
+
+// --- Liste de suggestions ---
+.listbox {
+  position: absolute;
+  top: calc(100% + 0.25rem);
+  inset-inline: 0;
+  z-index: 30;
+  max-height: 18rem;
+  overflow-y: auto;
+  padding: space(1);
+  border: var(--border-w) solid var(--border);
+  border-radius: var(--r);
+  background: var(--surface);
+  box-shadow: var(--elev-lg);
+  animation: fade-in 120ms ease-out both;
+}
+
+.option {
+  display: flex;
+  align-items: center;
+  gap: space(2.5);
+  padding: space(1.5) space(2);
+  border-radius: var(--r-sm);
+  font-size: 0.875rem;
+  cursor: pointer;
+}
+
+.active {
+  background: var(--surface-2);
+}
+
+.optionImage {
+  flex-shrink: 0;
+  width: 1.75rem;
+  height: 1.75rem;
+  border-radius: 50%;
+  object-fit: cover;
+  background: var(--surface-3);
+}
+
+.optionDot {
+  flex-shrink: 0;
+  width: 0.625rem;
+  height: 0.625rem;
+  border-radius: 50%;
+}
+
+.optionText {
+  min-width: 0;
+  flex: 1;
+}
+
+.optionLabel {
+  @include truncate;
+  display: block;
+}
+
+.optionDescription {
+  @include truncate;
+  display: block;
+  font-size: 0.75rem;
+  color: var(--fg-muted);
+}
+
+.empty {
+  padding: space(2);
+  font-size: 0.8125rem;
+  color: var(--fg-muted);
+}

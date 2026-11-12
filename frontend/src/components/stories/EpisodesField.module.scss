@@ -1,0 +1,59 @@
+@use '@/styles/mixins' as *;
+
+.root {
+  display: flex;
+  flex-direction: column;
+  gap: space(3);
+}
+
+.error {
+  font-size: 0.8125rem;
+  font-weight: 500;
+  color: var(--danger);
+}
+
+.list {
+  display: flex;
+  flex-direction: column;
+  gap: space(2);
+}
+
+.row {
+  display: flex;
+  align-items: center;
+  gap: space(3);
+}
+
+.number {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  width: 2rem;
+  height: 2rem;
+  border: 2px solid var(--entity-primary, var(--border-strong));
+  border-radius: 50%;
+  font-size: 0.8125rem;
+  font-weight: 700;
+  color: var(--entity-primary, var(--fg));
+}
+
+.title {
+  flex: 1;
+  min-width: 0;
+}
+
+.tools {
+  display: flex;
+  flex-shrink: 0;
+  gap: space(0.5);
+}
+
+.add {
+  align-self: flex-start;
+}
+
+.note {
+  font-size: 0.75rem;
+  color: var(--fg-subtle);
+}

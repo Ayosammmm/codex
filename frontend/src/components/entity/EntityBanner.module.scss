@@ -1,0 +1,49 @@
+@use '@/styles/mixins' as *;
+
+// --- Bannière : image, sinon dégradé des couleurs du groupe, sinon fond neutre ---
+.banner {
+  position: relative;
+  display: block;
+  overflow: hidden;
+  background:
+    linear-gradient(
+      135deg,
+      var(--entity-primary, var(--surface-3)),
+      var(--entity-secondary, var(--entity-primary, var(--surface-3))) 70%,
+      var(--entity-tertiary, var(--entity-secondary, var(--entity-primary, var(--surface-3))))
+    );
+
+  img {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+}
+
+// --- Pile d'avatars des membres ---
+.stack {
+  display: flex;
+  align-items: center;
+}
+
+.stackAvatar {
+  // Taille réglable par le parent : --stack-size
+  width: var(--stack-size, 1.75rem);
+  height: var(--stack-size, 1.75rem);
+  font-size: 0.625rem;
+  box-shadow: 0 0 0 2px var(--surface);
+
+  & + & {
+    margin-left: -0.5rem;
+  }
+}
+
+.stackMore {
+  margin-left: space(1.5);
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--fg-muted);
+}
+

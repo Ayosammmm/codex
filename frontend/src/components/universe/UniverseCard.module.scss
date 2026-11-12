@@ -1,0 +1,181 @@
+@use '@/styles/mixins' as *;
+
+// --- Bannière (réutilisée par l'aperçu et l'accueil d'univers) ---
+.banner {
+  position: relative;
+  overflow: hidden;
+  background: var(--surface-3);
+}
+
+.bannerMedia {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+// Dégradé aux couleurs de l'univers quand il n'a pas de bannière
+.bannerGradient {
+  background:
+    radial-gradient(60% 120% at 85% 110%, color-mix(in oklab, var(--tertiary) 70%, transparent), transparent 70%),
+    linear-gradient(120deg, var(--primary) 15%, color-mix(in oklab, var(--primary) 45%, var(--secondary)) 60%, var(--secondary));
+}
+
+// --- Carte « affiche » : la bannière occupe toute la carte, identité en bas à gauche ---
+.card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  aspect-ratio: 16 / 10;
+  overflow: hidden;
+  border-radius: var(--r-lg);
+  background: var(--surface-3);
+  box-shadow: var(--elev);
+  isolation: isolate;
+  transition:
+    transform 300ms $ease-out,
+    box-shadow 300ms $ease-out;
+
+  // Survol / focus clavier : léger agrandissement, la bannière zoome
+  &:hover,
+  &:focus-within {
+    transform: scale(1.02);
+    box-shadow: var(--elev-lg);
+    z-index: 1;
+  }
+
+  // Le lien étiré n'a pas d'outline : on l'affiche sur la carte
+  &:has(.link:focus-visible) {
+    @include focus-ring(3px);
+  }
+}
+
+.cardBanner {
+  position: absolute;
+  inset: 0;
+  z-index: -2;
+
+  .bannerMedia {
+    transition: transform 700ms $ease-out;
+  }
+
+  .card:hover &,
+  .card:focus-within & {
+    .bannerMedia {
+      transform: scale(1.06);
+    }
+  }
+}
+
+// Voile sombre en bas pour garder le titre lisible, quelle que soit l'image
+.shade {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: linear-gradient(to top, rgb(0 0 0 / 0.78) 0%, rgb(0 0 0 / 0.35) 45%, rgb(0 0 0 / 0) 75%);
+  transition: opacity 300ms $ease-out;
+  opacity: 0.9;
+
+  .card:hover & {
+    opacity: 1;
+  }
+}
+
+.menuSlot {
+  position: absolute;
+  top: space(3);
+  right: space(3);
+  z-index: 10;
+}
+
+.menuTrigger {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2rem;
+  height: 2rem;
+  border-radius: var(--r);
+  background: rgb(0 0 0 / 0.35);
+  color: #fff;
+  backdrop-filter: blur(4px);
+  transition: background-color 150ms;
+
+  &:hover {
+    background: rgb(0 0 0 / 0.55);
+  }
+
+  svg {
+    width: 1rem;
+    height: 1rem;
+  }
+}
+
+// Non positionné : le lien étiré du titre couvre ainsi toute la carte
+.identity {
+  display: flex;
+  align-items: flex-end;
+  gap: space(4);
+  padding: space(5) space(6);
+  color: #fff;
+}
+
+.avatar {
+  width: 4.5rem;
+  height: 4.5rem;
+  border: 2px solid rgb(255 255 255 / 0.85);
+  font-size: 1.5rem;
+  box-shadow: 0 6px 20px rgb(0 0 0 / 0.35);
+  transition: transform 300ms $ease-out;
+
+  .card:hover &,
+  .card:focus-within & {
+    transform: translateY(-2px) rotate(-3deg);
+  }
+}
+
+.heading {
+  min-width: 0;
+  padding-bottom: space(1);
+}
+
+.title {
+  @include truncate;
+  font-size: 1.75rem;
+  line-height: 1.15;
+  text-shadow: 0 2px 12px rgb(0 0 0 / 0.45);
+
+  @include up(lg) {
+    font-size: 2rem;
+  }
+}
+
+// Filet aux couleurs de l'univers sous le titre, qui s'allonge au survol
+.accent {
+  display: block;
+  width: 2.5rem;
+  height: 3px;
+  margin-top: space(2);
+  border-radius: 999px;
+  background: linear-gradient(90deg, var(--tertiary), var(--secondary));
+  transition: width 400ms $ease-out;
+
+  .card:hover &,
+  .card:focus-within & {
+    width: 5rem;
+  }
+}
+
+// Lien étiré : toute la carte est cliquable, le menu reste accessible
+.link {
+  &::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+  }
+
+  &:focus {
+    outline: none;
+  }
+}

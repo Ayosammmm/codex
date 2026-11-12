@@ -1,0 +1,105 @@
+@use '@/styles/mixins' as *;
+
+.stories {
+  display: flex;
+  flex-direction: column;
+  gap: space(4);
+}
+
+.storyName {
+  display: inline-flex;
+  align-items: center;
+  gap: space(1.5);
+  margin-bottom: space(2);
+  font-weight: 600;
+
+  &:hover {
+    text-decoration: underline;
+    text-underline-offset: 2px;
+  }
+
+  svg {
+    width: 0.9375rem;
+    height: 0.9375rem;
+    color: var(--fg-muted);
+  }
+}
+
+.episodes {
+  @include card(var(--r));
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.episode {
+  display: flex;
+  align-items: center;
+  gap: space(3);
+  padding: space(2) space(3);
+  transition: background-color 120ms;
+
+  li + li & {
+    border-top: var(--border-w, 1px) solid var(--border);
+  }
+
+  &:hover {
+    background: var(--surface-2);
+  }
+}
+
+.number {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  width: 1.5rem;
+  height: 1.5rem;
+  border-radius: 50%;
+  background: var(--surface-3);
+  font-size: 0.75rem;
+  font-weight: 700;
+}
+
+.title {
+  @include truncate;
+  flex: 1;
+}
+
+.role {
+  flex-shrink: 0;
+  font-size: 0.75rem;
+  color: var(--fg-muted);
+
+  &[data-role='principal'] {
+    font-weight: 600;
+    color: var(--entity-primary, var(--primary-ink));
+  }
+}
+
+.events {
+  display: flex;
+  flex-wrap: wrap;
+  gap: space(2);
+}
+
+.event {
+  @include card(var(--r));
+  display: flex;
+  flex-direction: column;
+  padding: space(2) space(3);
+  border-left: 3px solid var(--tone);
+
+  &:hover {
+    box-shadow: var(--elev);
+  }
+}
+
+.eventName {
+  font-weight: 600;
+}
+
+.eventDate {
+  font-size: 0.75rem;
+  color: var(--fg-muted);
+}

@@ -1,0 +1,122 @@
+@use '@/styles/mixins' as *;
+
+.stack {
+  display: flex;
+  flex-direction: column;
+  gap: space(4);
+}
+
+.size {
+  display: flex;
+  align-items: center;
+  gap: space(2);
+
+  > input {
+    flex: 1;
+    min-width: 0;
+  }
+}
+
+// --- Intelligence ---
+.intelligence {
+  display: flex;
+  flex-direction: column;
+  gap: space(2);
+  margin-top: space(2);
+}
+
+.intelligenceHead {
+  display: flex;
+  align-items: center;
+  gap: space(3);
+  min-height: 2rem;
+}
+
+.intelligenceLabel {
+  font-size: 0.875rem;
+  font-weight: 500;
+}
+
+.intelligenceValue {
+  font-size: 0.875rem;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  color: var(--entity-primary, var(--primary-ink));
+
+  .unset & {
+    font-weight: 400;
+    color: var(--fg-subtle);
+  }
+}
+
+.slider {
+  width: 100%;
+  accent-color: var(--entity-primary, var(--primary));
+
+  .unset & {
+    opacity: 0.4;
+  }
+}
+
+.scale {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.75rem;
+  color: var(--fg-subtle);
+}
+
+// --- Aperçu (colonne latérale) ---
+.preview {
+  @include card;
+  overflow: hidden;
+  border-top: 3px solid var(--entity-primary, var(--border));
+}
+
+.previewVisual {
+  position: relative;
+  display: block;
+}
+
+.previewImage {
+  aspect-ratio: 4 / 5;
+}
+
+.previewRank {
+  position: absolute;
+  top: space(2);
+  left: space(2);
+
+  > span {
+    background: color-mix(in oklab, var(--badge-color) 14%, var(--surface));
+    box-shadow: var(--elev-sm);
+  }
+}
+
+.previewBody {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: space(1.5);
+  padding: space(3) space(4) space(4);
+}
+
+.previewName {
+  font-family: var(--font-title);
+  font-weight: var(--title-weight);
+  font-size: 1.125rem;
+  line-height: 1.25;
+  color: color-mix(in oklab, var(--entity-primary, var(--fg)) 55%, var(--fg));
+}
+
+.previewMeta {
+  display: inline-flex;
+  align-items: center;
+  gap: space(1);
+  font-size: 0.8125rem;
+  color: var(--fg-muted);
+
+  svg {
+    width: 0.875rem;
+    height: 0.875rem;
+  }
+}

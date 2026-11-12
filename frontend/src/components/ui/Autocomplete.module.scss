@@ -1,0 +1,24 @@
+@use '@/styles/mixins' as *;
+
+.item {
+  display: flex;
+  flex-direction: column;
+}
+
+// Intertitre d'un groupe de suggestions (ex. un archétype de relation)
+.group {
+  display: flex;
+  align-items: center;
+  gap: space(1.5);
+  padding: space(2) space(3) space(1);
+  font-size: 0.6875rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: color-mix(in oklab, var(--group, var(--fg-muted)) 70%, var(--fg-muted));
+
+  .item:not(:first-child) > & {
+    margin-top: space(1);
+    border-top: var(--border-w, 1px) solid var(--border);
+  }
+}

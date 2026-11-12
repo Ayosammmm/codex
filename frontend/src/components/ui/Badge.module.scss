@@ -1,0 +1,24 @@
+@use '@/styles/mixins' as *;
+
+.badge {
+  @include pill;
+  max-width: 100%;
+  padding: 0.125rem space(2);
+  border: var(--border-w) solid color-mix(in oklab, var(--badge-color, var(--fg-subtle)) 35%, transparent);
+  background: color-mix(in oklab, var(--badge-color, var(--fg-subtle)) 12%, transparent);
+  color: var(--fg);
+  font-size: 0.75rem;
+  white-space: nowrap;
+}
+
+.dot {
+  flex-shrink: 0;
+  width: 0.5rem;
+  height: 0.5rem;
+  border-radius: 50%;
+  background: var(--badge-color, var(--fg-subtle));
+}
+
+.label {
+  @include truncate;
+}

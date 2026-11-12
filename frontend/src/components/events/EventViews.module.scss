@@ -1,0 +1,229 @@
+@use '@/styles/mixins' as *;
+
+.meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: space(1.5) space(3);
+}
+
+.metaItem {
+  display: inline-flex;
+  align-items: center;
+  gap: space(1);
+  min-width: 0;
+  font-size: 0.75rem;
+  color: var(--fg-muted);
+
+  svg {
+    flex-shrink: 0;
+    width: 0.8125rem;
+    height: 0.8125rem;
+  }
+}
+
+.stack {
+  --stack-size: 1.5rem;
+}
+
+.entryName {
+  font-family: var(--font-title);
+  font-weight: var(--title-weight);
+  letter-spacing: var(--title-tracking);
+  text-transform: var(--title-transform);
+  font-size: 1.0625rem;
+  line-height: 1.25;
+  color: color-mix(in oklab, var(--entity-primary, var(--fg)) 55%, var(--fg));
+}
+
+.excerpt {
+  @include line-clamp(2);
+  font-size: 0.875rem;
+  color: var(--fg-muted);
+}
+
+// ============================================================================
+//  Frise chronologique : date à gauche, fil au centre, événement à droite
+// ============================================================================
+.timeline {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: space(4);
+
+  // Le fil
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0.75rem;
+    bottom: 0.75rem;
+    left: 1rem;
+    width: 2px;
+    background: var(--border-strong);
+
+    @include up(md) {
+      left: 9.5rem;
+    }
+  }
+}
+
+.node {
+  position: relative;
+  display: grid;
+  grid-template-columns: 2rem minmax(0, 1fr);
+  grid-template-areas: 'dot when' 'dot entry';
+  column-gap: space(3);
+  row-gap: space(1);
+
+  @include up(md) {
+    grid-template-columns: 8rem 2rem minmax(0, 1fr);
+    grid-template-areas: 'when dot entry';
+    align-items: start;
+  }
+}
+
+.dot {
+  grid-area: dot;
+  justify-self: center;
+  z-index: 1;
+  width: 0.875rem;
+  height: 0.875rem;
+  margin-top: space(4);
+  border: 3px solid var(--surface);
+  border-radius: 50%;
+  background: var(--tone);
+  box-shadow: 0 0 0 2px var(--tone);
+}
+
+// Événement capital : point plus gros
+.dotMajor {
+  width: 1.25rem;
+  height: 1.25rem;
+  margin-top: space(3.5);
+}
+
+.when {
+  grid-area: when;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--fg-muted);
+
+  @include up(md) {
+    margin-top: space(3.5);
+    text-align: right;
+  }
+}
+
+.noDate {
+  font-weight: 400;
+  font-style: italic;
+  color: var(--fg-subtle);
+}
+
+.entry {
+  grid-area: entry;
+  display: flex;
+  align-items: flex-start;
+  gap: space(2);
+  min-width: 0;
+}
+
+.entryCard {
+  @include card(var(--r));
+  display: flex;
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  border-left: 3px solid var(--tone);
+  transition: box-shadow 150ms;
+
+  &:hover {
+    box-shadow: var(--elev);
+  }
+
+  &:focus-visible {
+    @include focus-ring;
+  }
+}
+
+.entryImage {
+  display: none;
+  flex-shrink: 0;
+  width: 8rem;
+
+  @include up(sm) {
+    display: block;
+  }
+}
+
+.entryBody {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: space(1.5);
+  min-width: 0;
+  padding: space(3) space(4);
+}
+
+.entryHead {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: space(2);
+}
+
+.order {
+  display: flex;
+  flex-direction: column;
+  flex-shrink: 0;
+  margin-top: space(2);
+}
+
+// ============================================================================
+//  Galerie
+// ============================================================================
+.gallery {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(16rem, 1fr));
+  gap: space(5);
+}
+
+.card {
+  @include card;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  overflow: hidden;
+  border-top: 3px solid var(--tone);
+  transition:
+    transform 250ms $ease-out,
+    box-shadow 250ms $ease-out;
+
+  &:hover,
+  &:focus-visible {
+    transform: scale(1.02);
+    box-shadow: var(--elev-lg);
+    z-index: 1;
+  }
+}
+
+.cardImage {
+  aspect-ratio: 16 / 9;
+}
+
+.cardBody {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: space(1.5);
+  padding: space(3) space(4) space(4);
+}
+
+.cardDate {
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--fg-muted);
+}

@@ -1,0 +1,58 @@
+@use '@/styles/mixins' as *;
+
+.page {
+  max-width: 64rem;
+}
+
+.intro {
+  max-width: 48rem;
+  margin-bottom: space(6);
+  font-size: 0.875rem;
+  color: var(--fg-muted);
+}
+
+.filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: space(2);
+  margin-bottom: space(5);
+}
+
+.filter {
+  display: inline-flex;
+  align-items: center;
+  gap: space(1.5);
+  padding: space(1.5) space(3);
+  border: var(--border-w, 1px) solid color-mix(in oklab, var(--dynamic, var(--border-strong)) 45%, var(--border));
+  border-radius: 999px;
+  background: var(--surface);
+  font-size: 0.8125rem;
+  font-weight: 500;
+
+  span {
+    color: var(--fg-subtle);
+  }
+
+  &:hover {
+    border-color: var(--dynamic, var(--border-strong));
+  }
+
+  &:focus-visible {
+    @include focus-ring;
+  }
+}
+
+.filterActive {
+  border-color: var(--dynamic, var(--primary));
+  background: color-mix(in oklab, var(--dynamic, var(--primary)) 14%, var(--surface));
+  font-weight: 600;
+}
+
+.list {
+  display: grid;
+  gap: space(3);
+
+  @include up(lg) {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}

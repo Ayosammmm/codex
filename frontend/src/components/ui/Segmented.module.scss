@@ -1,0 +1,43 @@
+@use '@/styles/mixins' as *;
+
+.group {
+  display: inline-flex;
+  padding: 0.125rem;
+  border: var(--border-w) solid var(--border);
+  border-radius: var(--r);
+  background: var(--surface-2);
+}
+
+.option {
+  display: inline-flex;
+  align-items: center;
+  gap: space(1.5);
+  height: 2rem;
+  padding-inline: space(2.5);
+  border-radius: var(--r-sm);
+  font-size: 0.875rem;
+  color: var(--fg-muted);
+  transition: background-color 150ms, color 150ms;
+
+  &:hover {
+    color: var(--fg);
+  }
+
+  &[aria-checked='true'] {
+    background: var(--surface);
+    color: var(--fg);
+    font-weight: 500;
+    box-shadow: var(--elev-sm);
+  }
+
+  svg {
+    width: 1rem;
+    height: 1rem;
+  }
+}
+
+.iconOnly {
+  width: 2rem;
+  padding: 0;
+  justify-content: center;
+}

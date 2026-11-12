@@ -1,0 +1,48 @@
+@use '@/styles/mixins' as *;
+
+// Vignette d'un personnage (aux couleurs du personnage) : avatar, nom, titre
+.chip {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: space(1);
+  width: 8.5rem;
+  padding: space(3) space(2);
+  border-radius: var(--r);
+  text-align: center;
+  transition: background-color 150ms, transform 200ms $ease-out;
+
+  &:hover {
+    background: color-mix(in oklab, var(--entity-primary, var(--fg)) 8%, var(--surface));
+    transform: translateY(-2px);
+  }
+
+  &:focus-visible {
+    @include focus-ring;
+  }
+}
+
+.avatar {
+  width: 3.5rem;
+  height: 3.5rem;
+  margin-bottom: space(1);
+  font-size: 1rem;
+  box-shadow:
+    0 0 0 2px var(--surface),
+    0 0 0 4px color-mix(in oklab, var(--entity-primary, var(--border)) 70%, transparent);
+}
+
+.name {
+  @include line-clamp(2);
+  font-size: 0.875rem;
+  font-weight: 600;
+  line-height: 1.25;
+}
+
+.title {
+  @include line-clamp(2);
+  font-size: 0.75rem;
+  line-height: 1.3;
+  color: var(--fg-muted);
+}
+

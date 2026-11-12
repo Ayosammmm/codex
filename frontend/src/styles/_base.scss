@@ -1,0 +1,151 @@
+@use 'mixins' as *;
+
+// --- Reset minimal ------------------------------------------------------------
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  border-color: var(--border);
+}
+
+* {
+  margin: 0;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  min-height: 100dvh;
+  background: var(--bg);
+  color: var(--fg);
+  font-family: var(--font-ui);
+  font-size: 1rem;
+  line-height: 1.5;
+  font-feature-settings: 'cv11', 'ss01';
+  -webkit-font-smoothing: antialiased;
+}
+
+img,
+svg,
+video {
+  display: block;
+  max-width: 100%;
+}
+
+input,
+button,
+textarea,
+select {
+  font: inherit;
+  color: inherit;
+}
+
+button {
+  cursor: pointer;
+  background: none;
+  border: 0;
+  padding: 0;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+ul,
+ol {
+  padding: 0;
+  list-style: none;
+}
+
+fieldset {
+  border: 0;
+  padding: 0;
+  min-width: 0;
+}
+
+legend {
+  padding: 0;
+}
+
+h1,
+h2,
+h3 {
+  font-family: var(--font-title);
+  font-weight: var(--title-weight);
+  line-height: 1.2;
+  letter-spacing: var(--title-tracking);
+  text-transform: var(--title-transform);
+  text-wrap: balance;
+}
+
+// Les variables de police sont résolues là où elles sont déclarées : chaque zone
+// thémée (univers, aperçu, échantillon) doit réappliquer police et couleur de texte.
+[data-theme] {
+  font-family: var(--font-ui);
+  letter-spacing: var(--ui-tracking);
+  color: var(--fg);
+}
+
+:focus-visible {
+  @include focus-ring;
+}
+
+::selection {
+  background: var(--primary-soft);
+}
+
+dialog::backdrop {
+  background: var(--overlay);
+  backdrop-filter: blur(2px);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+// --- Utilitaires globaux (volontairement très peu nombreux) --------------------
+.sr-only {
+  @include visually-hidden;
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+// --- Icônes selon le thème (les icônes dessinées sont dans components/ui/icons.jsx) ---
+// Crayonné : tracé tremblé, comme à main levée
+[data-theme='sketch'] svg.lucide {
+  filter: url(#almanach-sketch);
+}
+
+// Terminal : traits droits et angles vifs
+[data-theme='terminal'] svg.lucide {
+  stroke-linecap: square;
+  stroke-linejoin: miter;
+}
+
+// Médiéval : traits plus fins, à la plume
+[data-theme='medieval'] svg.lucide:not(.themed-icon) {
+  stroke-width: 1.6;
+}

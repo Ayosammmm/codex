@@ -1,0 +1,105 @@
+@use '@/styles/mixins' as *;
+
+.card {
+  @include card(var(--r));
+  display: flex;
+  flex-direction: column;
+  gap: space(2.5);
+  padding: space(4);
+  border-left: 4px solid var(--dynamic);
+}
+
+.compact {
+  gap: space(1);
+  padding: space(3) space(4);
+}
+
+.type {
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: color-mix(in oklab, var(--dynamic) 75%, var(--fg));
+}
+
+.sentence {
+  font-size: 0.9375rem;
+}
+
+.compact .sentence {
+  font-size: 0.875rem;
+}
+
+.members {
+  display: flex;
+  flex-wrap: wrap;
+  gap: space(2);
+}
+
+.member {
+  display: inline-flex;
+  align-items: center;
+  gap: space(1.5);
+  padding: space(1) space(3) space(1) space(1);
+  border: var(--border-w, 1px) solid var(--border);
+  border-radius: 999px;
+  background: var(--surface);
+  font-size: 0.8125rem;
+  font-weight: 500;
+
+  &:hover {
+    background: var(--surface-2);
+  }
+}
+
+// Personnage au centre de la dynamique (pivot)
+.focus {
+  border-color: var(--dynamic);
+  background: color-mix(in oklab, var(--dynamic) 10%, var(--surface));
+}
+
+.avatar {
+  width: 1.75rem;
+  height: 1.75rem;
+  font-size: 0.625rem;
+}
+
+.links {
+  display: flex;
+  flex-direction: column;
+  gap: space(1);
+  padding-top: space(2);
+  border-top: var(--border-w, 1px) solid var(--border);
+  font-size: 0.8125rem;
+}
+
+.link {
+  display: flex;
+  flex-wrap: wrap;
+  gap: space(1) space(3);
+
+  &::before {
+    content: '';
+    align-self: center;
+    width: 0.5rem;
+    height: 0.5rem;
+    border-radius: 50%;
+    background: #94a3b8;
+  }
+
+  &[data-sign='positive']::before {
+    background: #22c55e;
+  }
+
+  &[data-sign='negative']::before {
+    background: #dc2626;
+  }
+}
+
+.pair {
+  font-weight: 500;
+}
+
+.nature {
+  color: var(--fg-muted);
+}

@@ -1,0 +1,183 @@
+@use '@/styles/mixins' as *;
+
+.intro {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: space(3);
+  font-size: 0.875rem;
+  color: var(--fg-muted);
+}
+
+.groups {
+  display: grid;
+  gap: space(4);
+
+  @include up(xl) {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+.group {
+  padding: space(3) space(4) space(4);
+  border: var(--border-w) solid var(--border);
+  border-radius: var(--r);
+  background: var(--surface-2);
+}
+
+.legend {
+  padding-inline: space(1);
+  font-family: var(--font-title);
+  font-weight: var(--title-weight);
+  font-size: 1rem;
+}
+
+.traits {
+  display: flex;
+  flex-direction: column;
+  gap: space(3);
+  margin-top: space(1);
+}
+
+// Une ligne : faiblesse ← curseur → force, valeur, effacer
+.trait {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  grid-template-areas:
+    'labels labels'
+    'slider value';
+  align-items: center;
+  column-gap: space(3);
+  row-gap: space(1);
+}
+
+.labels {
+  grid-area: labels;
+  display: flex;
+  justify-content: space-between;
+  gap: space(2);
+  font-size: 0.8125rem;
+}
+
+.weakness {
+  color: var(--secondary-ink);
+}
+
+.strength {
+  color: var(--primary-ink);
+  font-weight: 500;
+  text-align: right;
+}
+
+// Le côté dominant est mis en avant
+.leanWeak .weakness {
+  font-weight: 600;
+}
+
+.leanStrong .strength {
+  font-weight: 700;
+}
+
+.slider {
+  grid-area: slider;
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100%;
+  height: 1.5rem;
+  background: transparent;
+  cursor: pointer;
+
+  // Piste : faiblesse (secondaire) → neutre → force (principale)
+  &::-webkit-slider-runnable-track {
+    height: 0.375rem;
+    border-radius: 999px;
+    background: linear-gradient(90deg, var(--secondary), var(--surface-3) 50%, var(--primary));
+  }
+
+  &::-moz-range-track {
+    height: 0.375rem;
+    border-radius: 999px;
+    background: linear-gradient(90deg, var(--secondary), var(--surface-3) 50%, var(--primary));
+  }
+
+  &::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 1.125rem;
+    height: 1.125rem;
+    margin-top: -0.375rem;
+    border: 2px solid var(--surface);
+    border-radius: 50%;
+    background: var(--fg);
+    box-shadow: var(--elev-sm), 0 0 0 1px var(--border-strong);
+  }
+
+  &::-moz-range-thumb {
+    width: 1rem;
+    height: 1rem;
+    border: 2px solid var(--surface);
+    border-radius: 50%;
+    background: var(--fg);
+    box-shadow: 0 0 0 1px var(--border-strong);
+  }
+
+  &:focus-visible {
+    outline: none;
+
+    &::-webkit-slider-thumb {
+      box-shadow: 0 0 0 3px var(--ring);
+    }
+
+    &::-moz-range-thumb {
+      box-shadow: 0 0 0 3px var(--ring);
+    }
+  }
+}
+
+// Trait non renseigné : curseur estompé au centre
+.unset .slider {
+  opacity: 0.4;
+
+  &:hover {
+    opacity: 0.7;
+  }
+}
+
+.value {
+  grid-area: value;
+  display: flex;
+  align-items: center;
+  gap: space(1);
+}
+
+.number {
+  min-width: 2.25rem;
+  font-variant-numeric: tabular-nums;
+  font-size: 0.875rem;
+  font-weight: 600;
+  text-align: right;
+}
+
+.clear {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.5rem;
+  height: 1.5rem;
+  border-radius: var(--r-sm);
+  color: var(--fg-subtle);
+
+  &:hover {
+    color: var(--fg);
+    background: var(--surface-3);
+  }
+
+  &:disabled {
+    visibility: hidden;
+  }
+
+  svg {
+    width: 0.875rem;
+    height: 0.875rem;
+  }
+}

@@ -1,0 +1,166 @@
+@use '@/styles/mixins' as *;
+
+// ============================================================================
+//  Organigramme : étages reliés par un trait vertical
+// ============================================================================
+.chart {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.tier {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: space(3);
+  width: 100%;
+  padding: space(4);
+  border: var(--border-w, 1px) dashed color-mix(in oklab, var(--entity-primary, var(--border-strong)) 45%, var(--border));
+  border-radius: var(--r-lg);
+  background: color-mix(in oklab, var(--surface) 70%, transparent);
+
+  // Trait qui relie l'étage au précédent
+  & + & {
+    margin-top: space(8);
+
+    &::before {
+      content: '';
+      position: absolute;
+      bottom: 100%;
+      left: 50%;
+      width: 2px;
+      height: space(8);
+      background: color-mix(in oklab, var(--entity-primary, var(--border-strong)) 70%, var(--border));
+      transform: translateX(-50%);
+    }
+  }
+}
+
+// Bloc des rôles : sans cadre, chaque rôle a sa propre boîte
+.tierPlain {
+  padding: 0;
+  border: 0;
+  background: none;
+}
+
+.note {
+  font-size: 0.875rem;
+  color: var(--fg-muted);
+}
+
+// --- Hiérarchie des rôles : un étage par niveau, liens tracés en SVG ---
+.hierarchy {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: space(12);
+  width: 100%;
+}
+
+.connectors {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+  pointer-events: none;
+
+  path {
+    fill: none;
+    stroke: color-mix(in oklab, var(--entity-primary, var(--border-strong)) 75%, var(--border));
+    stroke-width: 2;
+  }
+}
+
+.level {
+  position: relative;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: space(6);
+}
+
+.roleBox {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: space(3);
+  max-width: 100%;
+  padding: space(4);
+  border: var(--border-w, 1px) solid color-mix(in oklab, var(--entity-primary, var(--border-strong)) 45%, var(--border));
+  border-top: 3px solid var(--entity-primary, var(--border-strong));
+  border-radius: var(--r-lg);
+  background: var(--surface);
+  box-shadow: var(--elev-sm);
+}
+
+.tierLabel {
+  display: flex;
+  align-items: center;
+  gap: space(2);
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: color-mix(in oklab, var(--entity-secondary, var(--fg-muted)) 55%, var(--fg-muted));
+}
+
+.tierCount {
+  font-weight: 400;
+  color: var(--fg-subtle);
+}
+
+.tierRow {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: space(3);
+}
+
+// --- Bulle d'un groupe (parent / sous-groupe, aux couleurs du groupe) ---
+.bubble {
+  display: flex;
+  align-items: center;
+  gap: space(3);
+  max-width: 18rem;
+  padding: space(2) space(4) space(2) space(2);
+  border: var(--border-w, 1px) solid color-mix(in oklab, var(--entity-primary, var(--border-strong)) 50%, var(--border));
+  border-radius: 999px;
+  background: color-mix(in oklab, var(--entity-primary, var(--fg)) 6%, var(--surface));
+  box-shadow: var(--elev-sm);
+  transition: box-shadow 150ms, transform 200ms $ease-out;
+
+  &:hover {
+    box-shadow: var(--elev);
+    transform: translateY(-2px);
+  }
+
+  &:focus-visible {
+    @include focus-ring;
+  }
+}
+
+.bubbleLogo {
+  width: 2.75rem;
+  height: 2.75rem;
+  font-size: 0.875rem;
+}
+
+.bubbleText {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.bubbleName {
+  @include truncate;
+  font-weight: 600;
+}
+
+.bubbleCount {
+  font-size: 0.75rem;
+  color: var(--fg-muted);
+}
+

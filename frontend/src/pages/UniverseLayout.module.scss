@@ -1,0 +1,75 @@
+@use '@/styles/mixins' as *;
+
+.root {
+  position: relative;
+  min-height: 100dvh;
+  background-color: var(--bg);
+  background-image: var(--bg-texture);
+  color: var(--fg);
+}
+
+// Fond d'ambiance (image ou couleur) fixé derrière le contenu
+.backdrop {
+  position: fixed;
+  inset: 0;
+}
+
+// Sidebar + contenu. Décalage des éléments collants (aperçu, ancres) sous la barre mobile.
+.shell {
+  position: relative;
+  min-height: 100dvh;
+  --sticky-top: 5rem;
+
+  @include up(lg) {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    --sticky-top: 1.5rem;
+  }
+}
+
+.scrim {
+  background: var(--scrim);
+}
+
+.main {
+  min-width: 0;
+}
+
+// --- Barre du haut, petit écran uniquement ---
+.topbar {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  display: flex;
+  align-items: center;
+  gap: space(2);
+  height: 3.5rem;
+  padding-inline: space(2) space(4);
+  border-bottom: var(--border-w) solid var(--border);
+  background: color-mix(in oklab, var(--bg) 85%, transparent);
+  backdrop-filter: blur(8px);
+
+  @include up(lg) {
+    display: none;
+  }
+}
+
+.topbarIdentity {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  gap: space(2);
+  border-radius: var(--r-sm);
+}
+
+.topbarAvatar {
+  width: 1.75rem;
+  height: 1.75rem;
+  font-size: 0.75rem;
+}
+
+.topbarName {
+  @include truncate;
+  font-family: var(--font-title);
+  font-weight: 600;
+}

@@ -1,0 +1,201 @@
+@use '@/styles/mixins' as *;
+
+// Mise en page commune des formulaires d'entités (personnage, groupe) : sections, aperçu, sommaire
+
+.layout {
+  display: grid;
+  gap: space(6);
+
+  @include up(lg) {
+    grid-template-columns: minmax(0, 1fr) 17rem;
+  }
+}
+
+.sections {
+  display: flex;
+  flex-direction: column;
+  gap: space(6);
+  min-width: 0;
+
+  // Sections aux couleurs du personnage : liseré principal et titre teinté
+  // (sauf la zone de suppression, qui garde son style « danger »)
+  > section:not([aria-labelledby='danger-title']) {
+    border-top: 3px solid var(--entity-primary, var(--border));
+
+    h2 {
+      color: color-mix(in oklab, var(--entity-primary, var(--fg)) 55%, var(--fg));
+    }
+  }
+}
+
+// --- Identité : avatar à gauche, champs à droite ---
+.identity {
+  display: grid;
+  gap: space(5);
+
+  @include up(sm) {
+    grid-template-columns: 11rem minmax(0, 1fr);
+  }
+}
+
+.fields {
+  display: grid;
+  gap: space(4);
+  align-content: start;
+
+  @include up(md) {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+.full {
+  grid-column: 1 / -1;
+}
+
+.identityError {
+  grid-column: 1 / -1;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  color: var(--danger);
+}
+
+.hintLink {
+  color: var(--primary-ink);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.note {
+  font-size: 0.875rem;
+  color: var(--fg-muted);
+}
+
+// --- Colonne latérale : aperçu + sommaire ---
+.aside {
+  display: none;
+
+  @include up(lg) {
+    display: block;
+  }
+}
+
+.asideSticky {
+  position: sticky;
+  top: var(--sticky-top, 6rem);
+  display: flex;
+  flex-direction: column;
+  gap: space(5);
+}
+
+.preview {
+  @include card;
+  overflow: hidden;
+}
+
+.previewAvatar {
+  width: 100%;
+  height: auto;
+  aspect-ratio: 4 / 5;
+  border-radius: 0;
+  font-size: 2.5rem;
+}
+
+.previewBody {
+  display: flex;
+  flex-direction: column;
+  gap: space(1.5);
+  padding: space(3) space(4) space(4);
+}
+
+.previewName {
+  font-family: var(--font-title);
+  font-weight: var(--title-weight);
+  font-size: 1.125rem;
+  line-height: 1.25;
+}
+
+.previewTitle {
+  font-size: 0.8125rem;
+  color: var(--fg-muted);
+}
+
+.badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: space(1);
+}
+
+.toc {
+  display: flex;
+  flex-direction: column;
+  gap: 0.125rem;
+  font-size: 0.875rem;
+
+  a {
+    padding: space(1) space(2.5);
+    border-left: 2px solid var(--border);
+    color: var(--fg-muted);
+    transition: color 150ms, border-color 150ms;
+
+    &:hover {
+      border-color: var(--primary);
+      color: var(--fg);
+    }
+  }
+}
+
+.tocLabel {
+  margin-bottom: space(1);
+  font-size: 0.6875rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--fg-subtle);
+}
+
+// --- Zone de suppression ---
+.danger {
+  @include card;
+  display: flex;
+  flex-direction: column;
+  gap: space(3);
+  padding: space(5);
+  border-color: color-mix(in oklab, var(--danger) 40%, transparent);
+
+  @include up(sm) {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    padding-inline: space(6);
+  }
+}
+
+.dangerTitle {
+  font-weight: 500;
+  color: var(--danger);
+}
+
+// --- Apparence ---
+.colors {
+  display: grid;
+  gap: space(4);
+  grid-template-columns: repeat(auto-fill, minmax(18rem, 1fr));
+}
+
+.background {
+  max-width: 28rem;
+}
+
+// --- Fond (section Apparence) ---
+.fieldset {
+  display: flex;
+  flex-direction: column;
+  gap: space(3);
+  margin-top: space(2);
+}
+
+.legend {
+  margin-bottom: space(2);
+  font-size: 0.875rem;
+  font-weight: 500;
+}

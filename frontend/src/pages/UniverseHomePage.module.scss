@@ -1,0 +1,115 @@
+@use '@/styles/mixins' as *;
+
+.main {
+  @include container;
+  padding-block: space(6) space(16);
+}
+
+.hero {
+  @include card;
+  overflow: hidden;
+}
+
+.banner {
+  height: 10rem;
+
+  @include up(sm) {
+    height: 14rem;
+  }
+}
+
+.identity {
+  display: flex;
+  flex-direction: column;
+  gap: space(4);
+  padding: 0 space(5) space(6);
+
+  @include up(sm) {
+    flex-direction: row;
+    align-items: flex-end;
+    padding-inline: space(8);
+  }
+}
+
+.avatar {
+  width: 6rem;
+  height: 6rem;
+  margin-top: -3rem;
+  border: 4px solid var(--surface);
+  font-size: 1.875rem;
+  box-shadow: var(--elev);
+}
+
+.name {
+  flex: 1;
+  min-width: 0;
+  font-size: 1.875rem;
+
+  @include up(sm) {
+    font-size: 2.25rem;
+  }
+}
+
+.description {
+  max-width: 48rem;
+  padding: 0 space(5) space(6);
+  color: var(--fg-muted);
+
+  @include up(sm) {
+    padding-inline: space(8);
+  }
+}
+
+.sectionTitle {
+  margin: space(10) 0 space(4);
+  font-size: 1.25rem;
+}
+
+.modules {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: space(3);
+
+  @include up(sm) {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  @include up(lg) {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+
+.module {
+  @include card;
+  display: block;
+  height: 100%;
+  padding: space(4);
+  transition: transform 200ms $ease-out, box-shadow 200ms $ease-out, border-color 200ms;
+
+  &:hover {
+    transform: scale(1.02);
+    border-color: color-mix(in oklab, var(--primary) 35%, transparent);
+    box-shadow: var(--elev);
+  }
+}
+
+.moduleIcon {
+  @include icon-tile;
+
+  svg {
+    width: 1.125rem;
+    height: 1.125rem;
+  }
+}
+
+.moduleLabel {
+  margin-top: space(3);
+  font-weight: 500;
+}
+
+.moduleCount {
+  font-size: 0.875rem;
+  font-variant-numeric: tabular-nums;
+  color: var(--fg-muted);
+}
+

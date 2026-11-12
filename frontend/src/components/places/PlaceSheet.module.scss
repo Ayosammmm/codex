@@ -1,0 +1,219 @@
+@use '@/styles/mixins' as *;
+
+.sheet {
+  display: flex;
+  flex-direction: column;
+  gap: space(10);
+}
+
+.note {
+  display: flex;
+  align-items: center;
+  gap: space(2);
+  font-size: 0.875rem;
+  color: var(--fg-muted);
+
+  svg {
+    width: 1rem;
+    height: 1rem;
+  }
+}
+
+// ============================================================================
+//  En-tête : grande image, fil d'Ariane, nom
+// ============================================================================
+.hero {
+  display: flex;
+  flex-direction: column;
+  gap: space(5);
+}
+
+.banner {
+  aspect-ratio: 3 / 1;
+  min-height: 10rem;
+  border-radius: var(--r-lg);
+  box-shadow: var(--elev-card);
+}
+
+.identity {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: space(4) space(5);
+}
+
+.heading {
+  flex: 1;
+  min-width: min(100%, 16rem);
+}
+
+.kicker {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: space(2) space(3);
+  margin-bottom: space(2);
+}
+
+.type {
+  padding: 0.125rem space(2.5);
+  border-radius: 999px;
+  background: color-mix(in oklab, var(--entity-primary, var(--fg)) 12%, var(--surface));
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  color: color-mix(in oklab, var(--entity-primary, var(--fg-muted)) 65%, var(--fg));
+}
+
+.breadcrumb {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: space(1);
+  font-size: 0.875rem;
+  color: var(--fg-muted);
+
+  a:hover {
+    color: var(--fg);
+    text-decoration: underline;
+    text-underline-offset: 2px;
+  }
+
+  svg {
+    width: 0.875rem;
+    height: 0.875rem;
+    color: var(--fg-subtle);
+  }
+}
+
+.name {
+  font-size: 2.25rem;
+  line-height: 1.1;
+  overflow-wrap: anywhere;
+
+  @include up(lg) {
+    font-size: 2.75rem;
+  }
+}
+
+.stats {
+  margin-top: space(2);
+  font-size: 0.875rem;
+  color: var(--fg-muted);
+}
+
+.actions {
+  display: flex;
+  gap: space(2);
+}
+
+// ============================================================================
+//  Sous-lieux
+// ============================================================================
+.children {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(15rem, 1fr));
+  gap: space(3);
+}
+
+.child {
+  @include card(var(--r));
+  display: flex;
+  align-items: center;
+  gap: space(3);
+  padding: space(2);
+  border-left: 3px solid var(--entity-primary, var(--border));
+  transition: box-shadow 150ms, background-color 150ms;
+
+  &:hover {
+    background: color-mix(in oklab, var(--entity-primary, var(--fg)) 5%, var(--surface));
+    box-shadow: var(--elev);
+  }
+
+  &:focus-visible {
+    @include focus-ring;
+  }
+}
+
+.childThumb {
+  flex-shrink: 0;
+  width: 4rem;
+  height: 3rem;
+  border-radius: var(--r-sm);
+}
+
+.childText {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.childName {
+  @include truncate;
+  font-weight: 600;
+}
+
+.childMeta {
+  @include truncate;
+  font-size: 0.75rem;
+  color: var(--fg-muted);
+}
+
+// ============================================================================
+//  Groupes qui contrôlent le lieu
+// ============================================================================
+.groups {
+  display: flex;
+  flex-wrap: wrap;
+  gap: space(3);
+}
+
+.bubble {
+  display: flex;
+  align-items: center;
+  gap: space(2.5);
+  padding: space(1.5) space(4) space(1.5) space(1.5);
+  border: var(--border-w, 1px) solid color-mix(in oklab, var(--entity-primary, var(--border-strong)) 50%, var(--border));
+  border-radius: 999px;
+  background: color-mix(in oklab, var(--entity-primary, var(--fg)) 6%, var(--surface));
+  box-shadow: var(--elev-sm);
+  transition: box-shadow 150ms, transform 200ms $ease-out;
+
+  &:hover {
+    box-shadow: var(--elev);
+    transform: translateY(-2px);
+  }
+
+  &:focus-visible {
+    @include focus-ring;
+  }
+}
+
+.bubbleIndirect {
+  border-style: dashed;
+  background: var(--surface);
+  box-shadow: none;
+  color: var(--fg-muted);
+}
+
+.bubbleLogo {
+  width: 2.25rem;
+  height: 2.25rem;
+  font-size: 0.75rem;
+}
+
+.bubbleName {
+  @include truncate;
+  max-width: 14rem;
+  font-weight: 600;
+}
+
+// ============================================================================
+//  Originaires
+// ============================================================================
+.natives {
+  display: flex;
+  flex-wrap: wrap;
+  gap: space(2);
+}

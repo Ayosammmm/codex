@@ -1,0 +1,106 @@
+import { useState } from 'react';
+import { Link, NavLink, useLocation } from 'react-router';
+import { ArrowLeft, ChevronRight, Settings, X } from '@/components/ui/icons';
+import { useUniverses } from '@/api/queries';
+import { getModulesState, getNavModules, getNavReferences } from '@/config/modules';
+import { Button } from '@/components/ui/Button';
+import { cx } from '@/components/ui/cx';
+import { UniverseAvatar } from '@/components/universe/UniverseAvatar';
+import { universeRef } from '@/utils/universe';
+import { usePermissions } from '@/auth/auth';
+import { ColorModeToggle } from './ColorModeToggle';
+import { UserMenu } from './UserMenu';
+import styles from './UniverseSidebar.module.scss';
+
+/**
+ * Navigation d'un univers.
+ * - Le logo et le nom mènent à l'accueil de l'univers.
+ * - « Encyclopédie » : pages des modules actifs (avec le nombre d'entrées).
+ * - « Référentiels » : listes de valeurs (genres, statuts...), repliables.
+ * - En bas : paramètres (qui contiennent aussi le choix clair / sombre).
+ * Sur petit écran, elle s'affiche en tiroir (`open` / `onClose`).
+ */
+export function UniverseSidebar({ universe, open, onClose }) {
+  const base = `/univers/${universeRef(universe)}`;
+  const { isAdmin } = usePermissions();
+  const { pathname } = useLocation();
+  const { data: universes } = useUniverses();
+  const stats = universes?.find((u) => u.id === universe.id)?.stats || {};
+
+  const modulesState = getModulesState(universe);
+  const modules = getNavModules(modulesState);
+  const references = getNavReferences(modulesState);
+  const onReference = references.some((r) => pathname.startsWith(`${base}/${r.path}`));
+  const [referencesOpen, setReferencesOpen] = useState(onReference);
+
+  // Sur mobile, toute navigation referme le tiroir
+  const navProps = { onClick: onClose };
+
+  return (
+    <>
+      {open && <div className={styles.overlay} onClick={onClose} aria-hidden />}
+      <aside id="universe-sidebar" aria-label={`Navigation de ${universe.name}`} className={cx(styles.sidebar, open && styles.open)}>
+        <div className={styles.scroll}>
+          <div className={styles.top}>
+            <Button variant="ghost" size="sm" iconOnly icon={X} aria-label="Fermer le menu" className={styles.close} onClick={onClose} />
+          </div>
+
+          <NavLink to={base} end className={styles.identity} title="Accueil de l’univers" {...navProps}>
+            <UniverseAvatar universe={universe} className={styles.identityAvatar} />
+            <span className={styles.identityName}>{universe.name}</span>
+          </NavLink>
+
+          <nav aria-label="Univers" className={styles.section}>
+            <p className={styles.sectionLabel}>Encyclopédie</p>
+            {modules.map((m) => (
+              <NavLink key={m.key} to={`${base}/${m.path}`} className={cx(styles.link, m.parent && styles.child)} {...navProps}>
+                <m.icon aria-hidden />
+                <span className={styles.label}>{m.navLabel || m.label}</span>
+                {stats[m.key] !== undefined && <span className={styles.count}>{stats[m.key]}</span>}
+              </NavLink>
+            ))}
+          </nav>
+
+          {references.length > 0 && (
+            <details
+              className={cx(styles.section, styles.collapsible)}
+              open={referencesOpen}
+              onToggle={(e) => setReferencesOpen(e.currentTarget.open)}
+            >
+              <summary className={styles.sectionLabel}>
+                Référentiels
+                <ChevronRight aria-hidden />
+              </summary>
+              <nav aria-label="Référentiels" className={styles.section}>
+                {references.map((r) => (
+                  <NavLink key={r.key} to={`${base}/${r.path}`} className={styles.link} {...navProps}>
+                    <r.icon aria-hidden />
+                    <span className={styles.label}>{r.label}</span>
+                  </NavLink>
+                ))}
+              </nav>
+            </details>
+          )}
+        </div>
+
+        <div className={styles.bottom}>
+          <Link to="/" className={styles.back} aria-label="Tous les univers" title="Tous les univers" {...navProps}>
+            <ArrowLeft aria-hidden />
+          </Link>
+          {/* Paramètres de l'univers : admins ; les autres gardent le choix clair / sombre */}
+          {isAdmin ? (
+            <NavLink to={`${base}/parametres`} className={styles.link} {...navProps}>
+              <Settings aria-hidden />
+              <span className={styles.label}>Paramètres</span>
+            </NavLink>
+          ) : (
+            <div className={styles.grow}>
+              <ColorModeToggle />
+            </div>
+          )}
+          <UserMenu placement="top" />
+        </div>
+      </aside>
+    </>
+  );
+}

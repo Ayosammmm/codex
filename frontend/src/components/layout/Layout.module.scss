@@ -1,0 +1,86 @@
+@use '@/styles/mixins' as *;
+
+// --- En-tête de l'application ---
+.header {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  border-bottom: var(--border-w) solid var(--border);
+  background: color-mix(in oklab, var(--bg) 85%, transparent);
+  backdrop-filter: blur(8px);
+}
+
+.headerInner {
+  @include container;
+  display: flex;
+  align-items: center;
+  gap: space(4);
+  height: 3.5rem;
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: space(2.5);
+  border-radius: var(--r-sm);
+}
+
+.brandMark {
+  width: 2rem;
+  height: 2rem;
+}
+
+.brandName {
+  font-family: var(--font-title);
+  font-size: 1.125rem;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+
+.headerSlot {
+  flex: 1;
+  min-width: 0;
+}
+
+// --- Sélecteur clair / sombre ---
+.modeToggle {
+  display: flex;
+  padding: 0.125rem;
+  border: var(--border-w) solid var(--border);
+  border-radius: var(--r);
+  background: var(--surface-2);
+}
+
+.modeOption {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.75rem;
+  height: 1.75rem;
+  border-radius: var(--r-sm);
+  color: var(--fg-subtle);
+  transition: background-color 150ms, color 150ms;
+
+  &:hover {
+    color: var(--fg);
+  }
+
+  &[aria-checked='true'] {
+    background: var(--surface);
+    color: var(--fg);
+    box-shadow: var(--elev-sm);
+  }
+
+  svg {
+    width: 1rem;
+    height: 1rem;
+  }
+}
+
+.modeOptionLabeled {
+  width: auto;
+  height: 2rem;
+  gap: space(2);
+  padding-inline: space(3);
+  font-size: 0.875rem;
+}

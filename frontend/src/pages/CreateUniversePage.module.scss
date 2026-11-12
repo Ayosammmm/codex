@@ -1,0 +1,39 @@
+@use '@/styles/mixins' as *;
+
+.toggle {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: space(4);
+}
+
+.toggleLabel {
+  font-weight: 500;
+}
+
+// Aperçu des valeurs ajoutées
+.defaults {
+  display: grid;
+  gap: space(2);
+  padding: space(3) space(4);
+  border-radius: var(--r);
+  background: var(--surface-2);
+  font-size: 0.875rem;
+
+  > div {
+    display: grid;
+    gap: space(0.5) space(3);
+
+    @include up(sm) {
+      grid-template-columns: 10rem minmax(0, 1fr);
+    }
+  }
+
+  dt {
+    font-weight: 600;
+  }
+
+  dd {
+    color: var(--fg-muted);
+  }
+}

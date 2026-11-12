@@ -1,0 +1,70 @@
+@use '@/styles/mixins' as *;
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: space(1.5);
+}
+
+.label {
+  font-size: 0.875rem;
+  font-weight: 500;
+}
+
+.required {
+  margin-left: 0.125rem;
+  color: var(--danger);
+}
+
+.hint,
+.error {
+  font-size: 0.75rem;
+}
+
+.hint {
+  color: var(--fg-subtle);
+}
+
+.error {
+  color: var(--danger);
+  font-weight: 500;
+}
+
+// Champ de saisie (réutilisé par ColorInput)
+.input {
+  width: 100%;
+  height: 2.5rem;
+  padding-inline: space(3);
+  border: var(--border-w) solid var(--border-strong);
+  border-radius: var(--r);
+  background: var(--surface);
+  color: var(--fg);
+  font-size: 0.875rem;
+  box-shadow: var(--elev-sm);
+  transition: border-color 150ms, box-shadow 150ms;
+
+  &::placeholder {
+    color: var(--fg-subtle);
+  }
+
+  &:focus {
+    outline: none;
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px var(--ring);
+  }
+
+  &[aria-invalid='true'] {
+    border-color: var(--danger);
+  }
+
+  &:disabled {
+    opacity: 0.6;
+  }
+}
+
+textarea.input {
+  height: auto;
+  padding-block: space(2);
+  line-height: 1.6;
+  resize: vertical;
+}

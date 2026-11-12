@@ -1,0 +1,48 @@
+@use '@/styles/mixins' as *;
+
+.bar {
+  position: sticky;
+  bottom: 0;
+  z-index: 20;
+  margin: space(8) space(-4) 0;
+  padding: space(3) space(4);
+  border-top: var(--border-w) solid var(--border);
+  background: color-mix(in oklab, var(--surface) 90%, transparent);
+  backdrop-filter: blur(8px);
+  // Animation par découpage (clip-path) et non par déplacement : un `transform` qui pousse la barre
+  // hors de l'écran agrandit la page et fait apparaître une bande sous le layout
+  clip-path: inset(0);
+  transition:
+    clip-path 250ms $ease-out,
+    opacity 200ms,
+    visibility 0s;
+
+  @include up(sm) {
+    margin-inline: space(-6);
+    padding-inline: space(6);
+  }
+}
+
+.hidden {
+  clip-path: inset(100% 0 0 0);
+  opacity: 0;
+  visibility: hidden; // boutons hors du parcours clavier
+  transition:
+    clip-path 250ms $ease-out,
+    opacity 200ms,
+    visibility 0s linear 250ms;
+}
+
+.inner {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
+  gap: space(3);
+}
+
+.message {
+  margin-right: auto;
+  font-size: 0.875rem;
+  color: var(--fg-muted);
+}

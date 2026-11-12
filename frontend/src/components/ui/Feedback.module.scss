@@ -1,0 +1,52 @@
+@use '@/styles/mixins' as *;
+
+.spinner {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: space(2);
+  padding-block: space(16);
+  font-size: 0.875rem;
+  color: var(--fg-muted);
+
+  svg {
+    width: 1.25rem;
+    height: 1.25rem;
+    animation: spin 1s linear infinite;
+  }
+}
+
+.empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: space(3);
+  padding: space(14) space(6);
+  border: var(--border-w) dashed var(--border-strong);
+  border-radius: var(--r-lg);
+  text-align: center;
+}
+
+.emptyIcon {
+  @include icon-tile(3rem, primary);
+  border-radius: 50%;
+
+  svg {
+    width: 1.5rem;
+    height: 1.5rem;
+  }
+}
+
+.emptyTitle {
+  font-size: 1.25rem;
+}
+
+.emptyText {
+  max-width: 28rem;
+  font-size: 0.875rem;
+  color: var(--fg-muted);
+}
+
+.emptyAction {
+  margin-top: space(2);
+}

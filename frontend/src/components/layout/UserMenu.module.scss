@@ -1,0 +1,63 @@
+@use '@/styles/mixins' as *;
+
+.trigger {
+  display: inline-flex;
+  align-items: center;
+  gap: space(2.5);
+  border-radius: 999px;
+  color: var(--fg);
+  transition: background-color 150ms;
+
+  &:hover {
+    background: var(--surface-2);
+  }
+
+  &:focus-visible {
+    @include focus-ring;
+  }
+}
+
+.expanded {
+  width: 100%;
+  padding: space(1);
+  border-radius: var(--r);
+  text-align: start;
+}
+
+.avatar {
+  display: inline-flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  width: 2.25rem;
+  height: 2.25rem;
+  border-radius: 50%;
+  background: var(--primary-soft);
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--primary);
+}
+
+.identity {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  line-height: 1.2;
+}
+
+.name {
+  @include truncate;
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+
+.role {
+  font-size: 0.75rem;
+  color: var(--fg-muted);
+}
+
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: space(4);
+}

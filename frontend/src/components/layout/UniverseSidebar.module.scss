@@ -1,0 +1,274 @@
+@use '@/styles/mixins' as *;
+
+$width: 16.5rem;
+
+// --- Conteneur ---
+// Grand écran : colonne collée à gauche. Petit écran : tiroir qui glisse depuis la gauche.
+.sidebar {
+  position: fixed;
+  inset-block: 0;
+  left: 0;
+  z-index: 40;
+  display: flex;
+  flex-direction: column;
+  width: min($width, 85vw);
+  border-right: var(--border-w) solid var(--border);
+  background: var(--surface);
+  transform: translateX(-100%);
+  visibility: hidden; // hors du parcours clavier quand le tiroir est fermé
+  transition:
+    transform 250ms $ease-out,
+    visibility 0s linear 250ms;
+
+  @include up(lg) {
+    position: sticky;
+    top: 0;
+    height: 100dvh;
+    width: $width;
+    background: color-mix(in oklab, var(--surface) 94%, transparent);
+    backdrop-filter: blur(8px);
+    transform: none;
+    visibility: visible;
+    transition: none;
+  }
+}
+
+.open {
+  transform: none;
+  visibility: visible;
+  box-shadow: var(--elev-lg);
+  transition: transform 250ms $ease-out;
+}
+
+.overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 35;
+  background: var(--overlay);
+  animation: fade-in 200ms ease-out both;
+
+  @include up(lg) {
+    display: none;
+  }
+}
+
+.scroll {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: space(5);
+  min-height: 0;
+  overflow-y: auto;
+  padding: space(4) space(3);
+}
+
+// --- En-tête : retour + identité de l'univers ---
+.top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-inline: space(1);
+  @include up(lg) {
+    display: none;
+  }
+}
+
+.back {
+  // Bouton carré, même hauteur que le lien « Paramètres » à côté
+  display: inline-flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  width: 2.25rem;
+  aspect-ratio: 1;
+  border: var(--border-w) solid var(--border);
+  border-radius: var(--r);
+  background: var(--surface);
+  color: var(--fg-muted);
+  transition: color 150ms, background-color 150ms, border-color 150ms;
+
+  &:hover {
+    color: var(--fg);
+    background: var(--surface-2);
+    border-color: var(--border-strong);
+  }
+
+  svg {
+    width: 1rem;
+    height: 1rem;
+  }
+}
+
+// Le logo et le nom mènent à l'accueil de l'univers
+.identity {
+  display: flex;
+  align-items: center;
+  gap: space(3);
+  padding: space(2.5);
+  border: 1px solid transparent;
+  border-radius: var(--r);
+  transition: background-color 150ms, border-color 150ms;
+
+  &:hover {
+    background: var(--surface-2);
+  }
+
+  &[aria-current='page'] {
+    border-color: color-mix(in oklab, var(--primary) 30%, transparent);
+    background: var(--primary-soft);
+  }
+}
+
+.identityAvatar {
+  width: 2.75rem;
+  height: 2.75rem;
+  font-size: 1rem;
+}
+
+.identityName {
+  @include line-clamp(2);
+  font-family: var(--font-title);
+  font-size: 1.0625rem;
+  font-weight: 600;
+  line-height: 1.25;
+}
+
+// --- Sections de navigation ---
+.section {
+  display: flex;
+  flex-direction: column;
+  gap: 0.125rem;
+}
+
+.sectionLabel {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 space(2.5) space(1.5);
+  font-size: 0.6875rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--fg-subtle);
+}
+
+// Référentiels : section repliable (<details>)
+.collapsible {
+  > summary {
+    cursor: pointer;
+    list-style: none;
+    border-radius: var(--r-sm);
+
+    &::-webkit-details-marker {
+      display: none;
+    }
+
+    &:hover {
+      color: var(--fg-muted);
+    }
+
+    svg {
+      width: 0.875rem;
+      height: 0.875rem;
+      transition: transform 200ms $ease-out;
+    }
+  }
+
+  &[open] > summary svg {
+    transform: rotate(90deg);
+  }
+}
+
+.link {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: space(2.5);
+  min-height: 2.25rem;
+  padding: space(1.5) space(2.5);
+  border-radius: var(--r);
+  font-size: 0.875rem;
+  color: var(--fg-muted);
+  transition: background-color 150ms, color 150ms;
+
+  &:hover {
+    background: var(--surface-2);
+    color: var(--fg);
+  }
+
+  &[aria-current='page'] {
+    background: var(--primary-soft);
+    color: var(--primary-ink);
+    font-weight: 500;
+
+    // Repère vertical aux couleurs de l'univers
+    &::before {
+      content: '';
+      position: absolute;
+      left: -0.75rem;
+      inset-block: space(1.5);
+      width: 3px;
+      border-radius: 0 3px 3px 0;
+      background: var(--primary);
+    }
+
+    .count {
+      color: var(--primary-ink);
+    }
+  }
+
+  > svg {
+    flex-shrink: 0;
+    width: 1.125rem;
+    height: 1.125rem;
+  }
+}
+
+// Sous-module (ex. Événements sous Histoires)
+.child {
+  margin-left: space(4);
+  min-height: 2rem;
+  font-size: 0.8125rem;
+
+  > svg {
+    width: 1rem;
+    height: 1rem;
+  }
+}
+
+.label {
+  flex: 1;
+  min-width: 0;
+  @include truncate;
+}
+
+.count {
+  font-size: 0.75rem;
+  font-variant-numeric: tabular-nums;
+  color: var(--fg-subtle);
+}
+
+// --- Bas de la sidebar ---
+.bottom {
+  display: flex;
+  align-items: center;
+  gap: space(2);
+  padding: space(3);
+  border-top: var(--border-w) solid var(--border);
+}
+
+// Le lien « Paramètres » occupe la place restante à côté du bouton retour.
+// Pas de repère vertical ici : il tomberait entre le bouton retour et le lien.
+.bottom > .link {
+  flex: 1;
+
+  &::before {
+    display: none;
+  }
+}
+
+.grow {
+  display: flex;
+  flex: 1;
+  align-items: center;
+}

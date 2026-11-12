@@ -1,0 +1,34 @@
+@use '@/styles/mixins' as *;
+
+// Section d'une fiche (personnage, groupe...) : titre avec losange tertiaire et filet
+.section {
+  display: flex;
+  flex-direction: column;
+  gap: space(4);
+  scroll-margin-top: space(6);
+}
+
+.sectionTitle {
+  display: flex;
+  align-items: center;
+  gap: space(3);
+  font-size: 1.25rem;
+
+  // Losange de la couleur tertiaire devant le titre
+  &::before {
+    content: '';
+    flex-shrink: 0;
+    width: 0.5rem;
+    height: 0.5rem;
+    background: var(--entity-tertiary, var(--border-strong));
+    transform: rotate(45deg);
+  }
+
+  // Filet qui prolonge le titre
+  &::after {
+    content: '';
+    flex: 1;
+    height: var(--border-w, 1px);
+    background: linear-gradient(90deg, var(--entity-secondary, var(--border)), var(--border) 40%);
+  }
+}

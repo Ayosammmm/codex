@@ -1,0 +1,104 @@
+@use '@/styles/mixins' as *;
+
+// Album photo en grille + visionneuse
+.album {
+  display: grid;
+  gap: space(3);
+  grid-template-columns: repeat(auto-fill, minmax(9rem, 1fr));
+}
+
+.photo {
+  display: block;
+  width: 100%;
+  aspect-ratio: 1;
+  overflow: hidden;
+  border-radius: var(--r);
+  background: var(--surface-2);
+  cursor: zoom-in;
+
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 400ms $ease-out;
+  }
+
+  &:hover img {
+    transform: scale(1.05);
+  }
+
+  &:focus-visible {
+    @include focus-ring;
+  }
+}
+
+.lightbox {
+  max-width: min(92vw, 80rem);
+  max-height: 92dvh;
+  padding: 0;
+  overflow: visible;
+  border: 0;
+  background: transparent;
+  cursor: zoom-out;
+
+  &::backdrop {
+    background: rgb(0 0 0 / 0.8);
+  }
+
+  img {
+    display: block;
+    max-width: min(92vw, 80rem);
+    // Place laissée à la légende sous l'image
+    max-height: 84dvh;
+    border-radius: var(--r);
+    object-fit: contain;
+  }
+}
+
+.lightboxClose {
+  position: fixed;
+  top: space(4);
+  right: space(4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: 50%;
+  background: rgb(0 0 0 / 0.5);
+  color: #fff;
+
+  svg {
+    width: 1.25rem;
+    height: 1.25rem;
+  }
+}
+
+// --- Légendes ---
+.figure {
+  display: flex;
+  flex-direction: column;
+  gap: space(1.5);
+}
+
+.caption {
+  @include line-clamp(2);
+  font-size: 0.8125rem;
+  line-height: 1.35;
+  color: var(--fg-muted);
+}
+
+.lightboxFigure {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: space(3);
+}
+
+.lightboxCaption {
+  max-width: min(92vw, 48rem);
+  font-size: 1rem;
+  text-align: center;
+  color: #fff;
+  text-shadow: 0 1px 4px rgb(0 0 0 / 0.6);
+}

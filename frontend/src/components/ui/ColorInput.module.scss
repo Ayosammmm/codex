@@ -1,0 +1,65 @@
+@use '@/styles/mixins' as *;
+
+.root {
+  display: flex;
+  align-items: center;
+  gap: space(2);
+}
+
+.swatch {
+  position: relative;
+  flex-shrink: 0;
+  width: 2.5rem;
+  height: 2.5rem;
+  overflow: hidden;
+  border: var(--border-w) solid var(--border-strong);
+  border-radius: var(--r);
+  box-shadow: var(--elev-sm);
+  cursor: pointer;
+
+  &:has(:focus-visible) {
+    @include focus-ring;
+  }
+}
+
+.swatchColor {
+  position: absolute;
+  inset: 0;
+}
+
+// Aucune couleur : damier
+.swatchEmpty {
+  background: repeating-conic-gradient(var(--surface-3) 0 25%, var(--surface) 0 50%) 0 0 / 0.75rem 0.75rem;
+}
+
+.native {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  cursor: pointer;
+}
+
+.hex {
+  max-width: 8rem;
+  font-family: var(--font-mono);
+  text-transform: uppercase;
+}
+
+.reset {
+  display: inline-flex;
+  align-items: center;
+  gap: space(1);
+  padding: space(1) space(1.5);
+  border-radius: var(--r-sm);
+  font-size: 0.75rem;
+  color: var(--fg-muted);
+
+  &:hover {
+    color: var(--fg);
+  }
+
+  svg {
+    width: 0.875rem;
+    height: 0.875rem;
+  }
+}

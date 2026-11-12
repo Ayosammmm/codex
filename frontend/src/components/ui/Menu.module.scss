@@ -1,0 +1,72 @@
+@use '@/styles/mixins' as *;
+
+.root {
+  position: relative;
+}
+
+.menu {
+  position: absolute;
+  top: 100%;
+  z-index: 30;
+  min-width: 12rem;
+  margin-top: space(1);
+  padding: space(1);
+  border: var(--border-w) solid var(--border);
+  border-radius: var(--r);
+  background: var(--surface);
+  box-shadow: var(--elev-lg);
+  animation: fade-in 160ms ease-out both;
+}
+
+.alignEnd {
+  right: 0;
+}
+
+.alignStart {
+  left: 0;
+}
+
+.top {
+  top: auto;
+  bottom: 100%;
+  margin-top: 0;
+  margin-bottom: space(1);
+}
+
+.separator {
+  height: 1px;
+  margin-block: space(1);
+  background: var(--border);
+}
+
+.item {
+  display: flex;
+  align-items: center;
+  gap: space(2.5);
+  width: 100%;
+  padding: space(2) space(2.5);
+  border-radius: var(--r-sm);
+  font-size: 0.875rem;
+  text-align: left;
+  outline: none;
+
+  &:hover,
+  &:focus {
+    background: var(--surface-2);
+  }
+
+  svg {
+    width: 1rem;
+    height: 1rem;
+    opacity: 0.8;
+  }
+}
+
+.danger {
+  color: var(--danger);
+
+  &:hover,
+  &:focus {
+    background: var(--danger-soft);
+  }
+}

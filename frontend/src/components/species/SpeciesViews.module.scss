@@ -1,0 +1,129 @@
+@use '@/styles/mixins' as *;
+
+// ============================================================================
+//  Galerie : illustration en portrait
+// ============================================================================
+.gallery {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(12rem, 1fr));
+  gap: space(5);
+}
+
+.card {
+  @include card;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  overflow: hidden;
+  border-top: 3px solid var(--entity-primary, var(--border));
+  content-visibility: auto;
+  contain-intrinsic-size: auto 22rem;
+  transition:
+    transform 250ms $ease-out,
+    box-shadow 250ms $ease-out,
+    border-color 250ms;
+
+  &:hover,
+  &:focus-visible {
+    transform: scale(1.03);
+    border-color: color-mix(in oklab, var(--entity-primary, var(--border-strong)) 60%, transparent);
+    border-top-color: var(--entity-primary, var(--border-strong));
+    box-shadow: var(--elev-lg);
+    z-index: 1;
+  }
+}
+
+.image {
+  aspect-ratio: 4 / 5;
+
+  img {
+    transition: transform 600ms $ease-out;
+
+    .card:hover &,
+    .card:focus-visible & {
+      transform: scale(1.06);
+    }
+  }
+}
+
+.body {
+  display: flex;
+  flex-direction: column;
+  gap: space(0.5);
+  padding: space(3) space(4) 0;
+}
+
+.name {
+  @include line-clamp(2);
+  font-family: var(--font-title);
+  font-weight: var(--title-weight);
+  letter-spacing: var(--title-tracking);
+  text-transform: var(--title-transform);
+  font-size: 1.125rem;
+  line-height: 1.25;
+  color: color-mix(in oklab, var(--entity-primary, var(--fg)) 55%, var(--fg));
+}
+
+.parent {
+  display: flex;
+  align-items: center;
+  gap: space(1);
+  font-size: 0.8125rem;
+  color: var(--fg-muted);
+
+  svg {
+    flex-shrink: 0;
+    width: 0.875rem;
+    height: 0.875rem;
+  }
+}
+
+.footer {
+  display: flex;
+  align-items: center;
+  gap: space(3);
+  min-height: 3.25rem;
+  margin-top: auto;
+  padding: space(3) space(4);
+}
+
+.stats {
+  display: flex;
+  flex-shrink: 0;
+  gap: space(3);
+  margin-left: auto;
+  font-size: 0.8125rem;
+  color: var(--fg-muted);
+
+  span {
+    display: inline-flex;
+    align-items: center;
+    gap: space(1);
+  }
+
+  svg {
+    flex-shrink: 0;
+    width: 0.875rem;
+    height: 0.875rem;
+  }
+}
+
+// ============================================================================
+//  Tableau (styles communs dans entity/ListViews)
+// ============================================================================
+.rowThumb {
+  flex-shrink: 0;
+  width: 2.25rem;
+  height: 2.25rem;
+  border-radius: var(--r-sm);
+}
+
+.membersCell {
+  display: flex;
+  align-items: center;
+  gap: space(2);
+}
+
+.rowStack {
+  --stack-size: 1.5rem;
+}

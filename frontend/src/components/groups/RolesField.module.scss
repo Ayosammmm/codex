@@ -1,0 +1,76 @@
+@use '@/styles/mixins' as *;
+
+.root {
+  display: flex;
+  flex-direction: column;
+  gap: space(3);
+}
+
+.error {
+  font-size: 0.8125rem;
+  font-weight: 500;
+  color: var(--danger);
+}
+
+.list {
+  display: flex;
+  flex-direction: column;
+  gap: space(3);
+}
+
+.role {
+  display: flex;
+  flex-direction: column;
+  gap: space(2.5);
+  padding: space(3) space(4);
+  border: var(--border-w, 1px) solid var(--border);
+  border-left: 3px solid var(--entity-primary, var(--border-strong));
+  border-radius: var(--r);
+  background: var(--surface);
+}
+
+.head {
+  display: flex;
+  align-items: center;
+  gap: space(3);
+}
+
+.name {
+  flex: 1;
+  font-weight: 600;
+}
+
+.count {
+  flex-shrink: 0;
+  font-size: 0.8125rem;
+  color: var(--fg-muted);
+}
+
+.links {
+  display: grid;
+  gap: space(1.5);
+  align-items: center;
+
+  @include up(sm) {
+    grid-template-columns: 6.5rem minmax(0, 1fr);
+  }
+}
+
+.linkLabel {
+  font-size: 0.8125rem;
+  font-weight: 500;
+  color: var(--fg-muted);
+}
+
+.superiors {
+  font-size: 0.75rem;
+  color: var(--fg-subtle);
+
+  @include up(sm) {
+    padding-left: calc(6.5rem + #{space(1.5)});
+  }
+}
+
+.add {
+  align-self: flex-start;
+}

@@ -1,0 +1,6 @@
+*.zip
+debug.log
+
+.env
+.env.*
+!.env.example

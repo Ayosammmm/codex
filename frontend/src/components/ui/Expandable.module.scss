@@ -1,0 +1,51 @@
+@use '@/styles/mixins' as *;
+
+.viewport {
+  position: relative;
+  overflow: hidden;
+  max-height: var(--collapsed-height);
+  transition: max-height 350ms $ease-out;
+}
+
+.expanded {
+  // Hauteur réelle mesurée en JS : permet d'animer l'ouverture
+  max-height: var(--full-height, none);
+}
+
+// Fondu en bas du texte replié. La couleur suit le fond du conteneur (--expandable-fade).
+.fade::after {
+  content: '';
+  position: absolute;
+  inset-inline: 0;
+  bottom: 0;
+  height: 3.5rem;
+  background: linear-gradient(to bottom, transparent, var(--expandable-fade, var(--surface)));
+  pointer-events: none;
+}
+
+.toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: space(1);
+  margin-top: space(2);
+  padding: space(1) 0;
+  border-radius: var(--r-sm);
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--primary-ink);
+
+  &:hover {
+    text-decoration: underline;
+    text-underline-offset: 3px;
+  }
+
+  svg {
+    width: 1rem;
+    height: 1rem;
+    transition: transform 250ms $ease-out;
+  }
+}
+
+.toggleOpen svg {
+  transform: rotate(180deg);
+}

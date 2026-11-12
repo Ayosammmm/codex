@@ -1,0 +1,140 @@
+@use '@/styles/mixins' as *;
+
+// ============================================================================
+//  Galerie : illustration en portrait
+// ============================================================================
+.gallery {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(12rem, 1fr));
+  gap: space(5);
+}
+
+.card {
+  @include card;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  overflow: hidden;
+  border-top: 3px solid var(--entity-primary, var(--border));
+  content-visibility: auto;
+  contain-intrinsic-size: auto 22rem;
+  transition:
+    transform 250ms $ease-out,
+    box-shadow 250ms $ease-out,
+    border-color 250ms;
+
+  &:hover,
+  &:focus-visible {
+    transform: scale(1.03);
+    border-color: color-mix(in oklab, var(--entity-primary, var(--border-strong)) 60%, transparent);
+    border-top-color: var(--entity-primary, var(--border-strong));
+    box-shadow: var(--elev-lg);
+    z-index: 1;
+  }
+}
+
+.visual {
+  position: relative;
+}
+
+.image {
+  aspect-ratio: 4 / 5;
+
+  img {
+    transition: transform 600ms $ease-out;
+
+    .card:hover &,
+    .card:focus-visible & {
+      transform: scale(1.06);
+    }
+  }
+}
+
+// Rang en pastille opaque sur l'illustration
+.rank {
+  position: absolute;
+  top: space(2);
+  left: space(2);
+
+  > span {
+    background: color-mix(in oklab, var(--badge-color) 14%, var(--surface));
+    box-shadow: var(--elev-sm);
+  }
+}
+
+.body {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: space(1);
+  padding: space(3) space(4) space(4);
+}
+
+.name {
+  @include line-clamp(2);
+  font-family: var(--font-title);
+  font-weight: var(--title-weight);
+  letter-spacing: var(--title-tracking);
+  text-transform: var(--title-transform);
+  font-size: 1.125rem;
+  line-height: 1.25;
+  color: color-mix(in oklab, var(--entity-primary, var(--fg)) 55%, var(--fg));
+}
+
+.temperament {
+  display: inline-flex;
+  align-items: center;
+  gap: space(1.5);
+  font-size: 0.8125rem;
+  font-weight: 500;
+  color: color-mix(in oklab, var(--tone) 70%, var(--fg));
+
+  &::before {
+    content: '';
+    width: 0.5rem;
+    height: 0.5rem;
+    border-radius: 50%;
+    background: var(--tone);
+  }
+}
+
+.meta {
+  display: flex;
+  flex-direction: column;
+  gap: space(0.5);
+  min-width: 0;
+  max-width: 100%;
+  margin-top: auto;
+  padding-top: space(1);
+  font-size: 0.75rem;
+  color: var(--fg-muted);
+
+  span {
+    display: inline-flex;
+    align-items: center;
+    gap: space(1);
+    min-width: 0;
+  }
+
+  svg {
+    flex-shrink: 0;
+    width: 0.8125rem;
+    height: 0.8125rem;
+  }
+}
+
+.truncate {
+  @include truncate;
+  display: block !important;
+}
+
+// ============================================================================
+//  Tableau (styles communs dans entity/ListViews)
+// ============================================================================
+.rowThumb {
+  flex-shrink: 0;
+  width: 2.25rem;
+  height: 2.25rem;
+  border-radius: var(--r-sm);
+}

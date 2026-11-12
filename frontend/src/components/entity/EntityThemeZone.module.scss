@@ -1,0 +1,20 @@
+.root {
+  position: relative;
+  isolation: isolate;
+  min-height: 100dvh;
+
+  // Titre de page (nom du personnage) teinté de sa couleur principale
+  h1 {
+    color: color-mix(in oklab, var(--entity-primary, var(--fg)) 55%, var(--fg));
+  }
+}
+
+// Image fixe derrière le contenu, voilée par le fond du thème pour garder le texte lisible
+.backdrop {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background:
+    linear-gradient(var(--scrim), var(--scrim)),
+    var(--zone-bg);
+}

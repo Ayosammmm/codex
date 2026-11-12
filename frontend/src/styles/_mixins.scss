@@ -1,0 +1,106 @@
+// ============================================================================
+//  Outils partagés : à importer dans chaque module avec
+//    @use '@/styles/mixins' as *;
+//  Ne produit aucun CSS par lui-même.
+// ============================================================================
+
+@use 'sass:map';
+
+$breakpoints: (
+  sm: 640px,
+  md: 768px,
+  lg: 1024px,
+  xl: 1280px,
+);
+
+/// Media query « à partir de » : @include up(md) { ... }
+@mixin up($name) {
+  @media (min-width: map.get($breakpoints, $name)) {
+    @content;
+  }
+}
+
+/// Espacements (multiples de 4px) : space(4) = 1rem
+@function space($n) {
+  @return $n * 0.25rem;
+}
+
+$ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+
+/// Anneau de focus clavier
+@mixin focus-ring($offset: 2px) {
+  outline: 2px solid var(--ring);
+  outline-offset: $offset;
+}
+
+/// Masqué visuellement mais lu par les lecteurs d'écran
+@mixin visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/// Surface « carte » : fond, bordure, arrondi, ombre
+@mixin card($radius: var(--r-lg)) {
+  background: var(--surface);
+  border: var(--border-w) solid var(--border);
+  border-radius: $radius;
+  box-shadow: var(--elev-card);
+}
+
+/// Texte tronqué à N lignes
+@mixin line-clamp($lines) {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: $lines;
+  overflow: hidden;
+}
+
+@mixin truncate {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/// Conteneur de page centré
+@mixin container($max: 72rem) {
+  width: 100%;
+  max-width: $max;
+  margin-inline: auto;
+  padding-inline: space(4);
+
+  @include up(sm) {
+    padding-inline: space(6);
+  }
+}
+
+/// Petite pastille (« Bientôt », « Toujours actif »...)
+@mixin pill {
+  display: inline-flex;
+  align-items: center;
+  gap: space(1);
+  padding: 0.125rem space(2);
+  border-radius: 999px;
+  font-size: 0.6875rem;
+  font-weight: 500;
+  line-height: 1.4;
+}
+
+/// Icône carrée sur fond doux (modules, états vides...)
+@mixin icon-tile($size: 2.25rem, $tone: secondary) {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  width: $size;
+  height: $size;
+  border-radius: var(--r);
+  background: var(--#{$tone}-soft);
+  color: var(--#{$tone}-ink);
+}

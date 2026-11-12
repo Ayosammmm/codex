@@ -1,0 +1,133 @@
+@use '@/styles/mixins' as *;
+
+.top {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: space(4);
+  margin-top: space(3);
+}
+
+.lead {
+  margin-top: space(1);
+  color: var(--fg-muted);
+}
+
+// --- Rôles : résumé ---
+.roles {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(13rem, 1fr));
+  gap: space(3);
+  margin: space(8) 0 space(6);
+}
+
+.roleCard {
+  @include card(var(--r));
+  display: grid;
+  grid-template-columns: auto 1fr;
+  column-gap: space(3);
+  align-items: baseline;
+  padding: space(4);
+  border-top: 3px solid var(--role);
+}
+
+.roleCount {
+  grid-row: span 2;
+  font-family: var(--font-title);
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: var(--role);
+}
+
+.roleName {
+  font-weight: 600;
+}
+
+.roleDescription {
+  font-size: 0.8rem;
+  color: var(--fg-muted);
+}
+
+// --- Tableau ---
+.tableWrap {
+  @include card;
+  overflow-x: auto;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+
+  th,
+  td {
+    padding: space(3) space(4);
+    text-align: start;
+    vertical-align: middle;
+  }
+
+  th {
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--fg-muted);
+    border-bottom: var(--border-w) solid var(--border);
+  }
+
+  tbody tr + tr td {
+    border-top: var(--border-w) solid var(--border);
+  }
+}
+
+.account {
+  display: flex;
+  align-items: center;
+  gap: space(3);
+}
+
+.avatar {
+  display: inline-flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  width: 2.25rem;
+  height: 2.25rem;
+  border-radius: 50%;
+  background: var(--primary-soft);
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--primary);
+}
+
+.identity {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.name {
+  font-weight: 600;
+}
+
+.you {
+  font-weight: 400;
+  color: var(--fg-muted);
+}
+
+.username,
+.date {
+  font-size: 0.85rem;
+  color: var(--fg-muted);
+}
+
+.actions {
+  white-space: nowrap;
+  text-align: end !important;
+}
+
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: space(4);
+}

@@ -1,0 +1,153 @@
+@use '@/styles/mixins' as *;
+
+// ============================================================================
+//  Galerie
+// ============================================================================
+.gallery {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(16rem, 1fr));
+  gap: space(5);
+}
+
+.card {
+  @include card;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  overflow: hidden;
+  content-visibility: auto;
+  contain-intrinsic-size: auto 18rem;
+  transition:
+    transform 250ms $ease-out,
+    box-shadow 250ms $ease-out,
+    border-color 250ms;
+
+  &:hover,
+  &:focus-visible {
+    transform: scale(1.02);
+    border-color: color-mix(in oklab, var(--entity-primary, var(--border-strong)) 60%, transparent);
+    box-shadow: var(--elev-lg);
+    z-index: 1;
+  }
+}
+
+.cardBanner {
+  aspect-ratio: 16 / 6;
+
+  img {
+    transition: transform 600ms $ease-out;
+
+    .card:hover &,
+    .card:focus-visible & {
+      transform: scale(1.06);
+    }
+  }
+}
+
+// Logo à cheval sur la bannière, type à droite
+.cardHead {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: space(2);
+  margin-top: -2rem;
+  padding-inline: space(4);
+}
+
+.cardLogo {
+  width: 4rem;
+  height: 4rem;
+  border-radius: var(--r);
+  font-size: 1.125rem;
+  box-shadow:
+    0 0 0 3px var(--surface),
+    var(--elev-sm);
+}
+
+.cardType {
+  @include truncate;
+  max-width: 60%;
+  padding: 0.125rem space(2);
+  border-radius: 999px;
+  background: color-mix(in oklab, var(--entity-primary, var(--fg)) 10%, var(--surface));
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: color-mix(in oklab, var(--entity-primary, var(--fg-muted)) 60%, var(--fg-muted));
+}
+
+.cardBody {
+  display: flex;
+  flex-direction: column;
+  gap: space(1);
+  padding: space(3) space(4) 0;
+}
+
+.cardName {
+  @include line-clamp(2);
+  font-family: var(--font-title);
+  font-weight: var(--title-weight);
+  letter-spacing: var(--title-tracking);
+  text-transform: var(--title-transform);
+  font-size: 1.125rem;
+  line-height: 1.25;
+  color: color-mix(in oklab, var(--entity-primary, var(--fg)) 55%, var(--fg));
+}
+
+.cardParent {
+  display: flex;
+  align-items: center;
+  gap: space(1);
+  min-width: 0;
+  font-size: 0.8125rem;
+  color: var(--fg-muted);
+
+  svg {
+    flex-shrink: 0;
+    width: 0.875rem;
+    height: 0.875rem;
+  }
+}
+
+.cardFooter {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: space(3);
+  margin-top: auto;
+  padding: space(4);
+}
+
+.cardStats {
+  display: flex;
+  flex-shrink: 0;
+  gap: space(3);
+  margin-left: auto;
+  font-size: 0.8125rem;
+  color: var(--fg-muted);
+
+  span {
+    display: inline-flex;
+    align-items: center;
+    gap: space(1);
+  }
+
+  svg {
+    flex-shrink: 0;
+    width: 0.875rem;
+    height: 0.875rem;
+  }
+}
+
+// ============================================================================
+//  Tableau (styles communs dans entity/ListViews)
+// ============================================================================
+.membersCell {
+  display: flex;
+  align-items: center;
+  gap: space(2);
+}
+
+.rowStack {
+  --stack-size: 1.5rem;
+}

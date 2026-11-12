@@ -1,0 +1,147 @@
+@use '@/styles/mixins' as *;
+
+.kicker {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: space(2) space(3);
+  margin-bottom: space(2);
+}
+
+.date {
+  display: inline-flex;
+  align-items: center;
+  gap: space(1.5);
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: color-mix(in oklab, var(--entity-secondary, var(--fg-muted)) 60%, var(--fg-muted));
+
+  svg {
+    width: 1rem;
+    height: 1rem;
+  }
+}
+
+.stories {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(16rem, 1fr));
+  gap: space(3);
+}
+
+.story {
+  @include card(var(--r));
+  padding: space(3) space(4);
+  border-left: 3px solid var(--entity-primary, var(--border-strong));
+}
+
+.storyName {
+  display: flex;
+  align-items: center;
+  gap: space(1.5);
+  margin-bottom: space(2);
+  font-weight: 600;
+
+  svg {
+    flex-shrink: 0;
+    width: 0.875rem;
+    height: 0.875rem;
+    color: var(--fg-muted);
+  }
+
+  a:hover {
+    text-decoration: underline;
+    text-underline-offset: 2px;
+  }
+}
+
+.episodeList {
+  display: flex;
+  flex-direction: column;
+  gap: space(1);
+  padding-left: space(5);
+  font-size: 0.875rem;
+  list-style: disc;
+  color: var(--fg-muted);
+
+  a {
+    color: var(--fg);
+
+    &:hover {
+      text-decoration: underline;
+      text-underline-offset: 2px;
+    }
+  }
+}
+
+.group {
+  display: inline-flex;
+  align-items: center;
+  gap: space(2);
+  padding: space(1) space(3) space(1) space(1);
+  border: var(--border-w, 1px) solid color-mix(in oklab, var(--entity-primary, var(--border-strong)) 50%, var(--border));
+  border-radius: 999px;
+  background: var(--surface);
+  font-size: 0.875rem;
+  font-weight: 500;
+
+  &:hover {
+    background: var(--surface-2);
+  }
+}
+
+.groupLogo {
+  width: 1.75rem;
+  height: 1.75rem;
+  font-size: 0.625rem;
+}
+
+// --- Événements voisins ---
+.pager {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: space(3);
+  padding-top: space(6);
+  border-top: var(--border-w, 1px) solid var(--border);
+}
+
+.pagerLink {
+  @include card(var(--r));
+  display: flex;
+  align-items: center;
+  gap: space(3);
+  min-width: 0;
+  padding: space(3) space(4);
+
+  &:hover {
+    border-color: color-mix(in oklab, var(--entity-primary, var(--border-strong)) 50%, transparent);
+  }
+
+  > span {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+  }
+
+  svg {
+    flex-shrink: 0;
+    width: 1.125rem;
+    height: 1.125rem;
+    color: var(--fg-muted);
+  }
+}
+
+.pagerNext {
+  grid-column: 2;
+  justify-content: flex-end;
+  text-align: right;
+}
+
+.pagerLabel {
+  font-size: 0.75rem;
+  color: var(--fg-muted);
+}
+
+.pagerTitle {
+  @include truncate;
+  font-weight: 600;
+}

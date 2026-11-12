@@ -1,0 +1,16 @@
+@use '@/styles/mixins' as *;
+
+.deleteForm {
+  display: flex;
+  flex-direction: column;
+  gap: space(4);
+}
+
+.warning {
+  font-size: 0.875rem;
+  color: var(--fg-muted);
+
+  strong {
+    color: var(--fg);
+  }
+}

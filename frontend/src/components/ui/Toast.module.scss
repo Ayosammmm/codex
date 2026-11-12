@@ -1,0 +1,66 @@
+@use '@/styles/mixins' as *;
+
+.region {
+  position: fixed;
+  inset-inline: 0;
+  bottom: 0;
+  z-index: 50;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: space(2);
+  padding: space(4);
+  pointer-events: none;
+
+  @include up(sm) {
+    align-items: flex-end;
+  }
+}
+
+.toast {
+  display: flex;
+  align-items: flex-start;
+  gap: space(3);
+  width: 100%;
+  max-width: 24rem;
+  padding: space(3);
+  border: var(--border-w) solid var(--border);
+  border-radius: var(--r);
+  background: var(--surface);
+  font-size: 0.875rem;
+  box-shadow: var(--elev-lg);
+  pointer-events: auto;
+  animation: fade-in 160ms ease-out both;
+}
+
+.icon {
+  flex-shrink: 0;
+  width: 1rem;
+  height: 1rem;
+  margin-top: 0.125rem;
+}
+
+.success {
+  color: var(--success);
+}
+
+.error {
+  color: var(--danger);
+}
+
+.message {
+  flex: 1;
+}
+
+.close {
+  color: var(--fg-subtle);
+
+  &:hover {
+    color: var(--fg);
+  }
+
+  svg {
+    width: 1rem;
+    height: 1rem;
+  }
+}

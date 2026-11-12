@@ -1,0 +1,30 @@
+@use '@/styles/mixins' as *;
+
+.main {
+  @include container;
+  padding-block: space(8) space(16);
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  gap: space(4);
+  margin-bottom: space(8);
+}
+
+.icon {
+  @include icon-tile(3rem);
+
+  svg {
+    width: 1.5rem;
+    height: 1.5rem;
+  }
+}
+
+.title {
+  font-size: 1.875rem;
+}
+
+.subtitle {
+  color: var(--fg-muted);
+}
