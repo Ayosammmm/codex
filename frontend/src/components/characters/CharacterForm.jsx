@@ -198,7 +198,6 @@ export function CharacterForm({ universe, character, state, refs, modules, error
           </div>
           <ImagePicker
             label="Image de fond"
-            hint="Atténuée derrière la fiche"
             aspect="16 / 9"
             className={styles.background}
             currentUrl={uploadUrl(character?.background)}

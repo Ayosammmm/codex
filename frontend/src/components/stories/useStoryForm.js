@@ -13,7 +13,7 @@ const toFormState = (s) => ({
   // Épisodes dans l'ordre : existants (id) ou nouveaux (titre seul)
   episodes: sortedEpisodes(s).map((e) => ({ key: newEpisodeKey(), id: e.id, title: e.title })),
   colors: { primary: s?.colors?.primary ?? null, secondary: s?.colors?.secondary ?? null, tertiary: s?.colors?.tertiary ?? null },
-  backgroundMode: s?.background ? 'image' : isHexColor(s?.backgroundColor) ? 'color' : 'none',
+  backgroundMode: !s?.background && isHexColor(s?.backgroundColor) ? 'color' : 'image',
   backgroundColor: s?.backgroundColor || null,
 });
 

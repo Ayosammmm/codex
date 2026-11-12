@@ -6,6 +6,7 @@ import { usePhotoMutations, usePhotos } from '@/api/queries';
 import { Spinner } from '@/components/ui/Feedback';
 import { useToast } from '@/components/ui/Toast';
 import { cx } from '@/components/ui/cx';
+import { toMemoryFile } from '@/components/ui/memoryFile';
 import styles from './PhotoAlbum.module.scss';
 
 const MAX_SIZE = 5 * 1024 * 1024;
@@ -27,9 +28,13 @@ export function PhotoAlbum({ entityType, entityId }) {
     const valid = files.filter((f) => f.type.startsWith('image/') && f.size <= MAX_SIZE);
     if (valid.length < files.length) toast.error('Certains fichiers ont été ignorés (images de 5 Mo maximum).');
     setUploading((n) => n + valid.length);
-    for (const file of valid) {
+    // Copie immédiate en mémoire : les envois sont successifs, les derniers fichiers
+    // seraient sinon relus du disque bien après le dépôt (voir memoryFile.js)
+    const copies = await Promise.allSettled(valid.map(toMemoryFile));
+    for (const [i, file] of valid.entries()) {
       try {
-        await upload.mutateAsync(file);
+        if (copies[i].status === 'rejected') throw copies[i].reason;
+        await upload.mutateAsync(copies[i].value);
       } catch (err) {
         toast.error(`« ${file.name} » : ${err.message}`);
       } finally {

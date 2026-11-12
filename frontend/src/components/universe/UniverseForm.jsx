@@ -134,7 +134,6 @@ function ImagesSection({ universe, form, update, images, setImage, onError }) {
         {form.backgroundMode === 'image' && (
           <ImagePicker
             label="Image de fond"
-            hint="Atténuée pour garder le texte lisible"
             className={styles.backgroundImage}
             currentUrl={current('background')}
             value={images.background}

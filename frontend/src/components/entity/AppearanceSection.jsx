@@ -9,15 +9,15 @@ import { FormSection } from '@/components/universe/UniverseForm';
 import form from './EntityForm.module.scss';
 
 const DEFAULT_BACKGROUND_COLOR = '#3b3f4a';
+// Pas d'option « Aucun » : le mode Image sans image choisie (ou image retirée) donne une page sans fond
 const BACKGROUND_MODES = [
-  { value: 'none', label: 'Aucun' },
-  { value: 'color', label: 'Couleur' },
   { value: 'image', label: 'Image' },
+  { value: 'color', label: 'Couleur' },
 ];
 
 /**
  * Section « Apparence » d'une entité (groupe, lieu) : 3 couleurs (vides = celles de l'univers)
- * et fond de la page (aucun, couleur ou image).
+ * et fond de la page (image, par défaut, ou couleur).
  * `state` : { form: { colors, backgroundMode, backgroundColor }, update, images, setImage } ;
  * `savedBackground` : chemin de l'image de fond enregistrée ; `subject` : « du groupe », « du lieu »...
  * `showColors={false}` : fond seul (ex. épisode) ; `title` / `description` remplacent les textes par défaut.
@@ -61,7 +61,6 @@ export function AppearanceSection({ state, savedBackground, subject, showColors 
         {f.backgroundMode === 'image' && (
           <ImagePicker
             label="Image de fond"
-            hint="Atténuée derrière la page"
             aspect="16 / 9"
             className={form.background}
             currentUrl={uploadUrl(savedBackground)}

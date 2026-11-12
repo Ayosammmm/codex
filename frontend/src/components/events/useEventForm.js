@@ -11,7 +11,7 @@ const toFormState = (e) => ({
   groupIds: e?.groups?.map((g) => g.id) || [],
   episodeIds: e?.episodes?.map((ep) => ep.id) || [],
   colors: { primary: e?.colors?.primary ?? null, secondary: e?.colors?.secondary ?? null, tertiary: e?.colors?.tertiary ?? null },
-  backgroundMode: e?.background ? 'image' : isHexColor(e?.backgroundColor) ? 'color' : 'none',
+  backgroundMode: !e?.background && isHexColor(e?.backgroundColor) ? 'color' : 'image',
   backgroundColor: e?.backgroundColor || null,
 });
 

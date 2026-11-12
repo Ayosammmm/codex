@@ -113,3 +113,51 @@
   color: var(--fg-muted);
 }
 
+
+// --- À découvrir : cartes tirées au hasard ------------------------------------
+.discoverHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: space(3);
+  margin: space(10) 0 space(4);
+
+  .sectionTitle {
+    margin: 0;
+  }
+}
+
+.discoverRow + .discoverRow {
+  margin-top: space(8);
+}
+
+.discoverRowHeader {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: space(3);
+  margin-bottom: space(3);
+}
+
+.discoverRowTitle {
+  font-size: 1rem;
+  color: var(--secondary-ink);
+}
+
+.seeAll {
+  display: inline-flex;
+  align-items: center;
+  gap: space(1);
+  font-size: 0.875rem;
+  color: var(--primary-ink);
+
+  svg {
+    width: 1rem;
+    height: 1rem;
+    transition: transform 200ms $ease-out;
+  }
+
+  &:hover svg {
+    transform: translateX(2px);
+  }
+}

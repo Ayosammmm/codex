@@ -26,7 +26,7 @@ function toFormState(g) {
       .map((c) => ({ key: newMemberKey(), characterId: c.id, role: memberRole(c, roles) })),
     placeIds: g?.controlledPlaces?.map((p) => p.id) || [],
     colors: { primary: g?.colors?.primary ?? null, secondary: g?.colors?.secondary ?? null, tertiary: g?.colors?.tertiary ?? null },
-    backgroundMode: g?.background ? 'image' : isHexColor(g?.backgroundColor) ? 'color' : 'none',
+    backgroundMode: !g?.background && isHexColor(g?.backgroundColor) ? 'color' : 'image',
     backgroundColor: g?.backgroundColor || null,
   };
 }

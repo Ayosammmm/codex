@@ -12,7 +12,7 @@ const toFormState = (p) => ({
   characterIds: p?.characters?.map((c) => c.id) || [],
   groupIds: p?.controllingGroups?.map((g) => g.id) || [],
   colors: { primary: p?.colors?.primary ?? null, secondary: p?.colors?.secondary ?? null, tertiary: p?.colors?.tertiary ?? null },
-  backgroundMode: p?.background ? 'image' : isHexColor(p?.backgroundColor) ? 'color' : 'none',
+  backgroundMode: !p?.background && isHexColor(p?.backgroundColor) ? 'color' : 'image',
   backgroundColor: p?.backgroundColor || null,
 });
 

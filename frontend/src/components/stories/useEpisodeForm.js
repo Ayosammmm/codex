@@ -15,7 +15,7 @@ const toFormState = (e) => ({
   placeIds: e?.places?.map((p) => p.id) || [],
   eventIds: e?.events?.map((ev) => ev.id) || [],
   // Fond propre (sinon celui de l'histoire)
-  backgroundMode: e?.background ? 'image' : isHexColor(e?.backgroundColor) ? 'color' : 'none',
+  backgroundMode: !e?.background && isHexColor(e?.backgroundColor) ? 'color' : 'image',
   backgroundColor: e?.backgroundColor || null,
 });
 

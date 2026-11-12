@@ -25,7 +25,7 @@ const toFormState = (c) => ({
   attackTypes: c?.attackTypes || '',
   moreDetails: c?.moreDetails || '',
   colors: { primary: c?.colors?.primary ?? null, secondary: c?.colors?.secondary ?? null, tertiary: c?.colors?.tertiary ?? null },
-  backgroundMode: c?.background ? 'image' : isHexColor(c?.backgroundColor) ? 'color' : 'none',
+  backgroundMode: !c?.background && isHexColor(c?.backgroundColor) ? 'color' : 'image',
   backgroundColor: c?.backgroundColor || null,
 });
 
