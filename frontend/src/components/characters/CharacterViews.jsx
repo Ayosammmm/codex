@@ -1,10 +1,9 @@
-import { Link, useNavigate } from 'react-router';
-import { ArrowDown, ArrowUp, ArrowUpDown } from '@/components/ui/icons';
+import { Link } from 'react-router';
 import { characterName } from '@/config/characters';
 import { Badge } from '@/components/ui/Badge';
-import { cx } from '@/components/ui/cx';
 import { entityColorVars } from '@/theme/universeTheme';
 import { CharacterAvatar } from './CharacterAvatar';
+import { NameCell, dash } from '@/components/entity/EntityTable';
 import list from '@/components/entity/ListViews.module.scss';
 import styles from './CharacterViews.module.scss';
 
@@ -69,72 +68,44 @@ export function CharacterCards({ characters, linkTo, show }) {
 
 // ---------------------------------------------------------------------------
 
-function SortHeader({ label, sortKey, sort, onSort }) {
-  const active = sort.key === sortKey;
-  const Icon = !active ? ArrowUpDown : sort.dir === 'asc' ? ArrowUp : ArrowDown;
-  return (
-    <th aria-sort={active ? (sort.dir === 'asc' ? 'ascending' : 'descending') : undefined}>
-      <button type="button" className={cx(list.sortButton, !active && list.sortIdle)} onClick={() => onSort(sortKey)}>
-        {label}
-        <Icon aria-hidden />
-      </button>
-    </th>
-  );
-}
-
-const dash = <span className={list.muted}>—</span>;
-
-/** `fill` : le tableau occupe la hauteur restante de son parent (flex) au lieu d'une hauteur fixe. */
-export function CharactersTable({ characters, linkTo, show, sort, onSort, fill = false }) {
-  const navigate = useNavigate();
-  return (
-    <div className={cx(list.tableWrap, fill && list.tableFill)}>
-      <table className={list.table}>
-        <thead>
-          <tr>
-            <SortHeader label="Personnage" sortKey="name" sort={sort} onSort={onSort} />
-            <th>Titre</th>
-            <SortHeader label="Âge" sortKey="age" sort={sort} onSort={onSort} />
-            <SortHeader label="Genre" sortKey="gender" sort={sort} onSort={onSort} />
-            <SortHeader label="Statut" sortKey="status" sort={sort} onSort={onSort} />
-            <SortHeader label="Alignement" sortKey="alignment" sort={sort} onSort={onSort} />
-            {show.ranks && <SortHeader label="Rang" sortKey="rank" sort={sort} onSort={onSort} />}
-            {show.groups && <th>Groupes</th>}
-            {show.species && <th>Espèces</th>}
-          </tr>
-        </thead>
-        <tbody>
-          {characters.map((c) => (
-            // Toute la ligne est cliquable ; le lien du nom reste la cible clavier
-            <tr key={c.id} onClick={() => navigate(linkTo(c))} style={entityColorVars(c.colors)}>
-              <td>
-                <span className={list.nameCell}>
-                  <CharacterAvatar character={c} round className={list.rowAvatar} />
-                  <Link to={linkTo(c)} className={list.rowName} onClick={(e) => e.stopPropagation()}>
-                    {characterName(c)}
-                  </Link>
-                </span>
-              </td>
-              <td>{c.title || dash}</td>
-              <td>{c.age != null && c.age > 0 ? c.age : dash}</td>
-              <td>{c.genders ? <Badge color={c.genders.color}>{c.genders.name}</Badge> : dash}</td>
-              <td>{c.statuses ? <Badge color={c.statuses.color}>{c.statuses.name}</Badge> : dash}</td>
-              <td>{c.alignments ? <Badge color={c.alignments.color}>{c.alignments.name}</Badge> : dash}</td>
-              {show.ranks && <td>{c.power_ranks ? <Badge color={c.power_ranks.color}>{c.power_ranks.name}</Badge> : dash}</td>}
-              {show.groups && (
-                <td className={styles.badgeCell}>
-                  {c.groups?.length ? <span className={styles.badges}>{c.groups.map((g) => <Badge key={g.id} color="var(--secondary)">{g.name}</Badge>)}</span> : dash}
-                </td>
-              )}
-              {show.species && (
-                <td className={styles.badgeCell}>
-                  {c.species?.length ? <span className={styles.badges}>{c.species.map((s) => <Badge key={s.id} color="var(--tertiary)">{s.name}</Badge>)}</span> : dash}
-                </td>
-              )}
-            </tr>
-          ))}
-        </tbody>
-      </table>
-    </div>
-  );
-}
+/**
+ * Colonnes du tableau des personnages (voir EntityTable).
+ * `show` : modules actifs ({ ranks, groups, species }).
+ */
+export const characterColumns = ({ linkTo, show }) =>
+  [
+    {
+      key: 'name', label: 'Personnage', sortKey: 'name', required: true, text: characterName,
+      render: (c) => <NameCell to={linkTo(c)} visual={<CharacterAvatar character={c} round className={list.rowAvatar} />}>{characterName(c)}</NameCell>,
+    },
+    { key: 'title', label: 'Titre', render: (c) => c.title || dash, edit: { field: 'title', type: 'text' } },
+    { key: 'age', label: 'Âge', sortKey: 'age', render: (c) => (c.age != null && c.age > 0 ? c.age : dash), edit: { field: 'age', type: 'number', min: 0 } },
+    {
+      key: 'gender', label: 'Genre', sortKey: 'gender',
+      render: (c) => (c.genders ? <Badge color={c.genders.color}>{c.genders.name}</Badge> : dash),
+      edit: { field: 'sexe_id', type: 'ref', criterion: 'gender' },
+    },
+    {
+      key: 'status', label: 'Statut', sortKey: 'status',
+      render: (c) => (c.statuses ? <Badge color={c.statuses.color}>{c.statuses.name}</Badge> : dash),
+      edit: { field: 'statut_id', type: 'ref', criterion: 'status' },
+    },
+    {
+      key: 'alignment', label: 'Alignement', sortKey: 'alignment',
+      render: (c) => (c.alignments ? <Badge color={c.alignments.color}>{c.alignments.name}</Badge> : dash),
+      edit: { field: 'alignment_id', type: 'ref', criterion: 'alignment' },
+    },
+    show.ranks && {
+      key: 'rank', label: 'Rang', sortKey: 'rank',
+      render: (c) => (c.power_ranks ? <Badge color={c.power_ranks.color}>{c.power_ranks.name}</Badge> : dash),
+      edit: { field: 'rank_id', type: 'ref', criterion: 'rank' },
+    },
+    show.groups && {
+      key: 'groups', label: 'Groupes', className: styles.badgeCell,
+      render: (c) => (c.groups?.length ? <span className={styles.badges}>{c.groups.map((g) => <Badge key={g.id} color="var(--secondary)">{g.name}</Badge>)}</span> : dash),
+    },
+    show.species && {
+      key: 'species', label: 'Espèces', className: styles.badgeCell,
+      render: (c) => (c.species?.length ? <span className={styles.badges}>{c.species.map((s) => <Badge key={s.id} color="var(--tertiary)">{s.name}</Badge>)}</span> : dash),
+    },
+  ].filter(Boolean);

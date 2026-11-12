@@ -11,7 +11,11 @@ import { useToast } from '@/components/ui/Toast';
 import { GroupedSections } from '@/components/entity/GroupedSections';
 import { ListToolbar } from '@/components/entity/ListToolbar';
 import { groupItems, useListState } from '@/components/entity/useListState';
-import { EventGallery, EventTimeline, EventsTable } from '@/components/events/EventViews';
+import { EventGallery, EventTimeline, eventColumns } from '@/components/events/EventViews';
+import { EntityTable } from '@/components/entity/EntityTable';
+import { TableControls } from '@/components/entity/TableControls';
+import { useTableState } from '@/components/entity/useTableState';
+import { useEditorsColumn } from '@/components/entity/useEditorsColumn';
 import { plural, universePath } from '@/utils/universe';
 import styles from '../ListPage.module.scss';
 import { useNarrativeReferences } from '../stories/useNarrativeReferences';
@@ -37,6 +41,9 @@ export default function EventsPage() {
   const toast = useToast();
 
   const linkTo = (e) => universePath(universe, `evenements/${e.id}`);
+  const editorsColumn = useEditorsColumn('event');
+  const columns = [...eventColumns({ linkTo, showGroups: modules.groups }), editorsColumn];
+  const table = useTableState({ storageKey: 'almanach:events-columns', columns, items: results, entityType: 'event' });
   const groupCriterion = criteria.find((c) => c.key === state.groupBy);
   const fitScreen = state.view === 'table' && !groupCriterion && results.length > 0;
   // L'ordre se règle sur la frise complète, dans l'ordre chronologique, sans recherche ni filtre
@@ -51,7 +58,7 @@ export default function EventsPage() {
 
   const renderView = (items) => {
     if (state.view === 'table') {
-      return <EventsTable events={items} linkTo={linkTo} sort={{ key: state.sort, dir: state.dir }} onSort={actions.sortBy} fill={fitScreen} showGroups={modules.groups} />;
+      return <EntityTable items={items} columns={columns} linkTo={linkTo} sort={{ key: state.sort, dir: state.dir }} onSort={actions.sortBy} fill={fitScreen} table={table} />;
     }
     if (state.view === 'gallery') return <EventGallery events={items} linkTo={linkTo} />;
     return <EventTimeline events={items} linkTo={linkTo} onMove={canCreate && canReorder && !groupCriterion ? move : undefined} moving={reorder.isPending} />;
@@ -104,6 +111,9 @@ export default function EventsPage() {
             <p className={styles.hint}>Pour régler l’ordre de la frise, triez par chronologie (croissante) sans recherche ni filtre.</p>
           )}
           <div className={styles.content}>
+            {state.view === 'table' && results.length > 0 && (
+              <TableControls table={table} columns={columns} criteria={criteria} resource="events" noun={['événement', 'événements']} />
+            )}
             {results.length === 0 ? (
               <div className={styles.noResult}>
                 <p>Aucun événement ne correspond à ces critères.</p>

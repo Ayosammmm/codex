@@ -1,13 +1,13 @@
-import { Link, useNavigate } from 'react-router';
+import { Link } from 'react-router';
 import { BookOpen, MapPin } from 'lucide-react';
-import { ArrowDown, ArrowUp, ArrowUpDown } from '@/components/ui/icons';
+import { ArrowDown, ArrowUp } from '@/components/ui/icons';
 import { characterName } from '@/config/characters';
-import { eventImage, eventStories, importanceColor } from '@/config/events';
+import { IMPORTANCE, eventImage, eventStories, importanceColor } from '@/config/events';
 import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
 import { cx } from '@/components/ui/cx';
 import { AvatarStack, EntityBanner } from '@/components/entity/EntityBanner';
-import list from '@/components/entity/ListViews.module.scss';
+import { NameCell, dash } from '@/components/entity/EntityTable';
 import { entityColorVars } from '@/theme/universeTheme';
 import { plainText } from '@/utils/universe';
 import styles from './EventViews.module.scss';
@@ -104,61 +104,30 @@ export function EventGallery({ events, linkTo }) {
   );
 }
 
-function SortHeader({ label, sortKey, sort, onSort }) {
-  const active = sort.key === sortKey;
-  const Icon = !active ? ArrowUpDown : sort.dir === 'asc' ? ArrowUp : ArrowDown;
-  return (
-    <th aria-sort={active ? (sort.dir === 'asc' ? 'ascending' : 'descending') : undefined}>
-      <button type="button" className={cx(list.sortButton, !active && list.sortIdle)} onClick={() => onSort(sortKey)}>
-        {label}
-        <Icon aria-hidden />
-      </button>
-    </th>
-  );
-}
-
-const dash = <span className={list.muted}>—</span>;
-
-/** Tableau ; `fill` : occupe la hauteur restante du parent (flex) au lieu d'une hauteur fixe. */
-export function EventsTable({ events, linkTo, sort, onSort, fill = false, showGroups }) {
-  const navigate = useNavigate();
-  return (
-    <div className={cx(list.tableWrap, fill && list.tableFill)}>
-      <table className={list.table}>
-        <thead>
-          <tr>
-            <SortHeader label="Événement" sortKey="name" sort={sort} onSort={onSort} />
-            <SortHeader label="Chronologie" sortKey="chrono" sort={sort} onSort={onSort} />
-            <SortHeader label="Importance" sortKey="importance" sort={sort} onSort={onSort} />
-            <th>Histoires</th>
-            <th>Personnages</th>
-            <th>Lieux</th>
-            {showGroups && <th>Groupes</th>}
-          </tr>
-        </thead>
-        <tbody>
-          {events.map((e) => {
-            const cast = people(e);
-            const stories = eventStories(e);
-            return (
-              // Toute la ligne est cliquable ; le lien du nom reste la cible clavier
-              <tr key={e.id} onClick={() => navigate(linkTo(e))} style={entityColorVars(e.colors)}>
-                <td>
-                  <Link to={linkTo(e)} className={list.rowName} onClick={(ev) => ev.stopPropagation()}>
-                    {e.name}
-                  </Link>
-                </td>
-                <td>{e.date || dash}</td>
-                <td>{e.importance ? <Badge color={importanceColor(e.importance)}>{e.importance}</Badge> : dash}</td>
-                <td>{stories.length ? stories.map((s) => s.name).join(', ') : dash}</td>
-                <td>{cast.length ? <AvatarStack members={cast.slice(0, 4)} total={cast.length} className={styles.stack} /> : dash}</td>
-                <td>{e.places?.length ? e.places.map((p) => p.name).join(', ') : dash}</td>
-                {showGroups && <td>{e.groups?.length ? e.groups.map((g) => g.name).join(', ') : dash}</td>}
-              </tr>
-            );
-          })}
-        </tbody>
-      </table>
-    </div>
-  );
-}
+/** Colonnes du tableau des événements (voir EntityTable). `showGroups` : module Groupes actif. */
+export const eventColumns = ({ linkTo, showGroups }) =>
+  [
+    { key: 'name', label: 'Événement', sortKey: 'name', required: true, render: (e) => <NameCell to={linkTo(e)}>{e.name}</NameCell> },
+    { key: 'chrono', label: 'Chronologie', sortKey: 'chrono', render: (e) => e.date || dash, edit: { field: 'date', type: 'text' } },
+    {
+      key: 'importance', label: 'Importance', sortKey: 'importance',
+      render: (e) => (e.importance ? <Badge color={importanceColor(e.importance)}>{e.importance}</Badge> : dash),
+      edit: { field: 'importance', type: 'enum', options: IMPORTANCE },
+    },
+    {
+      key: 'stories', label: 'Histoires',
+      render: (e) => {
+        const stories = eventStories(e);
+        return stories.length ? stories.map((s) => s.name).join(', ') : dash;
+      },
+    },
+    {
+      key: 'characters', label: 'Personnages',
+      render: (e) => {
+        const cast = people(e);
+        return cast.length ? <AvatarStack members={cast.slice(0, 4)} total={cast.length} className={styles.stack} /> : dash;
+      },
+    },
+    { key: 'places', label: 'Lieux', render: (e) => (e.places?.length ? e.places.map((p) => p.name).join(', ') : dash) },
+    showGroups && { key: 'groups', label: 'Groupes', render: (e) => (e.groups?.length ? e.groups.map((g) => g.name).join(', ') : dash) },
+  ].filter(Boolean);

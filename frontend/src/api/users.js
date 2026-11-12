@@ -9,6 +9,7 @@ export const usersApi = {
   update: (id, data) => request(`/users/${id}`, { method: 'PUT', body: data }),
   remove: (id) => request(`/users/${id}`, { method: 'DELETE' }),
   entityEditors: (type, id) => request(`/editors/${type}/${id}`),
+  editorsByType: (type) => request(`/editors/${type}`),
   setEntityEditors: (type, id, userIds) => request(`/editors/${type}/${id}`, { method: 'PUT', body: { userIds } }),
   changePassword: (currentPassword, newPassword) => request('/auth/password', { method: 'PUT', body: { currentPassword, newPassword } }),
 };
@@ -37,6 +38,10 @@ export const useDeleteUser = () => useUserMutation(usersApi.remove);
 
 export const useChangePassword = () => useMutation({ mutationFn: ({ currentPassword, newPassword }) => usersApi.changePassword(currentPassword, newPassword) });
 
+/** Éditeurs de toutes les entités d'un type : { [entityId]: [{ id, displayName, username }] }. */
+export const useEditorsByType = (type) =>
+  useQuery({ queryKey: ['editors', type, 'all'], queryFn: () => usersApi.editorsByType(type) });
+
 /** Éditeurs liés à une entité (type : character, place, group, specie, creature, story, event). */
 export const useEntityEditors = (type, id) => {
   const queryClient = useQueryClient();
@@ -46,6 +51,7 @@ export const useEntityEditors = (type, id) => {
     mutationFn: (userIds) => usersApi.setEntityEditors(type, id, userIds),
     onSuccess: (editors) => {
       queryClient.setQueryData(key, editors);
+      queryClient.invalidateQueries({ queryKey: ['editors', type, 'all'] }); // colonne « Éditeurs » des tableaux
       queryClient.invalidateQueries({ queryKey: ['auth'] }); // l'éditeur a pu se retirer lui-même
     },
   });

@@ -4,7 +4,11 @@ import { Button } from '@/components/ui/Button';
 import { cx } from '@/components/ui/cx';
 import { EmptyState, Spinner } from '@/components/ui/Feedback';
 import { ListToolbar } from '@/components/entity/ListToolbar';
-import { CharacterCards, CharacterGallery, CharactersTable } from '@/components/characters/CharacterViews';
+import { CharacterCards, CharacterGallery, characterColumns } from '@/components/characters/CharacterViews';
+import { EntityTable } from '@/components/entity/EntityTable';
+import { TableControls } from '@/components/entity/TableControls';
+import { useTableState } from '@/components/entity/useTableState';
+import { useEditorsColumn } from '@/components/entity/useEditorsColumn';
 import { GroupedSections } from '@/components/entity/GroupedSections';
 import { characterSorts, groupCharacters, useCharacterList } from '@/components/characters/useCharacterList';
 import { plural, universePath } from '@/utils/universe';
@@ -23,6 +27,9 @@ export default function CharactersPage() {
 
   const linkTo = (c) => universePath(universe, `personnages/${c.id}`);
   const show = { groups: modules.groups, species: modules.species, ranks: modules.ranks };
+  const editorsColumn = useEditorsColumn('character');
+  const columns = [...characterColumns({ linkTo, show }), editorsColumn];
+  const table = useTableState({ storageKey: 'almanach:characters-columns', columns, items: results, entityType: 'character' });
   const newButton = canCreate && (
     <Button as={Link} to={universePath(universe, 'personnages/nouveau')} variant="primary" icon={UserPlus}>
       Nouveau personnage
@@ -35,7 +42,7 @@ export default function CharactersPage() {
 
   const renderView = (items) => {
     if (state.view === 'table') {
-      return <CharactersTable characters={items} linkTo={linkTo} show={show} sort={{ key: state.sort, dir: state.dir }} onSort={actions.sortBy} fill={fitScreen} />;
+      return <EntityTable items={items} columns={columns} linkTo={linkTo} sort={{ key: state.sort, dir: state.dir }} onSort={actions.sortBy} fill={fitScreen} table={table} />;
     }
     if (state.view === 'cards') return <CharacterCards characters={items} linkTo={linkTo} show={show} />;
     return <CharacterGallery characters={items} linkTo={linkTo} />;
@@ -80,6 +87,9 @@ export default function CharactersPage() {
             searchLabel="Rechercher un personnage"
           />
           <div className={styles.content}>
+            {state.view === 'table' && results.length > 0 && (
+              <TableControls table={table} columns={columns} criteria={criteria} resource="characters" noun={['personnage', 'personnages']} />
+            )}
             {results.length === 0 ? (
               <div className={styles.noResult}>
                 <p>Aucun personnage ne correspond à ces critères.</p>

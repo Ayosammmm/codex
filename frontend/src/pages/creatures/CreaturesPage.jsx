@@ -8,7 +8,11 @@ import { EmptyState, Spinner } from '@/components/ui/Feedback';
 import { GroupedSections } from '@/components/entity/GroupedSections';
 import { ListToolbar } from '@/components/entity/ListToolbar';
 import { groupItems, useListState } from '@/components/entity/useListState';
-import { CreatureGallery, CreaturesTable } from '@/components/creatures/CreatureViews';
+import { CreatureGallery, creatureColumns } from '@/components/creatures/CreatureViews';
+import { EntityTable } from '@/components/entity/EntityTable';
+import { TableControls } from '@/components/entity/TableControls';
+import { useTableState } from '@/components/entity/useTableState';
+import { useEditorsColumn } from '@/components/entity/useEditorsColumn';
 import { plural, universePath } from '@/utils/universe';
 import styles from '../ListPage.module.scss';
 import { useCreatureReferences } from './useCreatureReferences';
@@ -26,13 +30,16 @@ export default function CreaturesPage() {
   const { state, actions, results } = list;
 
   const linkTo = (c) => universePath(universe, `bestiaire/${c.id}`);
+  const editorsColumn = useEditorsColumn('creature');
+  const columns = [...creatureColumns({ linkTo, showRanks: modules.ranks }), editorsColumn];
+  const table = useTableState({ storageKey: 'almanach:creatures-columns', columns, items: results, entityType: 'creature' });
   const groupCriterion = criteria.find((c) => c.key === state.groupBy);
   // Tableau seul : la page tient dans l'écran et seul le tableau défile
   const fitScreen = state.view === 'table' && !groupCriterion && results.length > 0;
 
   const renderView = (items) => {
     if (state.view === 'table') {
-      return <CreaturesTable showRanks={modules.ranks} creatures={items} linkTo={linkTo} sort={{ key: state.sort, dir: state.dir }} onSort={actions.sortBy} fill={fitScreen} />;
+      return <EntityTable items={items} columns={columns} linkTo={linkTo} sort={{ key: state.sort, dir: state.dir }} onSort={actions.sortBy} fill={fitScreen} table={table} />;
     }
     return <CreatureGallery showRanks={modules.ranks} creatures={items} linkTo={linkTo} />;
   };
@@ -81,6 +88,9 @@ export default function CreaturesPage() {
             searchLabel="Rechercher une créature"
           />
           <div className={styles.content}>
+            {state.view === 'table' && results.length > 0 && (
+              <TableControls table={table} columns={columns} criteria={criteria} resource="creatures" noun={['créature', 'créatures', 'f']} />
+            )}
             {results.length === 0 ? (
               <div className={styles.noResult}>
                 <p>Aucune créature ne correspond à ces critères.</p>

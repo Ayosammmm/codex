@@ -92,6 +92,77 @@
   }
 }
 
+// --- Sélection multiple (voir EntityTable / TableControls) ---
+$select-w: 2.75rem;
+
+.selectCell {
+  width: $select-w;
+  min-width: $select-w;
+  padding-inline: 0 !important;
+  text-align: center !important;
+  cursor: default;
+}
+
+.checkbox {
+  width: 1rem;
+  height: 1rem;
+  margin: 0;
+  vertical-align: middle;
+  accent-color: var(--primary);
+  cursor: pointer;
+
+  &:disabled {
+    cursor: not-allowed;
+    opacity: 0.35;
+  }
+}
+
+.table tbody tr.selected {
+  &,
+  &:hover {
+    background: color-mix(in oklab, var(--primary) 10%, var(--surface));
+  }
+}
+
+// Case + nom restent fixes : la bordure de séparation passe après le nom
+@include up(md) {
+  .selectable {
+    th:first-child,
+    td:first-child {
+      box-shadow: none;
+    }
+
+    td:first-child {
+      box-shadow: inset 3px 0 0 var(--entity-primary, transparent);
+    }
+
+    th:nth-child(2),
+    td:nth-child(2) {
+      position: sticky;
+      left: $select-w;
+      z-index: 1;
+      box-shadow: inset calc(-1 * var(--border-w)) 0 0 var(--border);
+    }
+
+    thead th:nth-child(2) {
+      z-index: 3;
+    }
+
+    td:nth-child(2) {
+      background: var(--surface);
+    }
+
+    tbody tr:hover td:nth-child(2) {
+      background: color-mix(in oklab, var(--entity-primary, var(--fg)) 5%, var(--surface));
+    }
+
+    tbody tr.selected td:first-child,
+    tbody tr.selected td:nth-child(2) {
+      background: color-mix(in oklab, var(--primary) 10%, var(--surface));
+    }
+  }
+}
+
 .sortButton {
   display: inline-flex;
   align-items: center;

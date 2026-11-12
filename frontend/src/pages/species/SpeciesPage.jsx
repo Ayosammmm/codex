@@ -8,7 +8,11 @@ import { EmptyState, Spinner } from '@/components/ui/Feedback';
 import { GroupedSections } from '@/components/entity/GroupedSections';
 import { ListToolbar } from '@/components/entity/ListToolbar';
 import { groupItems, useListState } from '@/components/entity/useListState';
-import { SpeciesGallery, SpeciesTable, SpeciesTree } from '@/components/species/SpeciesViews';
+import { SpeciesGallery, specieColumns, SpeciesTree } from '@/components/species/SpeciesViews';
+import { EntityTable } from '@/components/entity/EntityTable';
+import { TableControls } from '@/components/entity/TableControls';
+import { useTableState } from '@/components/entity/useTableState';
+import { useEditorsColumn } from '@/components/entity/useEditorsColumn';
 import { plural, universePath } from '@/utils/universe';
 import styles from '../ListPage.module.scss';
 import { useSpeciesReferences } from './useSpeciesReferences';
@@ -25,13 +29,16 @@ export default function SpeciesPage() {
   const { state, actions, results } = list;
 
   const linkTo = (s) => universePath(universe, `especes/${s.id}`);
+  const editorsColumn = useEditorsColumn('specie');
+  const columns = [...specieColumns({ linkTo }), editorsColumn];
+  const table = useTableState({ storageKey: 'almanach:species-columns', columns, items: results, entityType: 'specie' });
   const groupCriterion = criteria.find((c) => c.key === state.groupBy);
   // Tableau seul : la page tient dans l'écran et seul le tableau défile
   const fitScreen = state.view === 'table' && !groupCriterion && results.length > 0;
 
   const renderView = (items) => {
     if (state.view === 'table') {
-      return <SpeciesTable species={items} linkTo={linkTo} sort={{ key: state.sort, dir: state.dir }} onSort={actions.sortBy} fill={fitScreen} />;
+      return <EntityTable items={items} columns={columns} linkTo={linkTo} sort={{ key: state.sort, dir: state.dir }} onSort={actions.sortBy} fill={fitScreen} table={table} />;
     }
     if (state.view === 'tree') return <SpeciesTree species={items} linkTo={linkTo} />;
     return <SpeciesGallery species={items} linkTo={linkTo} />;
@@ -81,6 +88,9 @@ export default function SpeciesPage() {
             searchLabel="Rechercher une espèce"
           />
           <div className={styles.content}>
+            {state.view === 'table' && results.length > 0 && (
+              <TableControls table={table} columns={columns} criteria={criteria} resource="species" noun={['espèce', 'espèces', 'f']} />
+            )}
             {results.length === 0 ? (
               <div className={styles.noResult}>
                 <p>Aucune espèce ne correspond à ces critères.</p>

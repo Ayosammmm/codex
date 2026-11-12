@@ -1,12 +1,11 @@
-import { Link, useNavigate } from 'react-router';
+import { Link } from 'react-router';
 import { MapPin, Users } from 'lucide-react';
-import { ArrowDown, ArrowUp, ArrowUpDown, CornerDownRight } from '@/components/ui/icons';
+import { CornerDownRight } from '@/components/ui/icons';
 import { characterName } from '@/config/characters';
 import { childCount, nativeCount, placeImage } from '@/config/places';
-import { cx } from '@/components/ui/cx';
 import { AvatarStack, EntityBanner } from '@/components/entity/EntityBanner';
 import { EntityTree } from '@/components/entity/EntityTree';
-import list from '@/components/entity/ListViews.module.scss';
+import { NameCell, dash } from '@/components/entity/EntityTable';
 import { GroupLogo } from '@/components/groups/GroupLogo';
 import { entityColorVars } from '@/theme/universeTheme';
 import { plural } from '@/utils/universe';
@@ -79,72 +78,34 @@ export function PlaceGallery({ places, linkTo }) {
 
 // ---------------------------------------------------------------------------
 
-function SortHeader({ label, sortKey, sort, onSort }) {
-  const active = sort.key === sortKey;
-  const Icon = !active ? ArrowUpDown : sort.dir === 'asc' ? ArrowUp : ArrowDown;
-  return (
-    <th aria-sort={active ? (sort.dir === 'asc' ? 'ascending' : 'descending') : undefined}>
-      <button type="button" className={cx(list.sortButton, !active && list.sortIdle)} onClick={() => onSort(sortKey)}>
-        {label}
-        <Icon aria-hidden />
-      </button>
-    </th>
-  );
-}
-
-const dash = <span className={list.muted}>—</span>;
-
-/** Tableau ; `fill` : occupe la hauteur restante du parent (flex) au lieu d'une hauteur fixe. */
-export function PlacesTable({ places, linkTo, sort, onSort, fill = false, showGroups }) {
-  const navigate = useNavigate();
-  return (
-    <div className={cx(list.tableWrap, fill && list.tableFill)}>
-      <table className={list.table}>
-        <thead>
-          <tr>
-            <SortHeader label="Lieu" sortKey="name" sort={sort} onSort={onSort} />
-            <SortHeader label="Type" sortKey="type" sort={sort} onSort={onSort} />
-            <SortHeader label="Lieu parent" sortKey="parent" sort={sort} onSort={onSort} />
-            <SortHeader label="Originaires" sortKey="natives" sort={sort} onSort={onSort} />
-            {showGroups && <th>Contrôlé par</th>}
-          </tr>
-        </thead>
-        <tbody>
-          {places.map((p) => {
-            const count = nativeCount(p);
-            const image = placeImage(p);
-            return (
-              // Toute la ligne est cliquable ; le lien du nom reste la cible clavier
-              <tr key={p.id} onClick={() => navigate(linkTo(p))} style={entityColorVars(p.colors)}>
-                <td>
-                  <span className={list.nameCell}>
-                    <EntityBanner src={image} className={styles.rowThumb} />
-                    <Link to={linkTo(p)} className={list.rowName} onClick={(e) => e.stopPropagation()}>
-                      {p.name}
-                    </Link>
-                  </span>
-                </td>
-                <td>{p.type?.name || dash}</td>
-                <td>{p.parent?.name || dash}</td>
-                <td>
-                  {count > 0 ? (
-                    <span className={styles.nativesCell}>
-                      <AvatarStack members={natives(p, 3)} total={count} className={styles.rowStack} />
-                      {plural(count, 'personnage')}
-                    </span>
-                  ) : (
-                    dash
-                  )}
-                </td>
-                {showGroups && <td>{p.controllingGroups?.length ? p.controllingGroups.map((g) => g.name).join(', ') : dash}</td>}
-              </tr>
-            );
-          })}
-        </tbody>
-      </table>
-    </div>
-  );
-}
+/** Colonnes du tableau des lieux (voir EntityTable). `showGroups` : module Groupes actif. */
+export const placeColumns = ({ linkTo, showGroups }) =>
+  [
+    {
+      key: 'name', label: 'Lieu', sortKey: 'name', required: true,
+      render: (p) => <NameCell to={linkTo(p)} visual={<EntityBanner src={placeImage(p)} className={styles.rowThumb} />}>{p.name}</NameCell>,
+    },
+    { key: 'type', label: 'Type', sortKey: 'type', render: (p) => p.type?.name || dash, edit: { field: 'placeTypeId', type: 'ref', criterion: 'type' } },
+    { key: 'parent', label: 'Lieu parent', sortKey: 'parent', render: (p) => p.parent?.name || dash, edit: { field: 'parentId', type: 'ref', criterion: 'parent' } },
+    {
+      key: 'natives', label: 'Originaires', sortKey: 'natives',
+      render: (p) => {
+        const count = nativeCount(p);
+        return count > 0 ? (
+          <span className={styles.nativesCell}>
+            <AvatarStack members={natives(p, 3)} total={count} className={styles.rowStack} />
+            {plural(count, 'personnage')}
+          </span>
+        ) : (
+          dash
+        );
+      },
+    },
+    showGroups && {
+      key: 'groups', label: 'Contrôlé par',
+      render: (p) => (p.controllingGroups?.length ? p.controllingGroups.map((g) => g.name).join(', ') : dash),
+    },
+  ].filter(Boolean);
 
 // ---------------------------------------------------------------------------
 

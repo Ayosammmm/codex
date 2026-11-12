@@ -8,7 +8,11 @@ import { EmptyState, Spinner } from '@/components/ui/Feedback';
 import { GroupedSections } from '@/components/entity/GroupedSections';
 import { ListToolbar } from '@/components/entity/ListToolbar';
 import { groupItems, useListState } from '@/components/entity/useListState';
-import { GroupGallery, GroupsTable } from '@/components/groups/GroupViews';
+import { GroupGallery, groupColumns } from '@/components/groups/GroupViews';
+import { EntityTable } from '@/components/entity/EntityTable';
+import { TableControls } from '@/components/entity/TableControls';
+import { useTableState } from '@/components/entity/useTableState';
+import { useEditorsColumn } from '@/components/entity/useEditorsColumn';
 import { plural, universePath } from '@/utils/universe';
 import styles from '../ListPage.module.scss';
 import { useGroupReferences } from './useGroupReferences';
@@ -25,13 +29,16 @@ export default function GroupsPage() {
   const { state, actions, results } = list;
 
   const linkTo = (g) => universePath(universe, `groupes/${g.id}`);
+  const editorsColumn = useEditorsColumn('group');
+  const columns = [...groupColumns({ linkTo }), editorsColumn];
+  const table = useTableState({ storageKey: 'almanach:groups-columns', columns, items: results, entityType: 'group' });
   const groupCriterion = criteria.find((c) => c.key === state.groupBy);
   // Tableau seul : la page tient dans l'écran et seul le tableau défile
   const fitScreen = state.view === 'table' && !groupCriterion && results.length > 0;
 
   const renderView = (items) =>
     state.view === 'table' ? (
-      <GroupsTable groups={items} linkTo={linkTo} sort={{ key: state.sort, dir: state.dir }} onSort={actions.sortBy} fill={fitScreen} />
+      <EntityTable items={items} columns={columns} linkTo={linkTo} sort={{ key: state.sort, dir: state.dir }} onSort={actions.sortBy} fill={fitScreen} table={table} />
     ) : (
       <GroupGallery groups={items} linkTo={linkTo} />
     );
@@ -80,6 +87,9 @@ export default function GroupsPage() {
             searchLabel="Rechercher un groupe"
           />
           <div className={styles.content}>
+            {state.view === 'table' && results.length > 0 && (
+              <TableControls table={table} columns={columns} criteria={criteria} resource="groups" noun={['groupe', 'groupes']} />
+            )}
             {results.length === 0 ? (
               <div className={styles.noResult}>
                 <p>Aucun groupe ne correspond à ces critères.</p>

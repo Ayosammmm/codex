@@ -1,0 +1,126 @@
+@use '@/styles/mixins' as *;
+
+.bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: space(2);
+  min-height: 2.25rem;
+  margin-bottom: space(3);
+}
+
+.spacer {
+  flex: 1;
+}
+
+.hint {
+  font-size: 0.8125rem;
+  color: var(--fg-subtle);
+}
+
+.selection {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: space(2);
+  padding: space(1) space(1) space(1) space(3);
+  border-radius: var(--r);
+  background: var(--primary-soft);
+  animation: fade-in 160ms ease-out both;
+}
+
+.count {
+  margin-right: space(1);
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+
+.muted {
+  font-weight: 400;
+  color: var(--fg-muted);
+}
+
+// Bouton « Sélection multiple » enfoncé
+.toggleOn {
+  border-color: color-mix(in oklab, var(--primary) 45%, transparent);
+  background: var(--primary-soft);
+  color: var(--primary-ink);
+}
+
+// --- Choix des colonnes ---
+.picker {
+  position: relative;
+}
+
+.badge {
+  margin-left: space(1);
+  font-size: 0.75rem;
+  font-variant-numeric: tabular-nums;
+  color: var(--fg-muted);
+}
+
+.panel {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  z-index: 30;
+  display: flex;
+  flex-direction: column;
+  min-width: 13rem;
+  max-height: 60vh;
+  margin-top: space(1);
+  padding: space(1);
+  overflow-y: auto;
+  border: var(--border-w) solid var(--border);
+  border-radius: var(--r);
+  background: var(--surface);
+  box-shadow: var(--elev-lg);
+  animation: fade-in 160ms ease-out both;
+}
+
+.option {
+  display: flex;
+  align-items: center;
+  gap: space(2.5);
+  padding: space(2) space(2.5);
+  border-radius: var(--r-sm);
+  font-size: 0.875rem;
+  cursor: pointer;
+
+  &:hover {
+    background: var(--surface-2);
+  }
+
+  input {
+    accent-color: var(--primary);
+  }
+}
+
+.reset {
+  margin-top: space(1);
+  padding: space(2) space(2.5);
+  border-top: var(--border-w) solid var(--border);
+  font-size: 0.8125rem;
+  text-align: left;
+  color: var(--primary-ink);
+
+  &:hover {
+    text-decoration: underline;
+  }
+}
+
+// --- Fenêtres ---
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: space(4);
+}
+
+.names {
+  display: flex;
+  flex-direction: column;
+  gap: space(1);
+  font-size: 0.875rem;
+  list-style: disc;
+  padding-left: space(5);
+}

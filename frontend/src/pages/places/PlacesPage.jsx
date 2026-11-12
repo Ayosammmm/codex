@@ -9,7 +9,11 @@ import { GroupedSections } from '@/components/entity/GroupedSections';
 import { ListToolbar } from '@/components/entity/ListToolbar';
 import { groupItems, useListState } from '@/components/entity/useListState';
 import { MapExplorer } from '@/components/places/MapExplorer';
-import { PlaceGallery, PlaceTree, PlacesTable } from '@/components/places/PlaceViews';
+import { PlaceGallery, PlaceTree, placeColumns } from '@/components/places/PlaceViews';
+import { EntityTable } from '@/components/entity/EntityTable';
+import { TableControls } from '@/components/entity/TableControls';
+import { useTableState } from '@/components/entity/useTableState';
+import { useEditorsColumn } from '@/components/entity/useEditorsColumn';
 import { plural, universePath } from '@/utils/universe';
 import styles from '../ListPage.module.scss';
 import { usePlaceReferences } from './usePlaceReferences';
@@ -27,6 +31,9 @@ export default function PlacesPage() {
   const { state, actions, results } = list;
 
   const linkTo = (p) => universePath(universe, `lieux/${p.id}`);
+  const editorsColumn = useEditorsColumn('place');
+  const columns = [...placeColumns({ linkTo, showGroups: modules.groups }), editorsColumn];
+  const table = useTableState({ storageKey: 'almanach:places-columns', columns, items: results, entityType: 'place' });
   const groupCriterion = criteria.find((c) => c.key === state.groupBy);
   // Tableau seul : la page tient dans l'écran et seul le tableau défile
   const fitScreen = state.view === 'table' && !groupCriterion && results.length > 0;
@@ -34,14 +41,7 @@ export default function PlacesPage() {
   const renderView = (items) => {
     if (state.view === 'table') {
       return (
-        <PlacesTable
-          places={items}
-          linkTo={linkTo}
-          sort={{ key: state.sort, dir: state.dir }}
-          onSort={actions.sortBy}
-          fill={fitScreen}
-          showGroups={modules.groups}
-        />
+        <EntityTable items={items} columns={columns} linkTo={linkTo} sort={{ key: state.sort, dir: state.dir }} onSort={actions.sortBy} fill={fitScreen} table={table} />
       );
     }
     if (state.view === 'tree') return <PlaceTree places={items} linkTo={linkTo} />;
@@ -94,6 +94,9 @@ export default function PlacesPage() {
             searchLabel="Rechercher un lieu"
           />
           <div className={styles.content}>
+            {state.view === 'table' && results.length > 0 && (
+              <TableControls table={table} columns={columns} criteria={criteria} resource="places" noun={['lieu', 'lieux']} />
+            )}
             {results.length === 0 ? (
               <div className={styles.noResult}>
                 <p>Aucun lieu ne correspond à ces critères.</p>

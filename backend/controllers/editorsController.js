@@ -13,6 +13,29 @@ exports.list = async (req, res) => {
   res.json(users);
 };
 
+// GET /editors/:entityType → éditeurs de toutes les entités de ce type : { [entityId]: [{ id, displayName, username }] }
+// (colonne « Éditeurs » des tableaux : une seule requête pour toute la liste)
+exports.listByType = async (req, res) => {
+  try {
+    const { entityType } = req.params;
+    if (!ENTITY_TYPES.includes(entityType)) return res.status(400).json({ error: "Type d'entité invalide." });
+    const links = await EntityEditor.findAll({
+      where: { entityType },
+      include: [{ model: User, attributes: ["id", "displayName", "username"] }],
+    });
+    const byEntity = {};
+    for (const link of links) {
+      if (!link.User) continue;
+      (byEntity[link.entityId] ||= []).push(link.User);
+    }
+    for (const users of Object.values(byEntity)) users.sort((a, b) => a.displayName.localeCompare(b.displayName, "fr"));
+    res.json(byEntity);
+  } catch (error) {
+    console.error("Erreur éditeurs:", error);
+    res.status(500).json({ error: error.message });
+  }
+};
+
 // PUT /editors/:entityType/:entityId { userIds } — admins ou éditeurs déjà liés à l'entité
 exports.set = async (req, res) => {
   try {
