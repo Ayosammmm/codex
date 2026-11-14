@@ -13,6 +13,7 @@ const toFormState = (universe) => ({
   },
   backgroundMode: universe?.background ? 'image' : universe?.backgroundColor ? 'color' : 'none',
   backgroundColor: universe?.backgroundColor || null,
+  scrimColor: universe?.scrimColor || null,
   modules: getModulesState(universe),
 });
 
@@ -53,6 +54,7 @@ export function useUniverseForm(universe) {
         theme: form.theme,
         colors: form.colors,
         backgroundColor: form.backgroundMode === 'color' ? form.backgroundColor || getTheme(form.theme).colors.primary : null,
+        scrimColor: form.backgroundMode === 'none' ? null : form.scrimColor,
         modules: toModulesPayload(form.modules),
       },
       images: finalImages,

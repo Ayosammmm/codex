@@ -32,6 +32,7 @@ export const universeThemeProps = (universe, overrides) => {
       '--primary-fg': readableTextOn(colors.primary),
       '--secondary-fg': readableTextOn(colors.secondary),
       '--tertiary-fg': readableTextOn(colors.tertiary),
+      ...(isHexColor(universe?.scrimColor) && { '--scrim-color': universe.scrimColor }),
     },
   };
 };

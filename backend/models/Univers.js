@@ -48,6 +48,11 @@ const Univers = sequelize.define('Univers', {
     type: DataTypes.STRING(16),
     allowNull: true,
   },
+  // Couleur du voile posé sur le fond (image ou couleur). Vide = couleur de fond du thème
+  scrimColor: {
+    type: DataTypes.STRING(16),
+    allowNull: true,
+  },
   // Thème visuel (voir frontend-v3/src/theme/themes.js)
   theme: {
     type: DataTypes.STRING(32),

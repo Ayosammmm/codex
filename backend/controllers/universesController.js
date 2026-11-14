@@ -50,6 +50,12 @@ const buildAppearanceData = (body) => {
     }
     data.backgroundColor = body.backgroundColor ? body.backgroundColor.toLowerCase() : null;
   }
+  if (body.scrimColor !== undefined) {
+    if (body.scrimColor && !HEX_COLOR.test(body.scrimColor)) {
+      throw Object.assign(new Error('Couleur du voile invalide'), { status: 400 });
+    }
+    data.scrimColor = body.scrimColor ? body.scrimColor.toLowerCase() : null;
+  }
   return data;
 };
 

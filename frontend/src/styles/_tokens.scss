@@ -41,7 +41,7 @@
   --warning: #b7791f;
 
   --overlay: rgb(20 18 15 / 0.45);
-  --scrim-strength: 82%;
+  --scrim-strength: 60%;
   // Mélange utilisé pour rendre les couleurs de marque lisibles en texte
   --ink-mix: black;
   --ink-amount: 20%;
@@ -66,7 +66,7 @@
   --warning: #e0a84b;
 
   --overlay: rgb(0 0 0 / 0.6);
-  --scrim-strength: 86%;
+  --scrim-strength: 60%;
   --ink-mix: white;
   --ink-amount: 35%;
 }
@@ -201,7 +201,7 @@
   --warning: #f5c542;
 
   --overlay: rgb(0 0 0 / 0.72);
-  --scrim-strength: 90%;
+  --scrim-strength: 60%;
   --ink-mix: white;
   --ink-amount: 25%;
 
@@ -292,6 +292,7 @@
   --ring: color-mix(in oklab, var(--primary) 55%, transparent);
   // Ombre des cartes / sections : un thème peut la renforcer via --card-shadow
   --elev-card: var(--card-shadow, var(--elev-sm));
-  // Fond « papier » qui voile l'image / la couleur de fond d'un univers
-  --scrim: color-mix(in oklab, var(--bg) var(--scrim-strength), transparent);
+  // Fond « papier » qui voile l'image / la couleur de fond d'un univers.
+  // --scrim-color : couleur choisie pour l'univers (sinon le fond du thème)
+  --scrim: color-mix(in oklab, var(--scrim-color, var(--bg)) var(--scrim-strength), transparent);
 }

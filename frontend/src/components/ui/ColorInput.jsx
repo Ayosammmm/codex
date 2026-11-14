@@ -8,9 +8,9 @@ import styles from './ColorInput.module.scss';
 /**
  * Sélecteur de couleur : pastille native + saisie hex.
  * `value` null = couleur par défaut (`fallback`) ; `onReset` affiche un bouton de réinitialisation.
- * Sans `fallback`, le champ peut rester vide (« Aucune »).
+ * Sans `fallback`, le champ peut rester vide (`emptyLabel`, « Aucune » par défaut).
  */
-export function ColorInput({ value, fallback, onChange, onReset, id, ...aria }) {
+export function ColorInput({ value, fallback, emptyLabel = 'Aucune', onChange, onReset, id, ...aria }) {
   const effective = value || fallback || '';
   const [text, setText] = useState(effective);
   const [synced, setSynced] = useState(effective);
@@ -49,7 +49,7 @@ export function ColorInput({ value, fallback, onChange, onReset, id, ...aria }) 
         onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), commitText(e.currentTarget.value.trim()))}
         spellCheck={false}
         maxLength={7}
-        placeholder={fallback ? undefined : 'Aucune'}
+        placeholder={fallback ? undefined : emptyLabel}
         className={styles.hex}
       />
       {onReset && value && (

@@ -141,6 +141,19 @@ function ImagesSection({ universe, form, update, images, setImage, onError }) {
             onError={onError}
           />
         )}
+        {form.backgroundMode !== 'none' && (
+          <Field label="Couleur du voile" hint="Voile semi-transparent posé sur le fond, sous le contenu. Vide : couleur de fond du thème.">
+            {(props) => (
+              <ColorInput
+                {...props}
+                value={form.scrimColor}
+                emptyLabel="Thème"
+                onChange={(scrimColor) => update({ scrimColor })}
+                onReset={() => update({ scrimColor: null })}
+              />
+            )}
+          </Field>
+        )}
       </fieldset>
     </FormSection>
   );

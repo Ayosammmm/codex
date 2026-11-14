@@ -21,7 +21,12 @@ export function UniversePreview({ form, images, savedImage }) {
   const banner = usePreviewUrl(images.banner, savedImage('banner'));
   const background = usePreviewUrl(images.background, savedImage('background'));
 
-  const draft = { name: form.name || 'Nouvel univers', theme: form.theme, colors: form.colors };
+  const draft = {
+    name: form.name || 'Nouvel univers',
+    theme: form.theme,
+    colors: form.colors,
+    scrimColor: form.backgroundMode === 'none' ? null : form.scrimColor,
+  };
   const backdrop =
     form.backgroundMode === 'image' && background
       ? { backgroundImage: `url("${background}")`, backgroundSize: 'cover', backgroundPosition: 'center' }

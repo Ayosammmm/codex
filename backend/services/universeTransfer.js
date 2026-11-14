@@ -91,7 +91,7 @@ const JOIN_TABLES = [
 const PHOTO_ENTITY_TABLES = { character: 'characters', creature: 'creatures', place: 'places', group: 'groups', specie: 'species' };
 const UNIVERSE_FILES = ['logo', 'banner', 'background'];
 const UNIVERSE_FIELDS = [
-  'name', 'description', 'theme', 'colors', 'backgroundColor', 'modules',
+  'name', 'description', 'theme', 'colors', 'backgroundColor', 'scrimColor', 'modules',
   'personalityModuleEnabled', 'bestiaryEnabled', 'storiesEnabled',
 ];
 
