@@ -1,6 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { Layers, Minus, RotateCcw } from 'lucide-react';
-import { Plus } from '@/components/ui/icons';
+import { Layers, Minus, Plus, RotateCcw } from '@/components/ui/icons';
 import { cx } from '@/components/ui/cx';
 import styles from './MapViewer.module.scss';
 

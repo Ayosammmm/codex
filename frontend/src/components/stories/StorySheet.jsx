@@ -1,6 +1,5 @@
 import { Link } from 'react-router';
-import { CalendarRange, MapPin } from 'lucide-react';
-import { Plus } from '@/components/ui/icons';
+import { CalendarRange, MapPin, Plus } from '@/components/ui/icons';
 import { importanceColor } from '@/config/events';
 import { EPISODE_ROLES, episodeRole, sortedEpisodes, storyCharacters, storyImage, storyLinked, storyPeriod } from '@/config/stories';
 import { Badge } from '@/components/ui/Badge';

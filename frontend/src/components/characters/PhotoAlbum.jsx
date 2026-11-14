@@ -1,6 +1,5 @@
 import { useRef, useState } from 'react';
-import { ImagePlus, LoaderCircle } from 'lucide-react';
-import { Trash2 } from '@/components/ui/icons';
+import { ImagePlus, LoaderCircle, Trash2 } from '@/components/ui/icons';
 import { uploadUrl } from '@/api/client';
 import { usePhotoMutations, usePhotos } from '@/api/queries';
 import { Spinner } from '@/components/ui/Feedback';

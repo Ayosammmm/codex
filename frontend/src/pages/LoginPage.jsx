@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Navigate, useNavigate, useSearchParams } from 'react-router';
-import { LogIn } from 'lucide-react';
+import { LogIn } from '@/components/ui/icons';
 import { useAuth } from '@/auth/auth';
 import { BrandMark } from '@/components/layout/AppHeader';
 import { ColorModeToggle } from '@/components/layout/ColorModeToggle';

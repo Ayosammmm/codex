@@ -1,5 +1,5 @@
 import { Link } from 'react-router';
-import { Compass } from 'lucide-react';
+import { Compass } from '@/components/ui/icons';
 import { AppHeader } from '@/components/layout/AppHeader';
 import { Button } from '@/components/ui/Button';
 import { EmptyState } from '@/components/ui/Feedback';

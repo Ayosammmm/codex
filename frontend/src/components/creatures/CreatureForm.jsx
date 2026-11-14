@@ -1,5 +1,5 @@
 import { Link } from 'react-router';
-import { MapPin, Ruler } from 'lucide-react';
+import { MapPin, Ruler } from '@/components/ui/icons';
 import { uploadUrl } from '@/api/client';
 import {
   ACTIVITY_CYCLES,

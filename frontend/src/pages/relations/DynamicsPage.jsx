@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react';
 import { Link, useOutletContext } from 'react-router';
-import { CircleAlert, HeartHandshake } from 'lucide-react';
+import { CircleAlert, HeartHandshake } from '@/components/ui/icons';
 import { useEntityList } from '@/api/queries';
 import { getModulesState, isModuleEnabled } from '@/config/modules';
 import { Button } from '@/components/ui/Button';

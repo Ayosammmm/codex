@@ -1,6 +1,5 @@
 import { Link } from 'react-router';
-import { Ellipsis, Copy, Download } from 'lucide-react';
-import { Settings, Trash2 } from '@/components/ui/icons';
+import { Copy, Download, Ellipsis, Settings, Trash2 } from '@/components/ui/icons';
 import { uploadUrl } from '@/api/client';
 import { universeThemeProps } from '@/theme/universeTheme';
 import { universePath } from '@/utils/universe';

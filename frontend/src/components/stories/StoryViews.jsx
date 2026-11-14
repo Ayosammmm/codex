@@ -1,5 +1,5 @@
 import { Link } from 'react-router';
-import { CalendarRange, Clapperboard, Users } from 'lucide-react';
+import { CalendarRange, Clapperboard, Users } from '@/components/ui/icons';
 import { episodeCount, storyCharacters, storyImage, storyPeriod } from '@/config/stories';
 import { AvatarStack, EntityBanner } from '@/components/entity/EntityBanner';
 import { NameCell, dash } from '@/components/entity/EntityTable';

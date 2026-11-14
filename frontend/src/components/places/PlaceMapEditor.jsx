@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { MapPin, Undo2 } from 'lucide-react';
+import { MapPin, Undo2 } from '@/components/ui/icons';
 import { uploadUrl } from '@/api/client';
 import { useSaveEntity } from '@/api/queries';
 import { mapPins } from '@/config/places';

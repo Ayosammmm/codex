@@ -1,4 +1,4 @@
-import { LoaderCircle } from 'lucide-react';
+import { LoaderCircle } from '@/components/ui/icons';
 import { cx } from './cx';
 import styles from './Feedback.module.scss';
 

@@ -1,6 +1,5 @@
 import { useMemo } from 'react';
-import { Users } from 'lucide-react';
-import { CornerDownRight } from '@/components/ui/icons';
+import { CornerDownRight, Users } from '@/components/ui/icons';
 import { uploadUrl } from '@/api/client';
 import { Combobox } from '@/components/ui/Combobox';
 import { Field, Input } from '@/components/ui/Field';

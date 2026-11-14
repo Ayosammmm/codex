@@ -1,7 +1,6 @@
 import { useMemo, useRef, useState } from 'react';
 import { Link, useNavigate } from 'react-router';
-import { Library, Upload, CircleAlert } from 'lucide-react';
-import { Plus, Search } from '@/components/ui/icons';
+import { CircleAlert, Library, Plus, Search, Upload } from '@/components/ui/icons';
 import { useImportUniverse, useUniverses } from '@/api/queries';
 import { AppHeader } from '@/components/layout/AppHeader';
 import { Button } from '@/components/ui/Button';

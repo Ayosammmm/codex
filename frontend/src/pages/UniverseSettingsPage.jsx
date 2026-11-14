@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import { useNavigate, useOutletContext } from 'react-router';
-import { Copy, Download } from 'lucide-react';
-import { Trash2 } from '@/components/ui/icons';
+import { Copy, Download, Trash2 } from '@/components/ui/icons';
 import { useSaveUniverse } from '@/api/queries';
 import { Button } from '@/components/ui/Button';
 import { ColorModeToggle } from '@/components/layout/ColorModeToggle';

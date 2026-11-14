@@ -1,6 +1,5 @@
 import { Link, useOutletContext } from 'react-router';
-import { CircleAlert, Dna } from 'lucide-react';
-import { Plus } from '@/components/ui/icons';
+import { CircleAlert, Dna, Plus } from '@/components/ui/icons';
 import { SORTS, searchText } from '@/config/species';
 import { Button } from '@/components/ui/Button';
 import { cx } from '@/components/ui/cx';

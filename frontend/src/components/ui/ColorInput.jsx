@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { RotateCcw } from 'lucide-react';
+import { RotateCcw } from '@/components/ui/icons';
 import { isHexColor } from '@/theme/color';
 import { Input } from './Field';
 import { cx } from './cx';

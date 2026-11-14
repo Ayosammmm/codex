@@ -1,6 +1,5 @@
 import { Link, useOutletContext } from 'react-router';
-import { Building2, CircleAlert } from 'lucide-react';
-import { Plus } from '@/components/ui/icons';
+import { Building2, CircleAlert, Plus } from '@/components/ui/icons';
 import { SORTS, searchText } from '@/config/groups';
 import { Button } from '@/components/ui/Button';
 import { cx } from '@/components/ui/cx';

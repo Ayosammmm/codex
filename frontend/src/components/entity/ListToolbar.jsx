@@ -1,6 +1,5 @@
 import { useState } from 'react';
-import { ArrowDownAZ, ArrowUpZA, Filter, GitCommitVertical, LayoutGrid, ListTree, Map as MapIcon, Rows3, Table2 } from 'lucide-react';
-import { Search, X } from '@/components/ui/icons';
+import { ArrowDownAZ, ArrowUpZA, Filter, GitCommitVertical, LayoutGrid, ListTree, MapIcon, Rows3, Search, Table2, X } from '@/components/ui/icons';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Field';
 import { Segmented } from '@/components/ui/Segmented';

@@ -1,6 +1,5 @@
 import { useEffect, useMemo } from 'react';
-import { Users, MapPin } from 'lucide-react';
-import { Plus } from '@/components/ui/icons';
+import { MapPin, Plus, Users } from '@/components/ui/icons';
 import { universeThemeProps } from '@/theme/universeTheme';
 import { getTheme } from '@/theme/themes';
 import { plainText } from '@/utils/universe';

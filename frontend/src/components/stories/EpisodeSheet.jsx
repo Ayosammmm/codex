@@ -1,6 +1,5 @@
 import { Link } from 'react-router';
-import { MapPin } from 'lucide-react';
-import { ArrowLeft, ArrowRight } from '@/components/ui/icons';
+import { ArrowLeft, ArrowRight, MapPin } from '@/components/ui/icons';
 import { characterName } from '@/config/characters';
 import { importanceColor } from '@/config/events';
 import { EPISODE_ROLES, episodeRole } from '@/config/stories';

@@ -1,7 +1,6 @@
 import { Fragment } from 'react';
 import { Link, useNavigate } from 'react-router';
-import { MapPin } from 'lucide-react';
-import { ChevronRight } from '@/components/ui/icons';
+import { ChevronRight, MapPin } from '@/components/ui/icons';
 import { uploadUrl } from '@/api/client';
 import { usePhotos } from '@/api/queries';
 import { characterName } from '@/config/characters';

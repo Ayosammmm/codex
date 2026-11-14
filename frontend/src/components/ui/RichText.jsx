@@ -4,7 +4,7 @@ import { EditorContent, useEditor, useEditorState } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
 import Image from '@tiptap/extension-image';
 import { TextStyle, Color, BackgroundColor } from '@tiptap/extension-text-style';
-import { Bold, Italic, Heading2, Heading3, List, ListOrdered, Quote, Undo2, Redo2 } from 'lucide-react';
+import { Bold, Italic, Heading2, Heading3, List, ListOrdered, Quote, Undo2, Redo2 } from '@/components/ui/icons';
 import { cx } from './cx';
 import { transformPastedHTML } from './pasteLineBreaks';
 import styles from './RichText.module.scss';

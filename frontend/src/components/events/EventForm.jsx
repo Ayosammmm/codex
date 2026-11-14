@@ -1,4 +1,4 @@
-import { CalendarClock } from 'lucide-react';
+import { CalendarClock } from '@/components/ui/icons';
 import { uploadUrl } from '@/api/client';
 import { IMPORTANCE, importanceColor } from '@/config/events';
 import { Badge } from '@/components/ui/Badge';

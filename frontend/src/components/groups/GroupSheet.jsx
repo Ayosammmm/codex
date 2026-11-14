@@ -1,5 +1,5 @@
 import { Link } from 'react-router';
-import { CornerLeftUp, MapPin } from 'lucide-react';
+import { CornerLeftUp, MapPin } from '@/components/ui/icons';
 import { uploadUrl } from '@/api/client';
 import { usePhotos } from '@/api/queries';
 import { RichText } from '@/components/ui/RichText';

@@ -1,7 +1,6 @@
 import { useMemo, useState } from 'react';
 import { Link, useOutletContext } from 'react-router';
-import { ArrowRight, Shuffle } from 'lucide-react';
-import { Settings } from '@/components/ui/icons';
+import { ArrowRight, Settings, Shuffle } from '@/components/ui/icons';
 import { useEntityList, useUniverses } from '@/api/queries';
 import { getModulesState, getNavModules, isModuleEnabled } from '@/config/modules';
 import { CharacterGallery } from '@/components/characters/CharacterViews';

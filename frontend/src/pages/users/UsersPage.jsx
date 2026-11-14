@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router';
-import { CircleAlert, UserPlus, UsersRound } from 'lucide-react';
-import { ArrowLeft, Pencil, Trash2 } from '@/components/ui/icons';
+import { ArrowLeft, CircleAlert, Pencil, Trash2, UserPlus, UsersRound } from '@/components/ui/icons';
 import { useCreateUser, useDeleteUser, useUpdateUser, useUsers } from '@/api/users';
 import { ROLES, canGrantRole, canManageUser, initials, roleLabel, useAuth } from '@/auth/auth';
 import { AppHeader } from '@/components/layout/AppHeader';

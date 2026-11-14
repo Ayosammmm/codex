@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import { Link, useOutletContext } from 'react-router';
-import { CircleAlert } from 'lucide-react';
-import { ArrowDown, ArrowUp, Pencil, Plus, Trash2 } from '@/components/ui/icons';
+import { ArrowDown, ArrowUp, CircleAlert, Pencil, Plus, Trash2 } from '@/components/ui/icons';
 import { useDeleteEntity, useEntityList, useReorderEntity } from '@/api/queries';
 import { REFERENCES, getModulesState, isModuleEnabled } from '@/config/modules';
 import { REFERENCE_CONFIG } from '@/config/references';

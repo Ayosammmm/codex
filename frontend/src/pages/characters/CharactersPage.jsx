@@ -1,5 +1,5 @@
 import { Link, useOutletContext } from 'react-router';
-import { CircleAlert, UserPlus, Users } from 'lucide-react';
+import { CircleAlert, UserPlus, Users } from '@/components/ui/icons';
 import { Button } from '@/components/ui/Button';
 import { cx } from '@/components/ui/cx';
 import { EmptyState, Spinner } from '@/components/ui/Feedback';

@@ -1,6 +1,5 @@
 import { Link } from 'react-router';
-import { ExternalLink } from 'lucide-react';
-import { ArrowDown, ArrowUp, Plus, Trash2 } from '@/components/ui/icons';
+import { ArrowDown, ArrowUp, ExternalLink, Plus, Trash2 } from '@/components/ui/icons';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Field';
 import { universePath } from '@/utils/universe';

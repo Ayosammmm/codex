@@ -1,5 +1,5 @@
 import { Link, useOutletContext, useParams } from 'react-router';
-import { CircleAlert } from 'lucide-react';
+import { CircleAlert } from '@/components/ui/icons';
 import { useEntity } from '@/api/queries';
 import { Button } from '@/components/ui/Button';
 import { EmptyState, Spinner } from '@/components/ui/Feedback';

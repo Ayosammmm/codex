@@ -1,5 +1,5 @@
 import { Link, Navigate, Outlet, useLocation } from 'react-router';
-import { CircleAlert, ShieldX } from 'lucide-react';
+import { CircleAlert, ShieldX } from '@/components/ui/icons';
 import { Button } from '@/components/ui/Button';
 import { EmptyState, Spinner } from '@/components/ui/Feedback';
 import page from '@/pages/Page.module.scss';

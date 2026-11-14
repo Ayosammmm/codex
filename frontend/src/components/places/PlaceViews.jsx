@@ -1,6 +1,5 @@
 import { Link } from 'react-router';
-import { MapPin, Users } from 'lucide-react';
-import { CornerDownRight } from '@/components/ui/icons';
+import { CornerDownRight, MapPin, Users } from '@/components/ui/icons';
 import { characterName } from '@/config/characters';
 import { childCount, nativeCount, placeImage } from '@/config/places';
 import { AvatarStack, EntityBanner } from '@/components/entity/EntityBanner';

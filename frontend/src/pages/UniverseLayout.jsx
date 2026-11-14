@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Link, Outlet, useNavigate, useParams, useLocation } from 'react-router';
-import { CircleAlert, Menu } from 'lucide-react';
+import { CircleAlert, Menu } from '@/components/ui/icons';
 import { useUniverse } from '@/api/queries';
 import { UniverseSidebar } from '@/components/layout/UniverseSidebar';
 import { Button } from '@/components/ui/Button';

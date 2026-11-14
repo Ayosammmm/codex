@@ -1,4 +1,4 @@
-import { Check, Lock } from 'lucide-react';
+import { Check, Lock } from '@/components/ui/icons';
 import { uploadUrl } from '@/api/client';
 import { MODULE_TREE } from '@/config/modules';
 import { COLOR_ROLES, THEMES, getTheme } from '@/theme/themes';

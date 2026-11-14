@@ -1,6 +1,5 @@
 import { Link } from 'react-router';
-import { Network, Users } from 'lucide-react';
-import { CornerDownRight } from '@/components/ui/icons';
+import { CornerDownRight, Network, Users } from '@/components/ui/icons';
 import { uploadUrl } from '@/api/client';
 import { characterName } from '@/config/characters';
 import { groupRoles, memberCount, memberRole, roleRanker } from '@/config/groups';

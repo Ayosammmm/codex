@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
 import { Link } from 'react-router';
-import { MapPin, Users } from 'lucide-react';
+import { MapPin, Users } from '@/components/ui/icons';
 import { uploadUrl } from '@/api/client';
 import { Combobox } from '@/components/ui/Combobox';
 import { Field, Input } from '@/components/ui/Field';

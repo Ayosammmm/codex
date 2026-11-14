@@ -1,6 +1,5 @@
 import { Link } from 'react-router';
-import { BookOpen, CalendarClock, MapPin } from 'lucide-react';
-import { ArrowLeft, ArrowRight } from '@/components/ui/icons';
+import { ArrowLeft, ArrowRight, BookOpen, CalendarClock, MapPin } from '@/components/ui/icons';
 import { characterName } from '@/config/characters';
 import { eventImage, importanceColor } from '@/config/events';
 import { Badge } from '@/components/ui/Badge';

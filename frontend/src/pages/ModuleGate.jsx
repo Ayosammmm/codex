@@ -1,5 +1,5 @@
 import { Link, useOutletContext } from 'react-router';
-import { PowerOff } from 'lucide-react';
+import { PowerOff } from '@/components/ui/icons';
 import { getModulesState, isModuleEnabled } from '@/config/modules';
 import { Button } from '@/components/ui/Button';
 import { EmptyState } from '@/components/ui/Feedback';

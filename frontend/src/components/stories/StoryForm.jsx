@@ -1,4 +1,4 @@
-import { CalendarRange, Clapperboard } from 'lucide-react';
+import { CalendarRange, Clapperboard } from '@/components/ui/icons';
 import { uploadUrl } from '@/api/client';
 import { Field, Input } from '@/components/ui/Field';
 import { ImagePicker } from '@/components/ui/ImagePicker';

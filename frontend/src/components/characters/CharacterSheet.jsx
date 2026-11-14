@@ -1,6 +1,6 @@
 import { Fragment, useMemo } from 'react';
 import { Link } from 'react-router';
-import { TrendingUp } from 'lucide-react';
+import { TrendingUp } from '@/components/ui/icons';
 import { usePhotos } from '@/api/queries';
 import {
   TRAIT_GROUPS,

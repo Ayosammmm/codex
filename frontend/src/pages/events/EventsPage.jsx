@@ -1,7 +1,6 @@
 import { useMemo } from 'react';
 import { Link, useOutletContext } from 'react-router';
-import { CalendarClock, CircleAlert } from 'lucide-react';
-import { Plus } from '@/components/ui/icons';
+import { CalendarClock, CircleAlert, Plus } from '@/components/ui/icons';
 import { useReorderEntity } from '@/api/queries';
 import { CRITERIA, SORTS, searchText } from '@/config/events';
 import { Button } from '@/components/ui/Button';

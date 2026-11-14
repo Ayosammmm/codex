@@ -1,6 +1,5 @@
 import { Link, useOutletContext } from 'react-router';
-import { CircleAlert, PawPrint } from 'lucide-react';
-import { Plus } from '@/components/ui/icons';
+import { CircleAlert, PawPrint, Plus } from '@/components/ui/icons';
 import { creatureSorts, searchText } from '@/config/creatures';
 import { Button } from '@/components/ui/Button';
 import { cx } from '@/components/ui/cx';

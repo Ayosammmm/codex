@@ -1,4 +1,4 @@
-import { Monitor, Moon, Sun } from 'lucide-react';
+import { Monitor, Moon, Sun } from '@/components/ui/icons';
 import { useColorMode } from '@/theme/ColorModeProvider';
 import { cx } from '@/components/ui/cx';
 import styles from './Layout.module.scss';

@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router';
-import { KeyRound, LogOut, UsersRound } from 'lucide-react';
+import { KeyRound, LogOut, UsersRound } from '@/components/ui/icons';
 import { useChangePassword } from '@/api/users';
 import { initials, roleLabel, useAuth, usePermissions } from '@/auth/auth';
 import { Button } from '@/components/ui/Button';

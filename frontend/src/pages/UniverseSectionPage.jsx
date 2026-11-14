@@ -1,5 +1,5 @@
 import { Link, useOutletContext, useParams } from 'react-router';
-import { Compass, Construction, PowerOff } from 'lucide-react';
+import { Compass, Construction, PowerOff } from '@/components/ui/icons';
 import { findSection, getModulesState } from '@/config/modules';
 import { Button } from '@/components/ui/Button';
 import { EmptyState } from '@/components/ui/Feedback';

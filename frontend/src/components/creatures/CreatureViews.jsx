@@ -1,5 +1,5 @@
 import { Link } from 'react-router';
-import { MapPin, Ruler } from 'lucide-react';
+import { MapPin, Ruler } from '@/components/ui/icons';
 import { ACTIVITY_CYCLES, DIETS, INTELLIGENCE_MAX, TEMPERAMENTS, creatureImage, formatSize, temperamentColor } from '@/config/creatures';
 import { Badge } from '@/components/ui/Badge';
 import { EntityBanner } from '@/components/entity/EntityBanner';

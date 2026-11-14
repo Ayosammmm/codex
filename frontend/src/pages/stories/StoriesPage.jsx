@@ -1,7 +1,6 @@
 import { useMemo } from 'react';
 import { Link, useOutletContext } from 'react-router';
-import { BookOpen, CircleAlert } from 'lucide-react';
-import { Plus } from '@/components/ui/icons';
+import { BookOpen, CircleAlert, Plus } from '@/components/ui/icons';
 import { Button } from '@/components/ui/Button';
 import { cx } from '@/components/ui/cx';
 import { EmptyState, Spinner } from '@/components/ui/Feedback';

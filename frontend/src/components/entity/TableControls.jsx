@@ -1,7 +1,6 @@
 import { useEffect, useId, useRef, useState } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
-import { Columns3, ListChecks, PencilLine, X } from 'lucide-react';
-import { Trash2 } from '@/components/ui/icons';
+import { Columns3, ListChecks, PencilLine, Trash2, X } from '@/components/ui/icons';
 import { RESOURCES } from '@/api/resources';
 import { universeKeys } from '@/api/queries';
 import { Button } from '@/components/ui/Button';

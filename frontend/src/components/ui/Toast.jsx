@@ -1,6 +1,5 @@
 import { createContext, useCallback, useContext, useMemo, useState } from 'react';
-import { CircleCheck, CircleAlert } from 'lucide-react';
-import { X } from '@/components/ui/icons';
+import { CircleAlert, CircleCheck, X } from '@/components/ui/icons';
 import { cx } from './cx';
 import styles from './Toast.module.scss';
 

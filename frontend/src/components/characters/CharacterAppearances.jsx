@@ -1,5 +1,5 @@
 import { Link } from 'react-router';
-import { BookOpen } from 'lucide-react';
+import { BookOpen } from '@/components/ui/icons';
 import { importanceColor } from '@/config/events';
 import { EPISODE_ROLES, episodeRole, sortedEpisodes } from '@/config/stories';
 import { SheetSection } from '@/components/entity/SheetSection';

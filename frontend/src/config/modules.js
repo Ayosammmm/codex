@@ -1,7 +1,7 @@
 import {
-  Users, MapPin, Brain, HeartHandshake, Map, Building2, Dna, PawPrint, BookOpen, CalendarClock,
+  Users, MapPin, Brain, HeartHandshake, MapIcon, Building2, Dna, PawPrint, BookOpen, CalendarClock,
   VenusAndMars, Activity, Scale, Medal, Tags, Tag,
-} from 'lucide-react';
+} from '@/components/ui/icons';
 
 /**
  * Modules d'un univers (voir Obsidian/Modules.md).
@@ -26,7 +26,7 @@ export const MODULES = [
 
   { key: 'places', path: 'lieux', label: 'Lieux', icon: MapPin, core: true,
     description: 'Les lieux de l’univers, leurs types et leur hiérarchie.' },
-  { key: 'map', label: 'Carte', icon: Map, parent: 'places', defaultEnabled: false,
+  { key: 'map', label: 'Carte', icon: MapIcon, parent: 'places', defaultEnabled: false,
     description: 'Une carte pour chaque lieu, avec ses sous-lieux placés dessus.' },
 
   { key: 'groups', path: 'groupes', label: 'Groupes', icon: Building2, defaultEnabled: true,

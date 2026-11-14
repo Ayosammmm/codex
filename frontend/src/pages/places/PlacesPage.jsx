@@ -1,6 +1,5 @@
 import { Link, useOutletContext } from 'react-router';
-import { CircleAlert, MapPin } from 'lucide-react';
-import { Plus } from '@/components/ui/icons';
+import { CircleAlert, MapPin, Plus } from '@/components/ui/icons';
 import { SORTS, searchText } from '@/config/places';
 import { Button } from '@/components/ui/Button';
 import { cx } from '@/components/ui/cx';

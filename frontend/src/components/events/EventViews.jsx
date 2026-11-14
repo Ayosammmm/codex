@@ -1,6 +1,5 @@
 import { Link } from 'react-router';
-import { BookOpen, MapPin } from 'lucide-react';
-import { ArrowDown, ArrowUp } from '@/components/ui/icons';
+import { ArrowDown, ArrowUp, BookOpen, MapPin } from '@/components/ui/icons';
 import { characterName } from '@/config/characters';
 import { IMPORTANCE, eventImage, eventStories, importanceColor } from '@/config/events';
 import { Badge } from '@/components/ui/Badge';

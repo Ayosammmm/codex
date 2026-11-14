@@ -1,6 +1,5 @@
 import { Link } from 'react-router';
-import { Dna, Users } from 'lucide-react';
-import { CornerDownRight } from '@/components/ui/icons';
+import { CornerDownRight, Dna, Users } from '@/components/ui/icons';
 import { childCount, memberCount, specieImage, specieMembers } from '@/config/species';
 import { AvatarStack, EntityBanner } from '@/components/entity/EntityBanner';
 import { EntityTree } from '@/components/entity/EntityTree';

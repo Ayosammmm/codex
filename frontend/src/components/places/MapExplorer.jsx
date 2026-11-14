@@ -1,8 +1,7 @@
 import { Fragment } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router';
-import { Map as MapIcon } from 'lucide-react';
 import { mapPins, placeMap } from '@/config/places';
-import { ChevronRight } from '@/components/ui/icons';
+import { ChevronRight, MapIcon } from '@/components/ui/icons';
 import { Select } from '@/components/ui/Select';
 import { EmptyState } from '@/components/ui/Feedback';
 import { entityAncestors } from '@/components/entity/tree';

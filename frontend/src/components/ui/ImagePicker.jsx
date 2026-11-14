@@ -1,6 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { ImagePlus, RefreshCw } from 'lucide-react';
-import { Trash2 } from '@/components/ui/icons';
+import { ImagePlus, RefreshCw, Trash2 } from '@/components/ui/icons';
 import { Button } from './Button';
 import { cx } from './cx';
 import { toMemoryFile } from './memoryFile';
