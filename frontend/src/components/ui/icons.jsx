@@ -22,7 +22,7 @@ import { useThemeKey } from '@/theme/themeKey';
  * Icônes d'interface selon le thème de l'univers (notes Obsidian « Frontend - Design »).
  * On les importe d'ici à la place de lucide-react : `import { ArrowLeft } from '@/components/ui/icons'`.
  * - médiéval : dessins propres (flèches empennées, plume, croix pattée...)
- * - terminal : glyphes en police monospace (<-, [+], rm...)
+ * - terminal : pixel art (grilles de pixels nets, voir pixel())
  * - crayonné : icônes habituelles, tracé « à main levée » (filtre SVG, voir SketchFilter)
  * - par défaut : lucide-react
  * Les autres icônes restent celles de lucide-react, retouchées par le CSS du thème.
@@ -120,44 +120,133 @@ const MEDIEVAL = {
   ),
 };
 
-// --- Terminal : glyphes monospace ---
-const glyph = (text) =>
-  function TerminalGlyph(props) {
-    // Taille adaptée à la longueur pour tenir dans le carré de l'icône
-    const fontSize = text.length <= 1 ? 17 : text.length === 2 ? 13 : 10;
+// --- Terminal : pixel art ---
+/*
+ * Chaque icône est une petite grille (8×8 au plus) : `#` = pixel allumé.
+ * Un pixel mesure 3 unités, soit exactement 2 px à la taille habituelle (16 px) :
+ * le dessin reste net. La grille est centrée dans le carré 24×24 ; un décalage
+ * d'un demi-pixel (1 px à 16 px) garde aussi les grilles impaires nettes.
+ */
+const PX = 3;
+const pixelPath = (rows) => {
+  const dx = (24 - PX * rows[0].length) / 2;
+  const dy = (24 - PX * rows.length) / 2;
+  let d = '';
+  rows.forEach((row, y) =>
+    [...row].forEach((c, x) => {
+      if (c === '#') d += `M${dx + PX * x} ${dy + PX * y}h${PX}v${PX}h-${PX}z`;
+    }),
+  );
+  return d;
+};
+
+/** Icône pixel art ; `rotate` l'oriente (180 = gauche, -90 = haut, 90 = bas). */
+const pixel = (rows, rotate) => {
+  const d = pixelPath(rows);
+  return function TerminalIcon(props) {
     return (
-      <Svg {...props} strokeWidth={0}>
-        <text
-          x="12"
-          y="12"
-          dominantBaseline="central"
-          textAnchor="middle"
-          fontFamily="var(--font-mono, ui-monospace, monospace)"
-          fontSize={fontSize}
-          fontWeight="700"
-          fill="currentColor"
-        >
-          {text}
-        </text>
+      <Svg {...props} stroke="none" fill="currentColor" shapeRendering="crispEdges">
+        <path d={d} transform={rotate ? `rotate(${rotate} 12 12)` : undefined} />
       </Svg>
     );
   };
+};
+
+const PIXEL_ARROW = [
+  '...#..',
+  '....#.',
+  '######',
+  '....#.',
+  '...#..',
+];
+const PIXEL_CHEVRON = [
+  '#..',
+  '.#.',
+  '..#',
+  '.#.',
+  '#..',
+];
 
 const TERMINAL = {
-  ArrowLeft: glyph('<-'),
-  ArrowRight: glyph('->'),
-  ArrowUp: glyph('^'),
-  ArrowDown: glyph('v'),
-  ArrowUpDown: glyph('<>'),
-  ChevronRight: glyph('>'),
-  ChevronDown: glyph('v'),
-  CornerDownRight: glyph('└>'),
-  Plus: glyph('+'),
-  Pencil: glyph('vi'),
-  Trash2: glyph('rm'),
-  X: glyph('x'),
-  Search: glyph('/'),
-  Settings: glyph('cfg'),
+  ArrowRight: pixel(PIXEL_ARROW),
+  ArrowLeft: pixel(PIXEL_ARROW, 180),
+  ArrowUp: pixel(PIXEL_ARROW, -90),
+  ArrowDown: pixel(PIXEL_ARROW, 90),
+  ChevronRight: pixel(PIXEL_CHEVRON),
+  ChevronDown: pixel(PIXEL_CHEVRON, 90),
+  ArrowUpDown: pixel([
+    '..#..',
+    '.###.',
+    '#.#.#',
+    '..#..',
+    '..#..',
+    '#.#.#',
+    '.###.',
+    '..#..',
+  ]),
+  CornerDownRight: pixel([
+    '#......',
+    '#......',
+    '#...#..',
+    '#....#.',
+    '.######',
+    '.....#.',
+    '....#..',
+  ]),
+  Plus: pixel([
+    '..#..',
+    '..#..',
+    '#####',
+    '..#..',
+    '..#..',
+  ]),
+  X: pixel([
+    '#...#',
+    '.#.#.',
+    '..#..',
+    '.#.#.',
+    '#...#',
+  ]),
+  Pencil: pixel([
+    '.....##.',
+    '....#..#',
+    '...##.#.',
+    '..#..#..',
+    '.#..#...',
+    '#..#....',
+    '#.#.....',
+    '##......',
+  ]),
+  Trash2: pixel([
+    '..###..',
+    '#######',
+    '.#...#.',
+    '.#.#.#.',
+    '.#.#.#.',
+    '.#.#.#.',
+    '.#...#.',
+    '.#####.',
+  ]),
+  Search: pixel([
+    '.####...',
+    '#....#..',
+    '#....#..',
+    '#....#..',
+    '#....#..',
+    '.####...',
+    '.....##.',
+    '......##',
+  ]),
+  Settings: pixel([
+    '...##...',
+    '.#.##.#.',
+    '..####..',
+    '###..###',
+    '###..###',
+    '..####..',
+    '.#.##.#.',
+    '...##...',
+  ]),
 };
 
 const SETS = { medieval: MEDIEVAL, terminal: TERMINAL };

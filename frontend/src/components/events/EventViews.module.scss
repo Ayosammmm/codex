@@ -57,12 +57,12 @@
     position: absolute;
     top: 0.75rem;
     bottom: 0.75rem;
-    left: 1rem;
+    left: 0.95rem;
     width: 2px;
     background: var(--border-strong);
 
     @include up(md) {
-      left: 9.5rem;
+      left: 9.7rem;
     }
   }
 }

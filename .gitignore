@@ -4,3 +4,4 @@ debug.log
 .env
 .env.*
 !.env.example
+Obsidian
