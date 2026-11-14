@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react';
 import { TRAIT_KEYS } from '@/config/characters';
+import { groupRoles, memberRole } from '@/config/groups';
 
 let rowId = 0;
 const nextRowId = () => `rel-${++rowId}`;
@@ -19,7 +20,8 @@ const toFormState = (c) => ({
   personality: c?.personality || '',
   story: c?.story || '',
   extras: c?.extras || '',
-  groupIds: c?.groups?.map((g) => g.id) || [],
+  // Groupes et rôle dans chacun : [{ groupId, role }]
+  groups: (c?.groups || []).map((g) => ({ groupId: g.id, role: memberRole({ CharacterGroup: g.CharacterGroup }, groupRoles(g)) })),
   specieIds: c?.species?.map((s) => s.id) || [],
   placeIds: c?.places?.map((p) => p.id) || [],
   relations: (c?.relatedCharacters || [])
@@ -89,7 +91,7 @@ export function useCharacterForm(character) {
     };
     // Module désactivé : le rang n'est pas envoyé, donc pas effacé
     if (modules.ranks) values.rank_id = toNullableId(form.rank_id);
-    if (modules.groups) values.groupIds = form.groupIds;
+    if (modules.groups) values.groups = form.groups.map(({ groupId, role }) => ({ groupId, role }));
     if (modules.species) values.specieIds = form.specieIds;
     if (modules.relations) {
       values.relations = form.relations

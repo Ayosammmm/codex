@@ -17,6 +17,7 @@ import {
   CalendarRange as LucideCalendarRange,
   Check as LucideCheck,
   ChevronDown as LucideChevronDown,
+  ChevronLeft as LucideChevronLeft,
   ChevronRight as LucideChevronRight,
   CircleAlert as LucideCircleAlert,
   CircleCheck as LucideCircleCheck,
@@ -224,6 +225,7 @@ export const CalendarClock = themed('CalendarClock', LucideCalendarClock);
 export const CalendarRange = themed('CalendarRange', LucideCalendarRange);
 export const Check = themed('Check', LucideCheck);
 export const ChevronDown = themed('ChevronDown', LucideChevronDown);
+export const ChevronLeft = themed('ChevronLeft', LucideChevronLeft);
 export const ChevronRight = themed('ChevronRight', LucideChevronRight);
 export const CircleAlert = themed('CircleAlert', LucideCircleAlert);
 export const CircleCheck = themed('CircleCheck', LucideCircleCheck);

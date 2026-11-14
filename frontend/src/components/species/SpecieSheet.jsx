@@ -95,7 +95,7 @@ export function SpecieSheet({ universe, specie: s, ancestors, subspecies, action
         )}
 
         {members.length > 0 && (
-          <SheetSection id="representants" title="Représentants">
+          <SheetSection id="representants" title="Personnages">
             <ul className={styles.members}>
               {members.map((c) => (
                 <li key={c.id}>

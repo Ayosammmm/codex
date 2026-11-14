@@ -75,6 +75,7 @@ export const PIXEL_ICONS = {
   ArrowDown: { rows: ARROW, rotate: 90 },
   ChevronRight: { rows: CHEVRON },
   ChevronDown: { rows: CHEVRON, rotate: 90 },
+  ChevronLeft: { rows: CHEVRON, rotate: 180 },
   ArrowUpDown: {
     rows: [
       '..#..',

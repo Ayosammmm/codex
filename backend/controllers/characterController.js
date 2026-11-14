@@ -5,6 +5,8 @@ const Status = require("../models/Status");
 const PowerRank = require("../models/PowerRank");
 const Alignment = require("../models/Alignment");
 const Group = require("../models/Group");
+const CharacterGroup = require("../models/CharacterGroup");
+const { groupRoles, fallbackRole } = require("../utils/groupRoles");
 const Place = require("../models/Place");
 const Specie = require("../models/Specie");
 const CharacterRelation = require("../models/CharacterRelation");
@@ -28,6 +30,35 @@ const relationFields = (relation) => ({
   evolving: Boolean(relation.evolving),
 });
 const fs = require("fs");
+
+const toId = (v) => (v === "" || v == null ? null : parseInt(v, 10) || null);
+
+/**
+ * Groupes du personnage et son rôle dans chacun.
+ * `groups` : [{ groupId, role }] (rôle inconnu du groupe = rôle par défaut du groupe) ;
+ * `groupIds` : [id] (ancien format : les rôles déjà en place sont conservés).
+ */
+async function saveGroups(character, body) {
+  if (Array.isArray(body.groups)) {
+    const wanted = new Map();
+    for (const m of body.groups) {
+      const id = toId(m?.groupId);
+      if (id && !wanted.has(id)) wanted.set(id, m.role);
+    }
+    const groups = wanted.size ? await Group.findAll({ where: { id: [...wanted.keys()] } }) : [];
+    await CharacterGroup.destroy({ where: { character_id: character.id } });
+    await CharacterGroup.bulkCreate(
+      groups.map((g) => {
+        const roles = groupRoles(g);
+        const role = wanted.get(g.id);
+        return { character_id: character.id, group_id: g.id, role: roles.some((r) => r.key === role) ? role : fallbackRole(roles) };
+      }),
+    );
+  } else if (Array.isArray(body.groupIds)) {
+    const groups = await Group.findAll({ where: { id: body.groupIds } });
+    await character.setGroups(groups);
+  }
+}
 const path = require("path");
 
 // Définition d'une constante d'inclusion réutilisable
@@ -118,11 +149,8 @@ exports.createCharacter = async (req, res) => {
     }
     const character = await Character.create(data);
 
-    // 🔗 Groupes
-    if (req.body.groupIds && Array.isArray(req.body.groupIds)) {
-      const groups = await Group.findAll({ where: { id: req.body.groupIds } });
-      await character.setGroups(groups);
-    }
+    // 🔗 Groupes (et rôle dans chacun)
+    await saveGroups(character, req.body);
 
     // 🔗 Espèces
     if (req.body.specieIds && Array.isArray(req.body.specieIds)) {
@@ -242,11 +270,8 @@ exports.updateCharacter = async (req, res) => {
     }
     await character.update(data);
 
-    // 🔗 Groupes
-    if (req.body.groupIds && Array.isArray(req.body.groupIds)) {
-      const groups = await Group.findAll({ where: { id: req.body.groupIds } });
-      await character.setGroups(groups);
-    }
+    // 🔗 Groupes (et rôle dans chacun)
+    await saveGroups(character, req.body);
 
     // 🔗 Espèces
     if (req.body.specieIds && Array.isArray(req.body.specieIds)) {

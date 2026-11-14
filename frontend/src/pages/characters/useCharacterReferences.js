@@ -3,6 +3,7 @@ import { useEntityList } from '@/api/queries';
 import { uploadUrl } from '@/api/client';
 import { CRITERIA, characterName } from '@/config/characters';
 import { getModulesState, isModuleEnabled } from '@/config/modules';
+import { groupRoles } from '@/config/groups';
 
 const toOptions = (items = [], extra) =>
   items.map((item) => ({ value: item.id, label: item.name, color: item.color || undefined, ...extra?.(item) }));
@@ -41,7 +42,8 @@ export function useCharacterReferences(universe) {
       statuses: toOptions(data.statuses),
       alignments: toOptions(data.alignments),
       powerRanks: toOptions(data.powerRanks),
-      groups: toOptions(data.groups),
+      // Chaque groupe porte ses rôles (choix du rôle du personnage) et de quoi afficher son logo
+      groups: toOptions(data.groups, (g) => ({ roles: groupRoles(g), group: g })),
       species: toOptions(data.species),
       places: toOptions(data.places),
       characters: (characters.data || [])

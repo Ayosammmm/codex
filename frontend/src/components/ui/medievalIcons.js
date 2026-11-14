@@ -77,6 +77,7 @@ export const MEDIEVAL_ICONS = {
   ArrowDown: { paths: [QUILL], rotate: 90 },
   ChevronRight: { paths: CHEVRON },
   ChevronDown: { paths: CHEVRON, rotate: 90 },
+  ChevronLeft: { paths: CHEVRON, rotate: 180 },
   ArrowUpDown: { paths: [smallQuill(7, -90), smallQuill(17, 90)] },
   ArrowDownAZ: {
     paths: [smallQuill(7, 90), 'M14 10.5l2.75-7.5 2.75 7.5M15 8h3.5', 'M14 13.5h5.5L14 20.5h5.5'],

@@ -17,6 +17,7 @@ import { CharacterAvatar } from './CharacterAvatar';
 import { PhotoAlbum } from './PhotoAlbum';
 import { RelationsField } from './RelationsField';
 import { DevelopmentField } from './DevelopmentField';
+import { GroupMembershipsField } from './GroupMembershipsField';
 import { TraitsField } from './TraitsField';
 import { useImagePreview } from '@/components/entity/useImagePreview';
 import styles from '@/components/entity/EntityForm.module.scss';
@@ -126,8 +127,8 @@ export function CharacterForm({ universe, character, state, refs, modules, error
 
         <FormSection id="appartenances" title="Appartenances" description="Les groupes, espèces et lieux auxquels le personnage est rattaché.">
           {modules.groups && (
-            <Field label="Groupes" hint="Le rôle dans chaque groupe se règle depuis l’édition du groupe.">
-              {(props) => <Combobox {...props} multiple options={refs.groups} value={form.groupIds} onChange={(groupIds) => update({ groupIds })} placeholder="Ajouter un groupe…" />}
+            <Field label="Groupes" hint="Le rôle proposé dépend des rôles définis dans chaque groupe.">
+              {(props) => <GroupMembershipsField {...props} universe={universe} options={refs.groups} value={form.groups} onChange={(groups) => update({ groups })} />}
             </Field>
           )}
           {modules.species && (
