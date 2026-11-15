@@ -87,6 +87,7 @@ import {
   Settings as LucideSettings,
   ShieldX as LucideShieldX,
   Shuffle as LucideShuffle,
+  Sparkles as LucideSparkles,
   SquareCode as LucideSquareCode,
   Strikethrough as LucideStrikethrough,
   Subscript as LucideSubscript,
@@ -313,6 +314,7 @@ export const SeparatorHorizontal = themed('SeparatorHorizontal', LucideSeparator
 export const Settings = themed('Settings', LucideSettings);
 export const ShieldX = themed('ShieldX', LucideShieldX);
 export const Shuffle = themed('Shuffle', LucideShuffle);
+export const Sparkles = themed('Sparkles', LucideSparkles);
 export const SquareCode = themed('SquareCode', LucideSquareCode);
 export const Strikethrough = themed('Strikethrough', LucideStrikethrough);
 export const Subscript = themed('Subscript', LucideSubscript);

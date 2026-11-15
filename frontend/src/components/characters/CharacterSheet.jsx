@@ -23,7 +23,7 @@ import { CharacterAvatar } from './CharacterAvatar';
 import styles from './CharacterSheet.module.scss';
 
 const STORY_FIELDS = [
-  { key: 'powers', id: 'pouvoirs', label: 'Pouvoirs et capacités' },
+  { key: 'powers', id: 'pouvoirs', label: 'Pouvoirs et capacités', module: 'powers' },
   { key: 'personality', id: 'psychologie', label: 'Profil psychologique' },
   { key: 'story', id: 'histoire', label: 'Histoire' },
   { key: 'extras', id: 'notes', label: 'Notes et extras' },
@@ -40,13 +40,13 @@ function mergeRelations(character) {
 
 /**
  * Fiche d'un personnage en lecture seule.
- * - `modules` : modules actifs { groups, species, personality, relations }
+ * - `modules` : modules actifs { groups, species, personality, relations, powers, ranks }
  * - `actions` : boutons affichés en haut de la fiche (ex. « Modifier »)
  */
 export function CharacterSheet({ universe, character: c, modules, actions, stories = [], events = [], dynamics = null }) {
   const { data: photos = [] } = usePhotos('character', c.id);
   const relations = useMemo(() => (modules.relations ? mergeRelations(c) : []), [c, modules.relations]);
-  const story = STORY_FIELDS.filter((f) => plainText(c[f.key]));
+  const story = STORY_FIELDS.filter((f) => (!f.module || modules[f.module]) && plainText(c[f.key]));
   const traitsSet = modules.personality && TRAIT_GROUPS.some((g) => g.traits.some((t) => c[t.key] != null));
   const development = modules.personality ? developmentType(c.development) : null;
   const showPersonality = traitsSet || Boolean(development);

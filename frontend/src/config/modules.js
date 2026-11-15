@@ -1,6 +1,6 @@
 import {
   Users, MapPin, Brain, HeartHandshake, MapIcon, Building2, Dna, PawPrint, BookOpen, CalendarClock,
-  VenusAndMars, Activity, Scale, Medal, Tags, Tag,
+  VenusAndMars, Activity, Scale, Medal, Tags, Tag, Sparkles,
 } from '@/components/ui/icons';
 
 /**
@@ -35,6 +35,9 @@ export const MODULES = [
     description: 'Espèces et races des personnages.' },
   { key: 'creatures', path: 'bestiaire', label: 'Bestiaire', icon: PawPrint, defaultEnabled: false, legacyFlag: 'bestiaryEnabled',
     description: 'Créatures et monstres : comportement, habitat, dangerosité.' },
+  // Actif par défaut : les fiches existantes gardent leur champ « Pouvoirs et capacités »
+  { key: 'powers', label: 'Pouvoirs', icon: Sparkles, defaultEnabled: false,
+    description: 'Pouvoirs et capacités des personnages.' },
   { key: 'powerRanks', label: 'Rangs de puissance', icon: Medal, defaultEnabled: false,
     description: 'Niveaux de puissance des personnages et des créatures (S, A, B…).' },
   { key: 'stories', path: 'histoires', label: 'Histoires', icon: BookOpen, defaultEnabled: false, legacyFlag: 'storiesEnabled',

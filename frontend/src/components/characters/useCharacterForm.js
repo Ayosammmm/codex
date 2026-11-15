@@ -82,7 +82,6 @@ export function useCharacterForm(character) {
       sexe_id: toNullableId(form.sexe_id),
       statut_id: toNullableId(form.statut_id),
       alignment_id: toNullableId(form.alignment_id),
-      powers: form.powers,
       personality: form.personality,
       story: form.story,
       extras: form.extras,
@@ -90,6 +89,7 @@ export function useCharacterForm(character) {
       colors: Object.values(form.colors).some(Boolean) ? form.colors : null,
     };
     // Module désactivé : le rang n'est pas envoyé, donc pas effacé
+    if (modules.powers) values.powers = form.powers;
     if (modules.ranks) values.rank_id = toNullableId(form.rank_id);
     if (modules.groups) values.groups = form.groups.map(({ groupId, role }) => ({ groupId, role }));
     if (modules.species) values.specieIds = form.specieIds;

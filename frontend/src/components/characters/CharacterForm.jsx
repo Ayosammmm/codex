@@ -26,7 +26,7 @@ import styles from '@/components/entity/EntityForm.module.scss';
  * Formulaire complet d'un personnage.
  * - `state`      : useCharacterForm()
  * - `refs`       : options des référentiels (useCharacterReferences)
- * - `modules`    : modules actifs { groups, species, personality, relations }
+ * - `modules`    : modules actifs { groups, species, personality, relations, powers, ranks }
  * - `dangerZone` : contenu de la zone de suppression (édition uniquement)
  */
 export function CharacterForm({ universe, character, state, refs, modules, errors, editors, dangerZone }) {
@@ -142,9 +142,11 @@ export function CharacterForm({ universe, character, state, refs, modules, error
         </FormSection>
 
         <FormSection id="recit" title="Récit" description="Tout ce qui raconte le personnage.">
-          <Field label="Pouvoirs et capacités">
-            {(props) => <RichTextEditor {...props} label="Pouvoirs et capacités" value={form.powers} onChange={(powers) => update({ powers })} />}
-          </Field>
+          {modules.powers && (
+            <Field label="Pouvoirs et capacités">
+              {(props) => <RichTextEditor {...props} label="Pouvoirs et capacités" value={form.powers} onChange={(powers) => update({ powers })} />}
+            </Field>
+          )}
           <Field label="Profil psychologique">
             {(props) => <RichTextEditor {...props} label="Profil psychologique" value={form.personality} onChange={(personality) => update({ personality })} />}
           </Field>

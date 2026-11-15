@@ -67,7 +67,7 @@ export function useCharacterReferences(universe) {
   return {
     options,
     criteria,
-    modules: { groups: on('groups'), species: on('species'), personality: on('personality'), relations: on('relations'), ranks: on('powerRanks') },
+    modules: { groups: on('groups'), species: on('species'), personality: on('personality'), relations: on('relations'), powers: on('powers'), ranks: on('powerRanks') },
     characters,
   };
 }
