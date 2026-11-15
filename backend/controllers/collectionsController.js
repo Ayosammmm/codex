@@ -40,6 +40,20 @@ const getLinks = async (req, res) => {
   }
 };
 
+// Les modifications groupées envoient plusieurs requêtes en parallèle : InnoDB peut alors signaler
+// un interblocage sur la table des liens. On réessaie quelques fois avant d'abandonner.
+const withDeadlockRetry = async (fn, attempts = 4) => {
+  for (let i = 1; ; i++) {
+    try {
+      return await fn();
+    } catch (error) {
+      const deadlock = error?.parent?.code === 'ER_LOCK_DEADLOCK' || error?.original?.code === 'ER_LOCK_DEADLOCK';
+      if (!deadlock || i >= attempts) throw error;
+      await new Promise((resolve) => setTimeout(resolve, 30 * i + Math.random() * 50));
+    }
+  }
+};
+
 /** Remplace les collections d'une entité : { collectionIds: [...] } (collections de son univers uniquement). */
 const setLinks = async (req, res) => {
   try {
@@ -54,17 +68,25 @@ const setLinks = async (req, res) => {
     const collections = wanted.length
       ? await Collection.findAll({ where: { id: wanted, universe_id: entity.universe_id }, attributes: ['id'] })
       : [];
+    const next = collections.map((c) => c.id);
 
-    await sequelize.transaction(async (transaction) => {
-      await EntityCollection.destroy({ where: { entityType, entityId }, transaction });
-      if (collections.length) {
-        await EntityCollection.bulkCreate(
-          collections.map((c) => ({ collectionId: c.id, entityType, entityId })),
-          { transaction },
-        );
-      }
-    });
-    res.json(collections.map((c) => c.id));
+    // Seuls les liens qui changent sont supprimés / ajoutés (moins de verrous qu'un « tout effacer, tout recréer »)
+    await withDeadlockRetry(() =>
+      sequelize.transaction(async (transaction) => {
+        const current = (await EntityCollection.findAll({ where: { entityType, entityId }, attributes: ['collectionId'], transaction }))
+          .map((l) => l.collectionId);
+        const removed = current.filter((id) => !next.includes(id));
+        const added = next.filter((id) => !current.includes(id));
+        if (removed.length) await EntityCollection.destroy({ where: { entityType, entityId, collectionId: removed }, transaction });
+        if (added.length) {
+          await EntityCollection.bulkCreate(
+            added.map((collectionId) => ({ collectionId, entityType, entityId })),
+            { transaction, ignoreDuplicates: true },
+          );
+        }
+      }),
+    );
+    res.json(next);
   } catch (error) {
     console.error('Erreur setLinks (Collection):', error);
     res.status(500).json({ error: error.message });

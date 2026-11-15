@@ -77,12 +77,11 @@ function ColumnPicker({ columns, state }) {
   }, [open]);
 
   const hideable = columns.filter((c) => !c.required);
-  const hiddenCount = hideable.filter((c) => !state.isVisible(c)).length;
 
   return (
     <div ref={rootRef} className={styles.picker}>
       <Button size="sm" icon={Columns3} aria-expanded={open} aria-controls={panelId} onClick={() => setOpen((o) => !o)}>
-        Colonnes{hiddenCount > 0 && <span className={styles.badge}>{hideable.length - hiddenCount}/{hideable.length}</span>}
+        Colonnes
       </Button>
       {open && (
         <div id={panelId} role="group" aria-label="Colonnes affichées" className={styles.panel}>

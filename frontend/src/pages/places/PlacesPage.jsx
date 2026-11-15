@@ -13,6 +13,7 @@ import { EntityTable } from '@/components/entity/EntityTable';
 import { TableControls } from '@/components/entity/TableControls';
 import { useTableState } from '@/components/entity/useTableState';
 import { useEditorsColumn } from '@/components/entity/useEditorsColumn';
+import { useCollectionsColumn } from '@/components/collections/useCollectionsColumn';
 import { plural, universePath } from '@/utils/universe';
 import styles from '../ListPage.module.scss';
 import { usePlaceReferences } from './usePlaceReferences';
@@ -31,7 +32,8 @@ export default function PlacesPage() {
 
   const linkTo = (p) => universePath(universe, `lieux/${p.id}`);
   const editorsColumn = useEditorsColumn('place');
-  const columns = [...placeColumns({ linkTo, showGroups: modules.groups }), editorsColumn];
+  const collectionsColumn = useCollectionsColumn('place');
+  const columns = [...placeColumns({ linkTo, showGroups: modules.groups }), collectionsColumn, editorsColumn].filter(Boolean);
   const table = useTableState({ storageKey: 'almanach:places-columns', columns, items: results, entityType: 'place' });
   const groupCriterion = criteria.find((c) => c.key === state.groupBy);
   // Tableau seul : la page tient dans l'écran et seul le tableau défile

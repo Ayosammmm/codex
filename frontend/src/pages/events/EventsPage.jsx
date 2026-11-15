@@ -15,6 +15,7 @@ import { EntityTable } from '@/components/entity/EntityTable';
 import { TableControls } from '@/components/entity/TableControls';
 import { useTableState } from '@/components/entity/useTableState';
 import { useEditorsColumn } from '@/components/entity/useEditorsColumn';
+import { useCollectionsColumn } from '@/components/collections/useCollectionsColumn';
 import { plural, universePath } from '@/utils/universe';
 import styles from '../ListPage.module.scss';
 import { useNarrativeReferences } from '../stories/useNarrativeReferences';
@@ -41,7 +42,8 @@ export default function EventsPage() {
 
   const linkTo = (e) => universePath(universe, `evenements/${e.id}`);
   const editorsColumn = useEditorsColumn('event');
-  const columns = [...eventColumns({ linkTo, showGroups: modules.groups }), editorsColumn];
+  const collectionsColumn = useCollectionsColumn('event');
+  const columns = [...eventColumns({ linkTo, showGroups: modules.groups }), collectionsColumn, editorsColumn].filter(Boolean);
   const table = useTableState({ storageKey: 'almanach:events-columns', columns, items: results, entityType: 'event' });
   const groupCriterion = criteria.find((c) => c.key === state.groupBy);
   const fitScreen = state.view === 'table' && !groupCriterion && results.length > 0;

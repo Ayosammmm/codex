@@ -12,6 +12,7 @@ import { EntityTable } from '@/components/entity/EntityTable';
 import { TableControls } from '@/components/entity/TableControls';
 import { useTableState } from '@/components/entity/useTableState';
 import { useEditorsColumn } from '@/components/entity/useEditorsColumn';
+import { useCollectionsColumn } from '@/components/collections/useCollectionsColumn';
 import { plural, universePath } from '@/utils/universe';
 import styles from '../ListPage.module.scss';
 import { CRITERIA, SORTS, searchText } from '@/config/stories';
@@ -34,7 +35,8 @@ export default function StoriesPage() {
 
   const linkTo = (s) => universePath(universe, `histoires/${s.id}`);
   const editorsColumn = useEditorsColumn('story');
-  const columns = [...storyColumns({ linkTo }), editorsColumn];
+  const collectionsColumn = useCollectionsColumn('story');
+  const columns = [...storyColumns({ linkTo }), collectionsColumn, editorsColumn].filter(Boolean);
   const table = useTableState({ storageKey: 'almanach:stories-columns', columns, items: results, entityType: 'story' });
   const groupCriterion = criteria.find((c) => c.key === state.groupBy);
   // Tableau seul : la page tient dans l'écran et seul le tableau défile
