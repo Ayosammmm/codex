@@ -283,6 +283,9 @@
 [data-theme] {
   --primary-hover: color-mix(in oklab, var(--primary) 88%, var(--ink-mix));
   --primary-soft: color-mix(in oklab, var(--primary) 14%, transparent);
+  // Texte sélectionné : plus marqué que --primary-soft, presque invisible sur les surfaces
+  --selection: rgb(55, 76, 170);
+  --selection-color: white;
   --primary-ink: color-mix(in oklab, var(--primary) calc(100% - var(--ink-amount)), var(--ink-mix));
   --secondary-soft: color-mix(in oklab, var(--secondary) 14%, transparent);
   --secondary-ink: color-mix(in oklab, var(--secondary) calc(100% - var(--ink-amount)), var(--ink-mix));

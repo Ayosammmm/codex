@@ -94,7 +94,8 @@ h3 {
 }
 
 ::selection {
-  background: var(--primary-soft);
+  background: var(--selection);
+  color: var(--selection-color);
 }
 
 dialog::backdrop {
