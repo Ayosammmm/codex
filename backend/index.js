@@ -13,6 +13,7 @@ require("./models/Story");
 require("./models/EntityPhoto");
 require("./models/User");
 require("./models/EntityEditor");
+require("./models/EntityCollection");
 const { authenticate, authorize } = require("./middlewares/authorize");
 const bootstrapAdmin = require("./services/bootstrapAdmin");
 
@@ -37,6 +38,7 @@ const imageProxyRoutes = require("./routes/imageProxyRoutes");
 const authRoutes = require("./routes/authRoutes");
 const usersRoutes = require("./routes/usersRoutes");
 const editorsRoutes = require("./routes/editorsRoutes");
+const collectionsRoutes = require("./routes/collectionsRoutes");
 
 const app = express();
 app.use(cors());
@@ -60,6 +62,7 @@ app.use("/api/genders", gendersRoutes);
 app.use("/api/statuses", statusesRoutes);
 app.use("/api/alignments", alignmentsRoutes);
 app.use("/api/power-ranks", powerRanksRoutes);
+app.use("/api/collections", collectionsRoutes);
 app.use("/api/universes", universesRoutes);
 app.use("/api/creatures", creaturesRoutes);
 app.use("/api/episodes", episodesRoutes);

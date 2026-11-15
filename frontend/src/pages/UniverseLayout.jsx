@@ -3,6 +3,7 @@ import { Link, Outlet, useNavigate, useParams, useLocation } from 'react-router'
 import { CircleAlert, Menu } from '@/components/ui/icons';
 import { useUniverse } from '@/api/queries';
 import { UniverseSidebar } from '@/components/layout/UniverseSidebar';
+import { CollectionFilterProvider } from '@/components/collections/CollectionFilterProvider';
 import { Button } from '@/components/ui/Button';
 import { EmptyState, Spinner } from '@/components/ui/Feedback';
 import { cx } from '@/components/ui/cx';
@@ -102,37 +103,40 @@ export default function UniverseLayout() {
   return (
     // Le thème est aussi transmis aux icônes (voir components/ui/icons.jsx)
     <ThemeKeyContext value={theme['data-theme']}>
-      <div {...theme} className={styles.root}>
-        {backdrop && <div aria-hidden className={styles.backdrop} style={backdrop} />}
-        <div className={cx(styles.shell, backdrop && styles.scrim)}>
-          <UniverseSidebar
-            universe={universe}
-            open={menuOpen}
-            onClose={() => setMenuOpen(false)}
-            collapsed={sidebarCollapsed}
-            onToggleCollapsed={toggleSidebar}
-          />
+      {/* Filtre de collection (sidebar) partagé par les listes ; `key` : état propre à chaque univers */}
+      <CollectionFilterProvider key={universe.id} universe={universe}>
+        <div {...theme} className={styles.root}>
+          {backdrop && <div aria-hidden className={styles.backdrop} style={backdrop} />}
+          <div className={cx(styles.shell, backdrop && styles.scrim)}>
+            <UniverseSidebar
+              universe={universe}
+              open={menuOpen}
+              onClose={() => setMenuOpen(false)}
+              collapsed={sidebarCollapsed}
+              onToggleCollapsed={toggleSidebar}
+            />
 
-          <div className={styles.main}>
-            <header className={styles.topbar}>
-              <Button
-                variant="ghost"
-                iconOnly
-                icon={Menu}
-                aria-label="Ouvrir le menu"
-                aria-expanded={menuOpen}
-                aria-controls="universe-sidebar"
-                onClick={() => setMenuOpen(true)}
-              />
-              <Link to={base} className={styles.topbarIdentity}>
-                <UniverseAvatar universe={universe} className={styles.topbarAvatar} />
-                <span className={styles.topbarName}>{universe.name}</span>
-              </Link>
-            </header>
-            <Outlet context={{ universe }} />
+            <div className={styles.main}>
+              <header className={styles.topbar}>
+                <Button
+                  variant="ghost"
+                  iconOnly
+                  icon={Menu}
+                  aria-label="Ouvrir le menu"
+                  aria-expanded={menuOpen}
+                  aria-controls="universe-sidebar"
+                  onClick={() => setMenuOpen(true)}
+                />
+                <Link to={base} className={styles.topbarIdentity}>
+                  <UniverseAvatar universe={universe} className={styles.topbarAvatar} />
+                  <span className={styles.topbarName}>{universe.name}</span>
+                </Link>
+              </header>
+              <Outlet context={{ universe }} />
+            </div>
           </div>
         </div>
-      </div>
+      </CollectionFilterProvider>
     </ThemeKeyContext>
   );
 }

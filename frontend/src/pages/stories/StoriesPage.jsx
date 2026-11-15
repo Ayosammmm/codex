@@ -29,7 +29,7 @@ export default function StoriesPage() {
     () => CRITERIA.map((c) => ({ ...c, options: options[c.resource] || [] })).filter((c) => c.options.length > 0),
     [options],
   );
-  const list = useListState(stories.data || [], { sorts: SORTS, criteria, searchText, views: VIEWS, storageKey: 'almanach:stories-view' });
+  const list = useListState(stories.data || [], { sorts: SORTS, criteria, searchText, views: VIEWS, storageKey: 'almanach:stories-view', entityType: 'story' });
   const { state, actions, results } = list;
 
   const linkTo = (s) => universePath(universe, `histoires/${s.id}`);

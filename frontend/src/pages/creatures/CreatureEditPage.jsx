@@ -2,6 +2,8 @@ import { useState } from 'react';
 import { usePermissions } from '@/auth/auth';
 import { Forbidden } from '@/auth/RequireAuth';
 import { EditorsSection } from '@/components/entity/EditorsSection';
+import { CollectionsSection } from '@/components/collections/CollectionsSection';
+import { useCollectionFilter } from '@/components/collections/collectionFilter';
 import { Link, useNavigate, useOutletContext, useParams } from 'react-router';
 import { ArrowLeft, Trash2 } from '@/components/ui/icons';
 import { useDeleteEntity, useSaveEntity } from '@/api/queries';
@@ -42,6 +44,7 @@ function CreatureEditor({ universe, creature }) {
   const state = useCreatureForm(creature);
   const { options, modules } = useCreatureReferences(universe);
   const save = useSaveEntity('creatures');
+  const { enabled: collectionsOn } = useCollectionFilter();
   const remove = useDeleteEntity('creatures');
   const [errors, setErrors] = useState({});
   const [confirmDelete, setConfirmDelete] = useState(false);
@@ -109,6 +112,7 @@ function CreatureEditor({ universe, creature }) {
             refs={refs}
             modules={modules}
             errors={errors}
+            collections={!isNew && collectionsOn && <CollectionsSection universe={universe} entityType="creature" entityId={creature.id} />}
             editors={!isNew && <EditorsSection entityType="creature" entityId={creature.id} />}
             dangerZone={
               !isNew && <CreatureDangerZone onDelete={<Button variant="danger" icon={Trash2} onClick={() => setConfirmDelete(true)}>Supprimer</Button>} />

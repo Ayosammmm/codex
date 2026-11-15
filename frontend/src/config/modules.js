@@ -1,6 +1,6 @@
 import {
   Users, MapPin, Brain, HeartHandshake, MapIcon, Building2, Dna, PawPrint, BookOpen, CalendarClock,
-  VenusAndMars, Activity, Scale, Medal, Tags, Tag, Sparkles,
+  VenusAndMars, Activity, Scale, Medal, Tags, Tag, Sparkles, Library,
 } from '@/components/ui/icons';
 
 /**
@@ -45,6 +45,9 @@ export const MODULES = [
     description: 'Histoires découpées en épisodes, avec leurs personnages et lieux.' },
   { key: 'events', path: 'evenements', label: 'Événements', icon: CalendarClock, parent: 'stories', defaultEnabled: false,
     description: 'Moments clés, partagés entre plusieurs épisodes.' },
+
+  { key: 'collections', label: 'Collections', icon: Library, defaultEnabled: false,
+    description: 'Classez toutes les entités dans des ensembles libres (saison, jeu, ère, « WIP »…) et filtrez l’univers par collection.' },
 ];
 
 export const MODULES_BY_KEY = Object.fromEntries(MODULES.map((m) => [m.key, m]));
@@ -60,6 +63,7 @@ export const REFERENCES = [
   { key: 'powerRanks', path: 'rangs', label: 'Rangs de puissance', icon: Medal, for: ['powerRanks'] },
   { key: 'placeTypes', path: 'types-de-lieux', label: 'Types de lieux', icon: Tags, for: ['places'] },
   { key: 'groupTypes', path: 'types-de-groupes', label: 'Types de groupes', icon: Tag, for: ['groups'] },
+  { key: 'collections', path: 'collections', label: 'Collections', icon: Library, for: ['collections'] },
 ];
 
 /** Modules de premier niveau, chacun avec ses sous-modules. */

@@ -141,3 +141,13 @@
     color: var(--fg);
   }
 }
+
+// Filtre de collection (sidebar) : pastille de la couleur de la collection
+.collectionChip::before {
+  content: '';
+  flex-shrink: 0;
+  width: 0.5rem;
+  height: 0.5rem;
+  border-radius: 50%;
+  background: var(--chip-color, var(--primary));
+}

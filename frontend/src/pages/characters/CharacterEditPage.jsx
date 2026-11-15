@@ -2,6 +2,8 @@ import { useState } from 'react';
 import { usePermissions } from '@/auth/auth';
 import { Forbidden } from '@/auth/RequireAuth';
 import { EditorsSection } from '@/components/entity/EditorsSection';
+import { CollectionsSection } from '@/components/collections/CollectionsSection';
+import { useCollectionFilter } from '@/components/collections/collectionFilter';
 import { Link, useNavigate, useOutletContext, useParams } from 'react-router';
 import { ArrowLeft, Trash2 } from '@/components/ui/icons';
 import { useDeleteEntity, useSaveEntity } from '@/api/queries';
@@ -44,6 +46,7 @@ function CharacterEditor({ universe, character }) {
   const state = useCharacterForm(character);
   const { options, modules, characters } = useCharacterReferences(universe);
   const save = useSaveEntity('characters');
+  const { enabled: collectionsOn } = useCollectionFilter();
   const remove = useDeleteEntity('characters');
   const [errors, setErrors] = useState({});
   const [confirmDelete, setConfirmDelete] = useState(false);
@@ -106,6 +109,7 @@ function CharacterEditor({ universe, character }) {
             refs={refs}
             modules={modules}
             errors={errors}
+            collections={!isNew && collectionsOn && <CollectionsSection universe={universe} entityType="character" entityId={character.id} />}
             editors={!isNew && <EditorsSection entityType="character" entityId={character.id} />}
             dangerZone={
               !isNew && (

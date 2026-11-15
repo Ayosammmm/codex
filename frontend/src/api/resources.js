@@ -36,6 +36,7 @@ export const RESOURCES = {
   powerRanks: createResource('/power-ranks'),
   placeTypes: createResource('/places_type'),
   groupTypes: createResource('/groups_type'),
+  collections: createResource('/collections'),
 };
 
 /** Albums photo (personnages, créatures, lieux, groupes). */

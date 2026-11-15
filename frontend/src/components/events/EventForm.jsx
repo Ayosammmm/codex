@@ -21,7 +21,7 @@ const IMPORTANCE_OPTIONS = [{ value: '', label: 'Non précisée' }, ...IMPORTANC
  * Formulaire complet d'un événement.
  * - `state` : useEventForm() ; `refs` : options (useNarrativeReferences) ; `modules` : { groups }
  */
-export function EventForm({ event, state, refs, modules, errors, editors, dangerZone }) {
+export function EventForm({ event, state, refs, modules, errors, collections, editors, dangerZone }) {
   const { form: f, update, images, setImage } = state;
   const toast = useToast();
   const image = useImagePreview(event?.image, images.image);
@@ -33,6 +33,7 @@ export function EventForm({ event, state, refs, modules, errors, editors, danger
     { id: 'protagonistes', label: 'Personnages et lieux' },
     { id: 'episodes', label: 'Épisodes' },
     { id: 'apparence', label: 'Apparence' },
+    collections && { id: 'collections', label: 'Collections' },
     editors && { id: 'editeurs', label: 'Éditeurs' },
   ].filter(Boolean);
 
@@ -88,6 +89,7 @@ export function EventForm({ event, state, refs, modules, errors, editors, danger
 
         <AppearanceSection state={state} savedBackground={event?.background} subject="de l’événement" />
 
+        {collections}
         {editors}
         {dangerZone}
       </div>

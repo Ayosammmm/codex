@@ -24,7 +24,7 @@ export default function GroupsPage() {
   const { canCreate } = usePermissions();
   const { universe } = useOutletContext();
   const { groups, criteria } = useGroupReferences(universe);
-  const list = useListState(groups.data || [], { sorts: SORTS, criteria, searchText, views: VIEWS, storageKey: 'almanach:groups-view' });
+  const list = useListState(groups.data || [], { sorts: SORTS, criteria, searchText, views: VIEWS, storageKey: 'almanach:groups-view', entityType: 'group' });
   const { state, actions, results } = list;
 
   const linkTo = (g) => universePath(universe, `groupes/${g.id}`);

@@ -1,4 +1,5 @@
 const EntityEditor = require("../models/EntityEditor");
+const EntityCollection = require("../models/EntityCollection");
 const EntityPhoto = require("../models/EntityPhoto");
 const Episode = require("../models/Episode");
 const Story = require("../models/Story");
@@ -11,7 +12,7 @@ const { hasRole, isAdmin, canEditEntity, userFromToken, ENTITY_TYPES } = require
  * - univers, référentiels : admins ;
  * - entités : création par les éditeurs (qui y sont alors liés), modification / suppression
  *   par les admins ou les éditeurs liés à l'entité ;
- * - épisodes : selon les droits sur leur histoire ; photos : selon les droits sur leur entité.
+ * - épisodes : selon les droits sur leur histoire ; photos et collections d'une entité : selon les droits sur l'entité.
  * Les routes /auth, /users et /editors font leurs propres vérifications.
  */
 
@@ -48,7 +49,7 @@ function afterSuccess(res, after) {
     if (res.statusCode >= 400) return original(body);
     Promise.resolve()
       .then(() => after(body))
-      .catch((err) => console.error("Liens éditeurs :", err))
+      .catch((err) => console.error("Liens éditeurs / collections :", err))
       .finally(() => original(body));
     return res;
   };
@@ -65,7 +66,7 @@ async function canEditEpisode(user, episodeId) {
 
 async function authorize(req, res, next) {
   try {
-    const [resource, id, sub] = req.path.split("/").filter(Boolean);
+    const [resource, id, sub, subId] = req.path.split("/").filter(Boolean);
     const write = !READ_METHODS.has(req.method);
 
     if (resource === "auth" && req.path === "/auth/login") return next();
@@ -75,6 +76,12 @@ async function authorize(req, res, next) {
     const deny = () => res.status(403).json({ error: "Vous n’avez pas les droits pour cette action." });
 
     if (ADMIN_RESOURCES.has(resource)) return isAdmin(req.user) ? next() : deny();
+
+    // --- Collections : le référentiel est réservé aux admins, les liens d'une entité suivent ses droits ---
+    if (resource === "collections") {
+      if (id === "links") return ENTITY_TYPES.includes(sub) && (await canEditEntity(req.user, sub, toId(subId))) ? next() : deny();
+      return isAdmin(req.user) ? next() : deny();
+    }
 
     // --- Entités ---
     const entityType = ENTITY_RESOURCES[resource];
@@ -88,8 +95,13 @@ async function authorize(req, res, next) {
         return next();
       }
       if (!(await canEditEntity(req.user, entityType, toId(id)))) return deny();
-      // Suppression de l'entité (pas d'une de ses images) : ses liens éditeurs disparaissent
-      if (req.method === "DELETE" && !sub) afterSuccess(res, () => EntityEditor.destroy({ where: { entityType, entityId: toId(id) } }));
+      // Suppression de l'entité (pas d'une de ses images) : ses liens éditeurs et collections disparaissent
+      if (req.method === "DELETE" && !sub) {
+        afterSuccess(res, () => Promise.all([
+          EntityEditor.destroy({ where: { entityType, entityId: toId(id) } }),
+          EntityCollection.destroy({ where: { entityType, entityId: toId(id) } }),
+        ]));
+      }
       return next();
     }
 

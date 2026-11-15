@@ -2,6 +2,8 @@ import { useState } from 'react';
 import { Link, useOutletContext } from 'react-router';
 import { ArrowDown, ArrowUp, CircleAlert, Pencil, Plus, Trash2 } from '@/components/ui/icons';
 import { useDeleteEntity, useEntityList, useReorderEntity } from '@/api/queries';
+import { useCollectionLinks } from '@/api/collections';
+import { useCollectionFilter } from '@/components/collections/collectionFilter';
 import { REFERENCES, getModulesState, isModuleEnabled } from '@/config/modules';
 import { REFERENCE_CONFIG } from '@/config/references';
 import { Badge } from '@/components/ui/Badge';
@@ -25,10 +27,14 @@ export default function ReferencePage({ referenceKey }) {
   const reference = REFERENCES.find((r) => r.key === referenceKey);
   const config = REFERENCE_CONFIG[referenceKey];
   const modules = getModulesState(universe);
-  const usageEnabled = config.usage.resource === 'characters' || isModuleEnabled(modules, config.usage.resource);
+  // Collections : utilisées par des entités de tous types (liens), filtrées depuis la barre latérale
+  const byLinks = Boolean(config.usage.collections);
+  const usageEnabled = byLinks || config.usage.resource === 'characters' || isModuleEnabled(modules, config.usage.resource);
 
   const items = useEntityList(referenceKey, universe.id);
-  const users = useEntityList(config.usage.resource, universe.id, { enabled: usageEnabled });
+  const users = useEntityList(config.usage.resource, universe.id, { enabled: usageEnabled && !byLinks });
+  const links = useCollectionLinks(universe.id, { enabled: byLinks });
+  const collectionFilter = useCollectionFilter();
   const reorder = useReorderEntity(referenceKey, universe.id);
   const remove = useDeleteEntity(referenceKey);
   const toast = useToast();
@@ -38,7 +44,10 @@ export default function ReferencePage({ referenceKey }) {
   const [deleting, setDeleting] = useState(null);
 
   const list = items.data || [];
-  const usageCount = (id) => (users.data || []).filter((u) => config.usage.values(u).includes(id)).length;
+  const usageCount = (id) =>
+    byLinks
+      ? (links.data || []).filter((l) => l.collectionId === id).length
+      : (users.data || []).filter((u) => config.usage.values(u).includes(id)).length;
   const hasColor = config.fields.includes('color');
 
   const move = (index, delta) => {
@@ -85,7 +94,7 @@ export default function ReferencePage({ referenceKey }) {
           {items.error.message}
         </EmptyState>
       ) : list.length === 0 ? (
-        <EmptyState icon={reference.icon} title={`Aucun ${config.singular} pour l’instant`} action={addButton}>
+        <EmptyState icon={reference.icon} title={config.emptyTitle || `Aucun ${config.singular} pour l’instant`} action={addButton}>
           {isAdmin ? `Ajoutez les valeurs proposées dans les fiches de « ${universe.name} ».` : 'Seuls les administrateurs peuvent ajouter des valeurs.'}
         </EmptyState>
       ) : (
@@ -124,7 +133,19 @@ export default function ReferencePage({ referenceKey }) {
                     {plainText(item.description) && <span className={styles.description}>{plainText(item.description)}</span>}
                   </span>
                   {usageEnabled &&
-                    (count > 0 ? (
+                    (count > 0 && byLinks ? (
+                      <button
+                        type="button"
+                        className={styles.usage}
+                        title="Filtrer l’univers sur cette collection"
+                        onClick={() => {
+                          collectionFilter.setFilter(String(item.id));
+                          toast.success(`Univers filtré sur « ${item.name} ».`);
+                        }}
+                      >
+                        {plural(count, nounOne, nounMany)}
+                      </button>
+                    ) : count > 0 ? (
                       <Link to={`${universePath(universe, config.usage.path)}?${config.usage.filter}=${item.id}`} className={styles.usage}>
                         {plural(count, nounOne, nounMany)}
                       </Link>
@@ -164,7 +185,9 @@ export default function ReferencePage({ referenceKey }) {
         title={deleting ? `Supprimer « ${deleting.name} » ?` : ''}
         description={
           deletingCount > 0
-            ? `${plural(deletingCount, nounOne, nounMany)} ${deletingCount > 1 ? 'perdront' : 'perdra'} cette valeur (le champ redeviendra « Non renseigné »).`
+            ? byLinks
+              ? `${plural(deletingCount, nounOne, nounMany)} ${deletingCount > 1 ? 'seront retirées' : 'sera retirée'} de cette collection (elles ne sont pas supprimées).`
+              : `${plural(deletingCount, nounOne, nounMany)} ${deletingCount > 1 ? 'perdront' : 'perdra'} cette valeur (le champ redeviendra « Non renseigné »).`
             : 'Cette valeur n’est utilisée nulle part.'
         }
         footer={

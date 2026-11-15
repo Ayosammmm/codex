@@ -153,6 +153,91 @@ $rail-width: 4.25rem; // sidebar réduite (grand écran)
   line-height: 1.25;
 }
 
+// --- Filtre de collection ---
+.collectionField {
+  display: flex;
+  flex-direction: column;
+}
+
+.collectionSelect {
+  position: relative;
+  display: flex;
+  align-items: center;
+
+  > svg {
+    position: absolute;
+    left: space(2.5);
+    width: 1rem;
+    height: 1rem;
+    color: var(--fg-subtle);
+    pointer-events: none;
+  }
+
+  select {
+    width: 100%;
+    min-height: 2.25rem;
+    padding: 0 space(2) 0 space(8);
+    border: var(--border-w) solid var(--border);
+    border-radius: var(--r);
+    background: var(--surface);
+    color: var(--fg);
+    font: inherit;
+    font-size: 0.875rem;
+    cursor: pointer;
+    transition: border-color 150ms, background-color 150ms;
+
+    &:hover {
+      border-color: var(--border-strong);
+    }
+  }
+}
+
+// Filtre actif : aux couleurs de la collection (ou primaire pour « Sans collection »)
+.collectionActive {
+  --collection-accent: var(--collection-color, var(--primary));
+
+  .collectionSelect {
+    > svg {
+      color: var(--collection-accent);
+    }
+
+    select {
+      border-color: var(--collection-accent);
+      background: color-mix(in oklab, var(--collection-accent) 12%, var(--surface));
+      font-weight: 500;
+    }
+  }
+
+  .collectionRail {
+    border-color: var(--collection-accent);
+    background: color-mix(in oklab, var(--collection-accent) 14%, var(--surface));
+    color: var(--collection-accent);
+  }
+}
+
+// Bouton de la sidebar réduite (grand écran)
+.collectionRail {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  width: 2.25rem;
+  aspect-ratio: 1;
+  margin-inline: auto;
+  border: var(--border-w) solid var(--border);
+  border-radius: var(--r);
+  color: var(--fg-muted);
+
+  &:hover {
+    background: var(--surface-2);
+    color: var(--fg);
+  }
+
+  svg {
+    width: 1.125rem;
+    height: 1.125rem;
+  }
+}
+
 // --- Sections de navigation ---
 .section {
   display: flex;
@@ -359,6 +444,15 @@ $rail-width: 4.25rem; // sidebar réduite (grand écran)
     .bottom > .link {
       flex: none;
       width: 2.25rem;
+    }
+
+    // Filtre de collection : bouton seul
+    .collectionField {
+      display: none;
+    }
+
+    .collectionRail {
+      display: flex;
     }
 
     // Choix clair / sombre (non-admins) : trop large, accessible en dépliant la sidebar

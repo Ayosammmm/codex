@@ -5,6 +5,7 @@
  * - ENTITY_TABLES : tables possédant un `universe_id` (ordre = ordre d'insertion)
  * - JOIN_TABLES   : tables de liaison entre entités
  * - les photos d'album (entity_photos), liées par (entityType, entityId)
+ * - les liens entité ↔ collection (entity_collections), liés par (collectionId, entityType, entityId)
  *
  * Format des données exportées (voir aussi services/universeArchive.js pour l'archive ZIP) :
  * {
@@ -13,6 +14,7 @@
  *   entities: { characters: [...], places: [...], ... },
  *   joins:    { characters_groups: [...], ... },
  *   photos:   [...],
+ *   collectionLinks: [...],
  *   files:    { '/uploads/...': 'data:image/png;base64,...' }   // anciens exports JSON (version 1) uniquement
  * }
  */
@@ -38,6 +40,8 @@ const Story = require('../models/Story');
 const Episode = require('../models/Episode');
 const Event = require('../models/Event');
 const EntityPhoto = require('../models/EntityPhoto');
+const Collection = require('../models/Collection');
+const EntityCollection = require('../models/EntityCollection');
 
 const FORMAT = 'almanach-universe';
 const UPLOADS_ROOT = path.resolve(__dirname, '..', 'uploads');
@@ -53,6 +57,7 @@ const ENTITY_TABLES = [
   { key: 'powerRanks', model: PowerRank },
   { key: 'placeTypes', model: PlaceType },
   { key: 'groupTypes', model: GroupType },
+  { key: 'collections', model: Collection },
   { key: 'species', model: Specie, selfRef: 'parentId', files: ['image', 'background'] },
   { key: 'places', model: Place, selfRef: 'parentId', refs: { placeTypeId: 'placeTypes' }, files: ['banner', 'background', 'mapImage'] },
   { key: 'groups', model: Group, selfRef: 'parentId', refs: { groupTypeId: 'groupTypes' }, files: ['image', 'banner', 'background'] },
@@ -84,6 +89,8 @@ const JOIN_TABLES = [
 ];
 
 const PHOTO_ENTITY_TABLES = { character: 'characters', creature: 'creatures', place: 'places', group: 'groups', specie: 'species' };
+// Entités pouvant être rangées dans une collection
+const COLLECTION_ENTITY_TABLES = { ...PHOTO_ENTITY_TABLES, story: 'stories', event: 'events' };
 const UNIVERSE_FILES = ['logo', 'banner', 'background'];
 const UNIVERSE_FIELDS = [
   'name', 'description', 'theme', 'colors', 'backgroundColor', 'scrimColor', 'modules',
@@ -195,7 +202,11 @@ const collectUniverse = async (universeId, { transaction } = {}) => {
     ? await EntityPhoto.findAll({ where: { [Op.or]: photoConditions }, raw: true, transaction })
     : [];
 
-  return { universe: plainUniverse(universe), entities, joins, photos };
+  const collectionLinks = ids.collections.length
+    ? await EntityCollection.findAll({ where: { collectionId: { [Op.in]: ids.collections } }, raw: true, transaction })
+    : [];
+
+  return { universe: plainUniverse(universe), entities, joins, photos, collectionLinks };
 };
 
 /** Liste de tous les chemins d'images référencés par un univers. */
@@ -320,6 +331,14 @@ const importUniverse = async (data, { readFile, name, transaction: outerTransact
       }, { transaction });
     }
 
+    const links = [];
+    for (const link of data.collectionLinks || []) {
+      const collectionId = idMaps.collections.get(link.collectionId);
+      const entityId = idMaps[COLLECTION_ENTITY_TABLES[link.entityType]]?.get(link.entityId);
+      if (collectionId && entityId) links.push({ collectionId, entityType: link.entityType, entityId });
+    }
+    if (links.length) await EntityCollection.bulkCreate(links, { transaction, ignoreDuplicates: true });
+
     return universe;
   };
 
@@ -354,6 +373,9 @@ const deleteUniverse = async (universeId) => {
   await sequelize.transaction(async (transaction) => {
     for (const photo of data.photos) {
       await EntityPhoto.destroy({ where: { id: photo.id }, transaction });
+    }
+    if (data.collectionLinks.length) {
+      await EntityCollection.destroy({ where: { collectionId: { [Op.in]: data.entities.collections.map((c) => c.id) } }, transaction });
     }
     for (const { table } of JOIN_TABLES) {
       // Les liaisons sont normalement supprimées en cascade ; on le fait explicitement par sécurité

@@ -5,6 +5,7 @@ import { Input } from '@/components/ui/Field';
 import { Segmented } from '@/components/ui/Segmented';
 import { Select } from '@/components/ui/Select';
 import { cx } from '@/components/ui/cx';
+import { useCollectionFilter } from '@/components/collections/collectionFilter';
 import styles from './ListToolbar.module.scss';
 
 /** Vues proposées, par clé. */
@@ -25,6 +26,9 @@ const VIEW_OPTIONS = {
 export function ListToolbar({ state, actions, criteria, activeFilterCount, sorts, views, searchPlaceholder, searchLabel }) {
   const [filtersOpen, setFiltersOpen] = useState(activeFilterCount > 0);
   const DirIcon = state.dir === 'asc' ? ArrowDownAZ : ArrowUpZA;
+  // Filtre de collection de la sidebar : rappelé ici, car il masque des éléments de toutes les listes
+  const collection = useCollectionFilter();
+  const collectionLabel = collection.current?.name || (collection.filter === 'none' ? 'Sans collection' : null);
 
   const activeFilters = Object.entries(state.filters)
     .map(([key, value]) => {
@@ -113,8 +117,16 @@ export function ListToolbar({ state, actions, criteria, activeFilterCount, sorts
         </div>
       )}
 
-      {(activeFilters.length > 0 || state.q) && (
+      {(activeFilters.length > 0 || state.q || collectionLabel) && (
         <div className={styles.chips} aria-label="Filtres actifs">
+          {collectionLabel && (
+            <span className={cx(styles.chip, styles.collectionChip)} style={collection.current ? { '--chip-color': collection.current.color } : undefined}>
+              <span className={styles.chipLabel}>Collection :</span> {collectionLabel}
+              <button type="button" aria-label="Afficher toutes les collections" onClick={() => collection.setFilter('')}>
+                <X aria-hidden />
+              </button>
+            </span>
+          )}
           {state.q && (
             <span className={styles.chip}>
               <span className={styles.chipLabel}>Recherche :</span> {state.q}
@@ -131,9 +143,11 @@ export function ListToolbar({ state, actions, criteria, activeFilterCount, sorts
               </button>
             </span>
           ))}
-          <button type="button" className={styles.clearAll} onClick={actions.clearFilters}>
-            Tout effacer
-          </button>
+          {(activeFilters.length > 0 || state.q) && (
+            <button type="button" className={styles.clearAll} onClick={actions.clearFilters}>
+              Tout effacer
+            </button>
+          )}
         </div>
       )}
     </div>

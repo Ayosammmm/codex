@@ -26,7 +26,7 @@ export default function PlacesPage() {
   const { places, criteria, modules } = usePlaceReferences(universe);
   // Vue « Carte » avec le module Carte
   const VIEWS = modules.map ? ['gallery', 'tree', 'map', 'table'] : ['gallery', 'tree', 'table'];
-  const list = useListState(places.data || [], { sorts: SORTS, criteria, searchText, views: VIEWS, storageKey: 'almanach:places-view' });
+  const list = useListState(places.data || [], { sorts: SORTS, criteria, searchText, views: VIEWS, storageKey: 'almanach:places-view', entityType: 'place' });
   const { state, actions, results } = list;
 
   const linkTo = (p) => universePath(universe, `lieux/${p.id}`);

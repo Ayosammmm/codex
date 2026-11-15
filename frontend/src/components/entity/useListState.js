@@ -1,5 +1,6 @@
 import { useMemo } from 'react';
 import { useSearchParams } from 'react-router';
+import { useCollectionFilter } from '@/components/collections/collectionFilter';
 
 export const normalizeText = (text = '') => text.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase();
 
@@ -19,9 +20,11 @@ const readStored = (key, allowed, fallback) => {
  * - `criteria`   : [{ key, label, values(item) }] — filtres et regroupements disponibles
  * - `searchText` : (item) => texte dans lequel chercher
  * - `views`      : clés des vues ; la vue choisie est mémorisée sur l'appareil (`storageKey`)
+ * - `entityType` : type des éléments (character, place...) pour le filtre de collection de la sidebar
  */
-export function useListState(items, { sorts, criteria, searchText, views, storageKey }) {
+export function useListState(items, { sorts, criteria, searchText, views, storageKey, entityType }) {
   const [params, setParams] = useSearchParams();
+  const { filter: collection, matches: inCollection } = useCollectionFilter();
 
   const state = {
     q: params.get('q') || '',
@@ -77,6 +80,7 @@ export function useListState(items, { sorts, criteria, searchText, views, storag
 
     return items
       .filter((item) => {
+        if (entityType && !inCollection(entityType, item.id)) return false;
         if (q && !normalizeText(searchText(item)).includes(q)) return false;
         return filters.every(([criterion, value]) => {
           const values = criterion.values(item).filter((v) => v != null);
@@ -86,7 +90,7 @@ export function useListState(items, { sorts, criteria, searchText, views, storag
       .sort(compare);
     // `filtersKey` (l'URL) couvre la recherche, le tri et les filtres
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [items, criteria, filtersKey]);
+  }, [items, criteria, filtersKey, entityType, collection, inCollection]);
 
   return { state, actions, results, activeFilterCount: Object.keys(state.filters).length };
 }

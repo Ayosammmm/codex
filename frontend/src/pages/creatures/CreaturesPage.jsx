@@ -25,7 +25,7 @@ export default function CreaturesPage() {
   const { universe } = useOutletContext();
   const { creatures, criteria, modules } = useCreatureReferences(universe);
   const sorts = creatureSorts(modules.ranks);
-  const list = useListState(creatures.data || [], { sorts, criteria, searchText, views: VIEWS, storageKey: 'almanach:creatures-view' });
+  const list = useListState(creatures.data || [], { sorts, criteria, searchText, views: VIEWS, storageKey: 'almanach:creatures-view', entityType: 'creature' });
   const { state, actions, results } = list;
 
   const linkTo = (c) => universePath(universe, `bestiaire/${c.id}`);

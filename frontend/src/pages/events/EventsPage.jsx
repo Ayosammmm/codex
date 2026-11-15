@@ -34,7 +34,7 @@ export default function EventsPage() {
         .filter((c) => c.options.length > 0),
     [options, modules],
   );
-  const list = useListState(events.data || [], { sorts: SORTS, criteria, searchText, views: VIEWS, storageKey: 'almanach:events-view' });
+  const list = useListState(events.data || [], { sorts: SORTS, criteria, searchText, views: VIEWS, storageKey: 'almanach:events-view', entityType: 'event' });
   const { state, actions, results } = list;
   const reorder = useReorderEntity('events', universe.id);
   const toast = useToast();

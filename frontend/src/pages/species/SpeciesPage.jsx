@@ -24,7 +24,7 @@ export default function SpeciesPage() {
   const { canCreate } = usePermissions();
   const { universe } = useOutletContext();
   const { species, criteria } = useSpeciesReferences(universe);
-  const list = useListState(species.data || [], { sorts: SORTS, criteria, searchText, views: VIEWS, storageKey: 'almanach:species-view' });
+  const list = useListState(species.data || [], { sorts: SORTS, criteria, searchText, views: VIEWS, storageKey: 'almanach:species-view', entityType: 'specie' });
   const { state, actions, results } = list;
 
   const linkTo = (s) => universePath(universe, `especes/${s.id}`);

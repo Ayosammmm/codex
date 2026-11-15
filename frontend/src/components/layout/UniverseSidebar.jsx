@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Link, NavLink, useLocation } from 'react-router';
-import { ArrowLeft, ChevronLeft, ChevronRight, Settings, X } from '@/components/ui/icons';
+import { ArrowLeft, ChevronLeft, ChevronRight, Library, Settings, X } from '@/components/ui/icons';
 import { useUniverses } from '@/api/queries';
 import { getModulesState, getNavModules, getNavReferences } from '@/config/modules';
 import { Button } from '@/components/ui/Button';
@@ -8,6 +8,7 @@ import { cx } from '@/components/ui/cx';
 import { UniverseAvatar } from '@/components/universe/UniverseAvatar';
 import { universeRef } from '@/utils/universe';
 import { usePermissions } from '@/auth/auth';
+import { COLLECTION_ENTITY_TYPES, useCollectionFilter } from '@/components/collections/collectionFilter';
 import { ColorModeToggle } from './ColorModeToggle';
 import { UserMenu } from './UserMenu';
 import styles from './UniverseSidebar.module.scss';
@@ -16,6 +17,7 @@ import styles from './UniverseSidebar.module.scss';
  * Navigation d'un univers.
  * - Le logo et le nom mènent à l'accueil de l'univers.
  * - « Encyclopédie » : pages des modules actifs (avec le nombre d'entrées).
+ * - « Collection » (module Collections) : filtre appliqué aux listes et aux compteurs.
  * - « Référentiels » : listes de valeurs (genres, statuts...), repliables.
  * - En bas : paramètres (qui contiennent aussi le choix clair / sombre).
  * Sur petit écran, elle s'affiche en tiroir (`open` / `onClose`).
@@ -27,6 +29,7 @@ export function UniverseSidebar({ universe, open, onClose, collapsed = false, on
   const { pathname } = useLocation();
   const { data: universes } = useUniverses();
   const stats = universes?.find((u) => u.id === universe.id)?.stats || {};
+  const collectionFilter = useCollectionFilter();
 
   const modulesState = getModulesState(universe);
   const modules = getNavModules(modulesState);
@@ -64,13 +67,19 @@ export function UniverseSidebar({ universe, open, onClose, collapsed = false, on
             <span className={styles.identityName}>{universe.name}</span>
           </NavLink>
 
+          {collectionFilter.enabled && (
+            <CollectionPicker filter={collectionFilter} onExpand={onToggleCollapsed} />
+          )}
+
           <nav aria-label="Univers" className={styles.section}>
             <p className={styles.sectionLabel}>Encyclopédie</p>
             {modules.map((m) => (
               <NavLink key={m.key} to={`${base}/${m.path}`} className={cx(styles.link, m.parent && styles.child)} title={tip(m.navLabel || m.label)} {...navProps}>
                 <m.icon aria-hidden />
                 <span className={styles.label}>{m.navLabel || m.label}</span>
-                {stats[m.key] !== undefined && <span className={styles.count}>{stats[m.key]}</span>}
+                {stats[m.key] !== undefined && (
+                  <span className={styles.count}>{collectionFilter.count(COLLECTION_ENTITY_TYPES[m.key], stats[m.key])}</span>
+                )}
               </NavLink>
             ))}
           </nav>
@@ -116,5 +125,42 @@ export function UniverseSidebar({ universe, open, onClose, collapsed = false, on
         </div>
       </aside>
     </>
+  );
+}
+
+/**
+ * Filtre de collection. Sidebar réduite : simple bouton (marqué si un filtre est actif) qui la déplie.
+ */
+function CollectionPicker({ filter, onExpand }) {
+  const { collections, current } = filter;
+  const active = Boolean(filter.filter);
+  const label = current ? current.name : filter.filter === 'none' ? 'Sans collection' : 'Toutes';
+  const color = current?.color;
+
+  return (
+    <div className={cx(styles.collection, active && styles.collectionActive)} style={color ? { '--collection-color': color } : undefined}>
+      <button
+        type="button"
+        className={styles.collectionRail}
+        title={`Collection : ${label} (déplier le menu pour changer)`}
+        aria-label={`Collection : ${label}. Déplier le menu pour changer`}
+        onClick={onExpand}
+      >
+        <Library aria-hidden />
+      </button>
+      <label className={styles.collectionField}>
+        <span className={styles.sectionLabel}>Collection</span>
+        <span className={styles.collectionSelect}>
+          <Library aria-hidden />
+          <select value={filter.filter} onChange={(e) => filter.setFilter(e.target.value)}>
+            <option value="">Toutes les fiches</option>
+            {collections.map((c) => (
+              <option key={c.id} value={String(c.id)}>{c.name}</option>
+            ))}
+            <option value="none">Sans collection</option>
+          </select>
+        </span>
+      </label>
+    </div>
   );
 }
