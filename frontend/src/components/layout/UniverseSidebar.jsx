@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Link, NavLink, useLocation } from 'react-router';
-import { ArrowLeft, ChevronRight, Settings, X } from '@/components/ui/icons';
+import { ArrowLeft, ChevronLeft, ChevronRight, Settings, X } from '@/components/ui/icons';
 import { useUniverses } from '@/api/queries';
 import { getModulesState, getNavModules, getNavReferences } from '@/config/modules';
 import { Button } from '@/components/ui/Button';
@@ -19,8 +19,9 @@ import styles from './UniverseSidebar.module.scss';
  * - « Référentiels » : listes de valeurs (genres, statuts...), repliables.
  * - En bas : paramètres (qui contiennent aussi le choix clair / sombre).
  * Sur petit écran, elle s'affiche en tiroir (`open` / `onClose`).
+ * Sur grand écran, elle peut être réduite à une colonne d'icônes (`collapsed` / `onToggleCollapsed`).
  */
-export function UniverseSidebar({ universe, open, onClose }) {
+export function UniverseSidebar({ universe, open, onClose, collapsed = false, onToggleCollapsed }) {
   const base = `/univers/${universeRef(universe)}`;
   const { isAdmin } = usePermissions();
   const { pathname } = useLocation();
@@ -35,14 +36,27 @@ export function UniverseSidebar({ universe, open, onClose }) {
 
   // Sur mobile, toute navigation referme le tiroir
   const navProps = { onClick: onClose };
+  // Sidebar réduite : libellé en infobulle (le texte reste lu par les lecteurs d'écran)
+  const tip = (label) => (collapsed ? label : undefined);
 
   return (
     <>
       {open && <div className={styles.overlay} onClick={onClose} aria-hidden />}
-      <aside id="universe-sidebar" aria-label={`Navigation de ${universe.name}`} className={cx(styles.sidebar, open && styles.open)}>
+      <aside id="universe-sidebar" aria-label={`Navigation de ${universe.name}`} className={cx(styles.sidebar, open && styles.open, collapsed && styles.collapsed)}>
         <div className={styles.scroll}>
           <div className={styles.top}>
             <Button variant="ghost" size="sm" iconOnly icon={X} aria-label="Fermer le menu" className={styles.close} onClick={onClose} />
+            <Button
+              variant="ghost"
+              size="sm"
+              iconOnly
+              icon={collapsed ? ChevronRight : ChevronLeft}
+              aria-label={collapsed ? 'Déplier le menu' : 'Réduire le menu'}
+              title={collapsed ? 'Déplier le menu' : 'Réduire le menu'}
+              aria-expanded={!collapsed}
+              className={styles.collapseToggle}
+              onClick={onToggleCollapsed}
+            />
           </div>
 
           <NavLink to={base} end className={styles.identity} title="Accueil de l’univers" {...navProps}>
@@ -53,7 +67,7 @@ export function UniverseSidebar({ universe, open, onClose }) {
           <nav aria-label="Univers" className={styles.section}>
             <p className={styles.sectionLabel}>Encyclopédie</p>
             {modules.map((m) => (
-              <NavLink key={m.key} to={`${base}/${m.path}`} className={cx(styles.link, m.parent && styles.child)} {...navProps}>
+              <NavLink key={m.key} to={`${base}/${m.path}`} className={cx(styles.link, m.parent && styles.child)} title={tip(m.navLabel || m.label)} {...navProps}>
                 <m.icon aria-hidden />
                 <span className={styles.label}>{m.navLabel || m.label}</span>
                 {stats[m.key] !== undefined && <span className={styles.count}>{stats[m.key]}</span>}
@@ -67,13 +81,13 @@ export function UniverseSidebar({ universe, open, onClose }) {
               open={referencesOpen}
               onToggle={(e) => setReferencesOpen(e.currentTarget.open)}
             >
-              <summary className={styles.sectionLabel}>
+              <summary className={styles.sectionLabel} title={tip(referencesOpen ? 'Masquer les référentiels' : 'Afficher les référentiels')}>
                 Référentiels
                 <ChevronRight aria-hidden />
               </summary>
               <nav aria-label="Référentiels" className={styles.section}>
                 {references.map((r) => (
-                  <NavLink key={r.key} to={`${base}/${r.path}`} className={styles.link} {...navProps}>
+                  <NavLink key={r.key} to={`${base}/${r.path}`} className={styles.link} title={tip(r.label)} {...navProps}>
                     <r.icon aria-hidden />
                     <span className={styles.label}>{r.label}</span>
                   </NavLink>
@@ -89,7 +103,7 @@ export function UniverseSidebar({ universe, open, onClose }) {
           </Link>
           {/* Paramètres de l'univers : admins ; les autres gardent le choix clair / sombre */}
           {isAdmin ? (
-            <NavLink to={`${base}/parametres`} className={styles.link} {...navProps}>
+            <NavLink to={`${base}/parametres`} className={styles.link} title={tip('Paramètres')} {...navProps}>
               <Settings aria-hidden />
               <span className={styles.label}>Paramètres</span>
             </NavLink>

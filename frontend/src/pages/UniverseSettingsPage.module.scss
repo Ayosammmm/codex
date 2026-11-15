@@ -25,6 +25,7 @@
   @include card;
   padding: space(5);
   border-color: color-mix(in oklab, var(--danger) 40%, transparent);
+  scroll-margin-top: var(--sticky-top, 6rem);
 
   @include up(sm) {
     padding-inline: space(6);

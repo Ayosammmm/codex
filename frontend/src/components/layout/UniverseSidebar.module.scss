@@ -1,6 +1,7 @@
 @use '@/styles/mixins' as *;
 
 $width: 16.5rem;
+$rail-width: 4.25rem; // sidebar réduite (grand écran)
 
 // --- Conteneur ---
 // Grand écran : colonne collée à gauche. Petit écran : tiroir qui glisse depuis la gauche.
@@ -29,7 +30,8 @@ $width: 16.5rem;
     backdrop-filter: blur(8px);
     transform: none;
     visibility: visible;
-    transition: none;
+    overflow-x: hidden;
+    transition: width 200ms $ease-out;
   }
 }
 
@@ -68,8 +70,26 @@ $width: 16.5rem;
   align-items: center;
   justify-content: space-between;
   padding-inline: space(1);
+
+  @include up(lg) {
+    justify-content: flex-end;
+    margin-bottom: calc(-1 * #{space(3)}); // rapproche l'identité du bouton
+  }
+}
+
+// Fermer le tiroir : petit écran ; réduire / déplier : grand écran
+// (sélecteurs imbriqués : plus spécifiques que le `display` du bouton)
+.top .close {
   @include up(lg) {
     display: none;
+  }
+}
+
+.top .collapseToggle {
+  display: none;
+
+  @include up(lg) {
+    display: inline-flex;
   }
 }
 
@@ -271,4 +291,79 @@ $width: 16.5rem;
   display: flex;
   flex: 1;
   align-items: center;
+}
+
+// --- Sidebar réduite (grand écran) : icônes seules, libellés en infobulle ---
+@mixin visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+.collapsed {
+  @include up(lg) {
+    width: $rail-width;
+
+    .top {
+      justify-content: center;
+      margin-bottom: 0;
+    }
+
+    .identity {
+      justify-content: center;
+      padding: space(1);
+    }
+
+    .identityAvatar {
+      width: 2.25rem;
+      height: 2.25rem;
+      font-size: 0.875rem;
+    }
+
+    .identityName,
+    .label,
+    .count {
+      @include visually-hidden;
+    }
+
+    // Titres de section : remplacés par un trait de séparation
+    .sectionLabel {
+      justify-content: center;
+      margin-inline: space(1);
+      padding: space(1.5) 0 0;
+      border-top: var(--border-w) solid var(--border);
+      font-size: 0;
+    }
+
+    nav > .sectionLabel {
+      margin-bottom: space(1.5);
+    }
+
+    .link {
+      justify-content: center;
+      padding-inline: 0;
+    }
+
+    .child {
+      margin-left: 0;
+    }
+
+    .bottom {
+      flex-direction: column;
+      padding-inline: space(2);
+    }
+
+    .bottom > .link {
+      flex: none;
+      width: 2.25rem;
+    }
+
+    // Choix clair / sombre (non-admins) : trop large, accessible en dépliant la sidebar
+    .grow {
+      display: none;
+    }
+  }
 }

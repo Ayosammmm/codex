@@ -61,6 +61,7 @@ export default function CreateUniversePage() {
             universe={null}
             state={state}
             nameError={nameError}
+            extraToc={[{ id: 'depart', label: 'Pour bien démarrer' }]}
             extraSections={<DefaultsSection checked={withDefaults} onChange={setWithDefaults} />}
           />
           <FormActionBar>

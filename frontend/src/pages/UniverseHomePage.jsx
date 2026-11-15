@@ -48,6 +48,8 @@ export default function UniverseHomePage() {
         )}
       </section>
 
+      <Discover universe={universe} groupsOn={isModuleEnabled(modulesState, 'groups')} />
+
       <h2 className={styles.sectionTitle}>Contenu de l’univers</h2>
       <ul className={styles.modules}>
         {modules.map((m) => (
@@ -62,8 +64,6 @@ export default function UniverseHomePage() {
           </li>
         ))}
       </ul>
-
-      <Discover universe={universe} groupsOn={isModuleEnabled(modulesState, 'groups')} />
     </main>
   );
 }

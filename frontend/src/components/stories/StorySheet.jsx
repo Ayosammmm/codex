@@ -76,7 +76,7 @@ export function StorySheet({ universe, story: s, modules, actions }) {
                       {ep.title}
                     </span>
                     {excerpt(ep.description) && <span className={styles.excerpt}>{excerpt(ep.description)}</span>}
-                    {(shown.length > 0 || ep.places?.length > 0 || (modules.events && ep.events?.length > 0)) && (
+                    {(shown.length > 0 || ep.places?.length > 0) && (
                       <span className={styles.episodeMeta}>
                         <AvatarStack members={shown.slice(0, 5)} total={shown.length} className={styles.stack} />
                         {ep.places?.length > 0 && (
@@ -84,12 +84,6 @@ export function StorySheet({ universe, story: s, modules, actions }) {
                             <MapPin aria-hidden /> {ep.places.map((p) => p.name).join(', ')}
                           </span>
                         )}
-                        {modules.events &&
-                          ep.events?.map((ev) => (
-                            <Badge key={ev.id} color={importanceColor(ev.importance) || 'var(--fg-subtle)'}>
-                              {ev.name}
-                            </Badge>
-                          ))}
                       </span>
                     )}
                   </Link>

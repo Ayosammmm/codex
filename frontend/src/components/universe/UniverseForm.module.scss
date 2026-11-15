@@ -30,6 +30,10 @@
   top: var(--sticky-top, 6rem);
 }
 
+.toc {
+  margin-top: space(5);
+}
+
 .asideLabel {
   margin-bottom: space(2);
   font-size: 0.75rem;

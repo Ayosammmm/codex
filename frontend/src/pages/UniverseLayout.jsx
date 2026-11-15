@@ -14,6 +14,23 @@ import { parseUniverseRef, universeRef } from '@/utils/universe';
 import page from './Page.module.scss';
 import styles from './UniverseLayout.module.scss';
 
+// Sidebar réduite (grand écran) : préférence mémorisée dans le navigateur
+const SIDEBAR_KEY = 'almanach.sidebarCollapsed';
+const readSidebarCollapsed = () => {
+  try {
+    return localStorage.getItem(SIDEBAR_KEY) === '1';
+  } catch {
+    return false;
+  }
+};
+const writeSidebarCollapsed = (value) => {
+  try {
+    localStorage.setItem(SIDEBAR_KEY, value ? '1' : '0');
+  } catch {
+    /* stockage indisponible : préférence le temps de la visite */
+  }
+};
+
 /**
  * Cadre commun à toutes les pages d'un univers : applique son thème, ses couleurs
  * et son fond, affiche la navigation, et fournit l'univers aux pages enfants via useOutletContext().
@@ -25,6 +42,13 @@ export default function UniverseLayout() {
   const navigate = useNavigate();
   const location = useLocation();
   const [menuOpen, setMenuOpen] = useState(false);
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(readSidebarCollapsed);
+  const toggleSidebar = () => {
+    setSidebarCollapsed((value) => {
+      writeSidebarCollapsed(!value);
+      return !value;
+    });
+  };
   // Les univers ont leur propre préférence clair / sombre, distincte de celle de l'Almanach
   useColorModeScope('universe');
 
@@ -81,7 +105,13 @@ export default function UniverseLayout() {
       <div {...theme} className={styles.root}>
         {backdrop && <div aria-hidden className={styles.backdrop} style={backdrop} />}
         <div className={cx(styles.shell, backdrop && styles.scrim)}>
-          <UniverseSidebar universe={universe} open={menuOpen} onClose={() => setMenuOpen(false)} />
+          <UniverseSidebar
+            universe={universe}
+            open={menuOpen}
+            onClose={() => setMenuOpen(false)}
+            collapsed={sidebarCollapsed}
+            onToggleCollapsed={toggleSidebar}
+          />
 
           <div className={styles.main}>
             <header className={styles.topbar}>

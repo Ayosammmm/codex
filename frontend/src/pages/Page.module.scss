@@ -53,6 +53,7 @@
   @include container(36rem);
   display: flex;
   align-items: center;
+  justify-content: center;
   min-height: 100dvh;
 }
 

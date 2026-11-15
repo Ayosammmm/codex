@@ -56,6 +56,11 @@ export default function UniverseSettingsPage() {
           universe={universe}
           state={state}
           nameError={nameError}
+          beforeAppearanceToc={[{ id: 'affichage', label: 'Affichage global' }]}
+          extraToc={[
+            { id: 'donnees', label: 'Données' },
+            { id: 'suppression', label: 'Suppression' },
+          ]}
           beforeAppearance={
             <FormSection id="affichage" title="Affichage global">
               <ActionRow
@@ -79,7 +84,7 @@ export default function UniverseSettingsPage() {
                   action={<Button icon={Copy} onClick={() => actions.duplicate(universe)}>Dupliquer</Button>}
                 />
               </FormSection>
-              <section aria-labelledby="danger-title" className={styles.danger}>
+              <section id="suppression" aria-labelledby="danger-title" className={styles.danger}>
                 <ActionRow
                   title={<span id="danger-title">Supprimer l’univers</span>}
                   text="Supprime définitivement l’univers et tout son contenu."

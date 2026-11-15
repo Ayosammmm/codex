@@ -11,6 +11,7 @@ import { cx } from '@/components/ui/cx';
 import { useToast } from '@/components/ui/Toast';
 import { UniversePreview } from './UniversePreview';
 import styles from './UniverseForm.module.scss';
+import entityStyles from '@/components/entity/EntityForm.module.scss';
 
 // ---------------------------------------------------------------------------
 // Mise en page
@@ -33,13 +34,25 @@ export function FormSection({ id, title, description, children }) {
  * `state` vient de useUniverseForm().
  * `beforeAppearance` : sections insérées juste avant « Apparence » (ex. affichage dans les paramètres).
  * `extraSections` : sections supplémentaires en fin de formulaire (ex. actions dans les paramètres).
+ * `beforeAppearanceToc` / `extraToc` : entrées du sommaire ({ id, label }) de ces sections.
  */
-export function UniverseForm({ universe, state, nameError, beforeAppearance, extraSections }) {
+export function UniverseForm({
+  universe, state, nameError, beforeAppearance, extraSections, beforeAppearanceToc = [], extraToc = [],
+}) {
   const { form, update, images, setImage } = state;
   const toast = useToast();
 
   // Aperçu : image enregistrée, sauf si elle a été retirée (les fichiers choisis sont gérés par l'aperçu)
   const savedImage = (field) => (images[field] === null ? null : uploadUrl(universe?.[field]));
+
+  const toc = [
+    { id: 'general', label: 'Général' },
+    { id: 'images', label: 'Images' },
+    ...beforeAppearanceToc,
+    { id: 'apparence', label: 'Apparence' },
+    { id: 'modules', label: 'Modules' },
+    ...extraToc,
+  ];
 
   return (
     <div className={styles.layout}>
@@ -56,6 +69,14 @@ export function UniverseForm({ universe, state, nameError, beforeAppearance, ext
         <div className={styles.asideSticky}>
           <p className={styles.asideLabel}>Aperçu</p>
           <UniversePreview form={form} images={images} savedImage={savedImage} />
+          <nav aria-label="Sections du formulaire" className={cx(entityStyles.toc, styles.toc)}>
+            <p className={entityStyles.tocLabel}>Sections</p>
+            {toc.map((s) => (
+              <a key={s.id} href={`#${s.id}`}>
+                {s.label}
+              </a>
+            ))}
+          </nav>
         </div>
       </aside>
     </div>
