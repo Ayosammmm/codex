@@ -2,6 +2,10 @@
 import { forwardRef } from 'react';
 import {
   Activity as LucideActivity,
+  AlignCenter as LucideAlignCenter,
+  AlignJustify as LucideAlignJustify,
+  AlignLeft as LucideAlignLeft,
+  AlignRight as LucideAlignRight,
   ArrowDown as LucideArrowDown,
   ArrowDownAZ as LucideArrowDownAZ,
   ArrowLeft as LucideArrowLeft,
@@ -9,6 +13,7 @@ import {
   ArrowUp as LucideArrowUp,
   ArrowUpDown as LucideArrowUpDown,
   ArrowUpZA as LucideArrowUpZA,
+  Baseline as LucideBaseline,
   Bold as LucideBold,
   BookOpen as LucideBookOpen,
   Brain as LucideBrain,
@@ -22,6 +27,7 @@ import {
   CircleAlert as LucideCircleAlert,
   CircleCheck as LucideCircleCheck,
   Clapperboard as LucideClapperboard,
+  Code as LucideCode,
   Columns3 as LucideColumns3,
   Compass as LucideCompass,
   Construction as LucideConstruction,
@@ -37,15 +43,19 @@ import {
   Heading2 as LucideHeading2,
   Heading3 as LucideHeading3,
   HeartHandshake as LucideHeartHandshake,
+  Highlighter as LucideHighlighter,
+  Image as LucideImage,
   ImagePlus as LucideImagePlus,
   Italic as LucideItalic,
   KeyRound as LucideKeyRound,
   Layers as LucideLayers,
   LayoutGrid as LucideLayoutGrid,
   Library as LucideLibrary,
+  Link as LucideLink,
   List as LucideList,
   ListChecks as LucideListChecks,
   ListOrdered as LucideListOrdered,
+  ListTodo as LucideListTodo,
   ListTree as LucideListTree,
   LoaderCircle as LucideLoaderCircle,
   Lock as LucideLock,
@@ -67,21 +77,29 @@ import {
   Quote as LucideQuote,
   Redo2 as LucideRedo2,
   RefreshCw as LucideRefreshCw,
+  RemoveFormatting as LucideRemoveFormatting,
   RotateCcw as LucideRotateCcw,
   Rows3 as LucideRows3,
   Ruler as LucideRuler,
   Scale as LucideScale,
   Search as LucideSearch,
+  SeparatorHorizontal as LucideSeparatorHorizontal,
   Settings as LucideSettings,
   ShieldX as LucideShieldX,
   Shuffle as LucideShuffle,
+  SquareCode as LucideSquareCode,
+  Strikethrough as LucideStrikethrough,
+  Subscript as LucideSubscript,
   Sun as LucideSun,
+  Superscript as LucideSuperscript,
   Table2 as LucideTable2,
   Tag as LucideTag,
   Tags as LucideTags,
   Trash2 as LucideTrash2,
   TrendingUp as LucideTrendingUp,
+  Underline as LucideUnderline,
   Undo2 as LucideUndo2,
+  Unlink as LucideUnlink,
   Upload as LucideUpload,
   UserPlus as LucideUserPlus,
   Users as LucideUsers,
@@ -100,7 +118,7 @@ import { useThemeKey } from '@/theme/themeKey';
  * - terminal : pixel art (grilles de pixels nets, voir pixel())
  * - crayonné : icônes habituelles, tracé « à main levée » (filtre SVG, voir SketchFilter)
  * - par défaut : lucide-react
- * Toutes les icônes de l'app passent par ce fichier (exception : `Map` est exportée sous le nom `MapIcon`).
+ * Toutes les icônes de l'app passent par ce fichier (exceptions : `Map` et `Image` sont exportées sous les noms `MapIcon` et `ImageIcon`).
  */
 
 // --- Base SVG commune aux dessins (mêmes dimensions et classes que lucide) ---
@@ -210,6 +228,10 @@ function themed(name, Fallback) {
 }
 
 export const Activity = themed('Activity', LucideActivity);
+export const AlignCenter = themed('AlignCenter', LucideAlignCenter);
+export const AlignJustify = themed('AlignJustify', LucideAlignJustify);
+export const AlignLeft = themed('AlignLeft', LucideAlignLeft);
+export const AlignRight = themed('AlignRight', LucideAlignRight);
 export const ArrowDown = themed('ArrowDown', LucideArrowDown);
 export const ArrowDownAZ = themed('ArrowDownAZ', LucideArrowDownAZ);
 export const ArrowLeft = themed('ArrowLeft', LucideArrowLeft);
@@ -217,6 +239,7 @@ export const ArrowRight = themed('ArrowRight', LucideArrowRight);
 export const ArrowUp = themed('ArrowUp', LucideArrowUp);
 export const ArrowUpDown = themed('ArrowUpDown', LucideArrowUpDown);
 export const ArrowUpZA = themed('ArrowUpZA', LucideArrowUpZA);
+export const Baseline = themed('Baseline', LucideBaseline);
 export const Bold = themed('Bold', LucideBold);
 export const BookOpen = themed('BookOpen', LucideBookOpen);
 export const Brain = themed('Brain', LucideBrain);
@@ -230,6 +253,7 @@ export const ChevronRight = themed('ChevronRight', LucideChevronRight);
 export const CircleAlert = themed('CircleAlert', LucideCircleAlert);
 export const CircleCheck = themed('CircleCheck', LucideCircleCheck);
 export const Clapperboard = themed('Clapperboard', LucideClapperboard);
+export const Code = themed('Code', LucideCode);
 export const Columns3 = themed('Columns3', LucideColumns3);
 export const Compass = themed('Compass', LucideCompass);
 export const Construction = themed('Construction', LucideConstruction);
@@ -245,15 +269,19 @@ export const GitCommitVertical = themed('GitCommitVertical', LucideGitCommitVert
 export const Heading2 = themed('Heading2', LucideHeading2);
 export const Heading3 = themed('Heading3', LucideHeading3);
 export const HeartHandshake = themed('HeartHandshake', LucideHeartHandshake);
+export const Highlighter = themed('Highlighter', LucideHighlighter);
+export const ImageIcon = themed('Image', LucideImage);
 export const ImagePlus = themed('ImagePlus', LucideImagePlus);
 export const Italic = themed('Italic', LucideItalic);
 export const KeyRound = themed('KeyRound', LucideKeyRound);
 export const Layers = themed('Layers', LucideLayers);
 export const LayoutGrid = themed('LayoutGrid', LucideLayoutGrid);
 export const Library = themed('Library', LucideLibrary);
+export const Link = themed('Link', LucideLink);
 export const List = themed('List', LucideList);
 export const ListChecks = themed('ListChecks', LucideListChecks);
 export const ListOrdered = themed('ListOrdered', LucideListOrdered);
+export const ListTodo = themed('ListTodo', LucideListTodo);
 export const ListTree = themed('ListTree', LucideListTree);
 export const LoaderCircle = themed('LoaderCircle', LucideLoaderCircle);
 export const Lock = themed('Lock', LucideLock);
@@ -275,21 +303,29 @@ export const PowerOff = themed('PowerOff', LucidePowerOff);
 export const Quote = themed('Quote', LucideQuote);
 export const Redo2 = themed('Redo2', LucideRedo2);
 export const RefreshCw = themed('RefreshCw', LucideRefreshCw);
+export const RemoveFormatting = themed('RemoveFormatting', LucideRemoveFormatting);
 export const RotateCcw = themed('RotateCcw', LucideRotateCcw);
 export const Rows3 = themed('Rows3', LucideRows3);
 export const Ruler = themed('Ruler', LucideRuler);
 export const Scale = themed('Scale', LucideScale);
 export const Search = themed('Search', LucideSearch);
+export const SeparatorHorizontal = themed('SeparatorHorizontal', LucideSeparatorHorizontal);
 export const Settings = themed('Settings', LucideSettings);
 export const ShieldX = themed('ShieldX', LucideShieldX);
 export const Shuffle = themed('Shuffle', LucideShuffle);
+export const SquareCode = themed('SquareCode', LucideSquareCode);
+export const Strikethrough = themed('Strikethrough', LucideStrikethrough);
+export const Subscript = themed('Subscript', LucideSubscript);
 export const Sun = themed('Sun', LucideSun);
+export const Superscript = themed('Superscript', LucideSuperscript);
 export const Table2 = themed('Table2', LucideTable2);
 export const Tag = themed('Tag', LucideTag);
 export const Tags = themed('Tags', LucideTags);
 export const Trash2 = themed('Trash2', LucideTrash2);
 export const TrendingUp = themed('TrendingUp', LucideTrendingUp);
+export const Underline = themed('Underline', LucideUnderline);
 export const Undo2 = themed('Undo2', LucideUndo2);
+export const Unlink = themed('Unlink', LucideUnlink);
 export const Upload = themed('Upload', LucideUpload);
 export const UserPlus = themed('UserPlus', LucideUserPlus);
 export const Users = themed('Users', LucideUsers);
