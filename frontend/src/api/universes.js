@@ -17,10 +17,10 @@ export const universesApi = {
   },
   deleteImage: (id, field) => request(`/universes/${id}/${field}`, { method: 'DELETE' }),
 
-  /** Le fichier est envoyé tel quel : pas besoin de le lire ni de le parser dans le navigateur. */
+  /** Archive .zip (ou ancien export .json) envoyée telle quelle : le serveur détecte le format. */
   importFile: (file) =>
-    request('/universes/import', { method: 'POST', body: file, headers: { 'Content-Type': 'application/json' } }),
+    request('/universes/import', { method: 'POST', body: file, headers: { 'Content-Type': 'application/octet-stream' } }),
 
   /** URL de téléchargement (le serveur renvoie un en-tête Content-Disposition). */
-  exportFile: (id) => download(`/universes/${id}/export`, `univers-${id}.json`),
+  exportFile: (id) => download(`/universes/${id}/export`, `univers-${id}.almanach.zip`),
 };

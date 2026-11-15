@@ -40,9 +40,9 @@ const editorsRoutes = require("./routes/editorsRoutes");
 
 const app = express();
 app.use(cors());
-// Les exports d'univers embarquent leurs images : limite plus haute pour la route d'import
-app.use("/api/universes/import", express.json({ limit: "500mb" }));
-app.use(express.json());
+// L'import d'univers lit lui-même le corps brut (archive ZIP ou ancien JSON) : pas de parsing ici
+const jsonParser = express.json();
+app.use((req, res, next) => (req.path === "/api/universes/import" ? next() : jsonParser(req, res, next)));
 
 // Comptes et droits : toute l'API demande une connexion (voir middlewares/authorize.js)
 app.use("/api", authenticate, authorize);

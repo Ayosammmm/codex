@@ -12,7 +12,7 @@ const IMAGE_FOLDERS = {
 
 router.post("/", universesController.create);
 router.get("/", universesController.getAll);
-// Import : le corps JSON est parsé avec une limite élevée dans index.js
+// Import : le corps brut (ZIP ou ancien JSON) est lu par le contrôleur, pas par express.json (index.js)
 router.post("/import", universesController.import);
 router.get("/:id", universesController.getById);
 router.put("/:id", universesController.update);

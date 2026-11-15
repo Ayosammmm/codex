@@ -129,7 +129,7 @@ function ImportButton() {
       <input
         ref={inputRef}
         type="file"
-        accept=".json,application/json"
+        accept=".zip,application/zip,.json,application/json"
         className={styles.hiddenInput}
         onChange={(e) => {
           onFile(e.target.files?.[0]);

@@ -1,19 +1,19 @@
 /**
- * Export, import, duplication et suppression complète d'un univers.
+ * Lecture, import, duplication et suppression complète d'un univers.
  *
  * Toutes ces opérations reposent sur la même description des tables :
  * - ENTITY_TABLES : tables possédant un `universe_id` (ordre = ordre d'insertion)
  * - JOIN_TABLES   : tables de liaison entre entités
  * - les photos d'album (entity_photos), liées par (entityType, entityId)
  *
- * Format d'export (JSON) :
+ * Format des données exportées (voir aussi services/universeArchive.js pour l'archive ZIP) :
  * {
- *   format: 'almanach-universe', version: 1, exportedAt,
+ *   format: 'almanach-universe', version, exportedAt,
  *   universe: { name, description, theme, colors, ... },
  *   entities: { characters: [...], places: [...], ... },
  *   joins:    { characters_groups: [...], ... },
  *   photos:   [...],
- *   files:    { '/uploads/...': 'data:image/png;base64,...' }   // seulement pour un export fichier
+ *   files:    { '/uploads/...': 'data:image/png;base64,...' }   // anciens exports JSON (version 1) uniquement
  * }
  */
 const fs = require('fs');
@@ -40,13 +40,8 @@ const Event = require('../models/Event');
 const EntityPhoto = require('../models/EntityPhoto');
 
 const FORMAT = 'almanach-universe';
-const VERSION = 1;
 const UPLOADS_ROOT = path.resolve(__dirname, '..', 'uploads');
 const IMAGE_EXTENSIONS = new Set(['.jpg', '.jpeg', '.png', '.gif', '.webp', '.avif', '.svg', '.bmp']);
-const MIME_BY_EXT = {
-  '.jpg': 'image/jpeg', '.jpeg': 'image/jpeg', '.png': 'image/png', '.gif': 'image/gif',
-  '.webp': 'image/webp', '.avif': 'image/avif', '.svg': 'image/svg+xml', '.bmp': 'image/bmp',
-};
 
 // refs     : colonne -> clé de la table référencée
 // selfRef  : colonne de hiérarchie (parent dans la même table)
@@ -112,11 +107,6 @@ const readUploadFromDisk = (uploadPath) => {
   const abs = resolveUpload(uploadPath);
   if (!abs || !fs.existsSync(abs)) return null;
   return fs.readFileSync(abs);
-};
-
-const toDataUrl = (uploadPath, buffer) => {
-  const mime = MIME_BY_EXT[path.extname(uploadPath).toLowerCase()] || 'application/octet-stream';
-  return `data:${mime};base64,${buffer.toString('base64')}`;
 };
 
 const fromDataUrl = (dataUrl) => {
@@ -218,23 +208,6 @@ const listFiles = (data) => {
   }
   for (const photo of data.photos || []) files.push(photo.imagePath);
   return [...new Set(files.filter(isLocalUpload))];
-};
-
-// ---------------------------------------------------------------------------
-// Export
-// ---------------------------------------------------------------------------
-
-const exportUniverse = async (universeId) => {
-  const data = await collectUniverse(universeId);
-  if (!data) return null;
-
-  const files = {};
-  for (const uploadPath of listFiles(data)) {
-    const buffer = readUploadFromDisk(uploadPath);
-    if (buffer) files[uploadPath] = toDataUrl(uploadPath, buffer);
-  }
-
-  return { format: FORMAT, version: VERSION, exportedAt: new Date().toISOString(), ...data, files };
 };
 
 // ---------------------------------------------------------------------------
@@ -358,7 +331,7 @@ const importUniverse = async (data, { readFile, name, transaction: outerTransact
   }
 };
 
-/** Importe un fichier d'export (images embarquées en data URL). */
+/** Importe un ancien export JSON (images embarquées en data URL). */
 const importFromExport = (data, options = {}) =>
   importUniverse(data, { ...options, readFile: (p) => fromDataUrl(data.files?.[p]) });
 
@@ -430,14 +403,18 @@ const countByUniverse = async () => {
 };
 
 module.exports = {
-  exportUniverse,
   importFromExport,
   duplicateUniverse,
   deleteUniverse,
   deleteUpload,
   countByUniverse,
-  // exposés pour les tests / scripts
+  // utilisés par l'archive ZIP (universeArchive.js), les tests et les scripts
+  FORMAT,
+  IMAGE_EXTENSIONS,
   collectUniverse,
+  listFiles,
+  isLocalUpload,
+  resolveUpload,
   importUniverse,
   readUploadFromDisk,
 };

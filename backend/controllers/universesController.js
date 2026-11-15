@@ -1,6 +1,7 @@
 const Univers = require('../models/Univers');
 const { seedUniverseDefaults } = require('../services/universeDefaults');
 const transfer = require('../services/universeTransfer');
+const universeArchive = require('../services/universeArchive');
 
 // Anciens booléens conservés pour compatibilité, synchronisés avec l'objet `modules`
 const LEGACY_FLAGS = {
@@ -191,24 +192,35 @@ exports.deleteImage = (field) => async (req, res) => {
   }
 };
 
-// Export d'un univers complet en JSON (images embarquées)
+// Export d'un univers complet : archive ZIP (universe.json + dossier uploads/)
 exports.export = async (req, res) => {
   try {
-    const data = await transfer.exportUniverse(Number(req.params.id));
-    if (!data) return res.status(404).json({ error: 'Univers non trouvé' });
-    const filename = `${data.universe.name.normalize('NFD').replace(/[^\w-]+/g, '-').toLowerCase()}.almanach.json`;
-    res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
-    res.json(data);
+    const result = await universeArchive.createExportArchive(Number(req.params.id));
+    if (!result) return res.status(404).json({ error: 'Univers non trouvé' });
+    const { archive, name } = result;
+    const slug = name.normalize('NFD').replace(/[^\w-]+/g, '-').replace(/^-+|-+$/g, '').toLowerCase() || 'univers';
+    res.setHeader('Content-Type', 'application/zip');
+    res.setHeader('Content-Disposition', `attachment; filename="${slug}.almanach.zip"`);
+    archive.on('warning', (err) => console.warn('Export univers :', err.message));
+    archive.on('error', (err) => {
+      console.error('Erreur export:', err);
+      res.destroy(err);
+    });
+    // Téléchargement interrompu : on arrête de construire l'archive
+    res.on('close', () => {
+      if (!res.writableFinished) archive.abort();
+    });
+    archive.pipe(res);
   } catch (error) {
     sendError(res, error, 'export');
   }
 };
 
-// Import d'un univers depuis un export JSON
+// Import d'un univers : corps brut = archive ZIP, ou ancien export JSON
 exports.import = async (req, res) => {
   try {
     const name = typeof req.query.name === 'string' ? req.query.name : undefined;
-    const universe = await transfer.importFromExport(req.body, { name });
+    const universe = await universeArchive.importFromStream(req, { name });
     res.status(201).json(universe);
   } catch (error) {
     sendError(res, error, 'import');

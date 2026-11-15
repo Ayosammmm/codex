@@ -70,7 +70,7 @@ export default function UniverseSettingsPage() {
               <FormSection id="donnees" title="Données">
                 <ActionRow
                   title="Exporter"
-                  text="Télécharge un fichier .json contenant l’univers, ses entités, leurs liens et leurs images. Il peut être réimporté depuis l’accueil."
+                  text="Télécharge une archive .zip contenant l’univers, ses entités, leurs liens et toutes leurs images. Il peut être réimporté depuis l’accueil."
                   action={<Button icon={Download} onClick={() => actions.export(universe)}>Exporter</Button>}
                 />
                 <ActionRow
