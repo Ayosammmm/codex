@@ -162,39 +162,58 @@ exports.listMessages = handle('listMessages', async (req, res) => {
   res.json({ messages: await serializeMessages(rows.slice(0, limit).reverse()), hasMore });
 });
 
+const MAX_PARTS = 20;
+
 /**
- * Nouveau message : JSON { content, characterIds }, ou formulaire multipart avec une image (`image`) ;
- * en multipart, `characterIds` est une liste JSON. Le texte peut alors être vide.
+ * Nouveaux messages, envoyés d'un coup dans l'ordre (saisie avec /personnage ; un seul message = une partie) :
+ * { parts: [{ content, characterIds }] } en JSON, ou en multipart (`parts` en JSON, `image` jointe au dernier).
+ * Tout ou rien : un message refusé annule les autres.
  */
-exports.createMessage = handle('createMessage', async (req, res) => {
+exports.createMessages = handle('createMessages', async (req, res) => {
   const imagePath = req.file ? `/uploads/${IMAGE_FOLDER}/${req.file.filename}` : null;
   try {
     const place = await findPlace(req.params.placeId);
-    const content = cleanContent(req.body?.content, { allowEmpty: Boolean(imagePath) });
-    let rawIds = req.body?.characterIds;
-    if (typeof rawIds === 'string') {
+    let parts = req.body?.parts;
+    if (typeof parts === 'string') {
       try {
-        rawIds = JSON.parse(rawIds);
+        parts = JSON.parse(parts);
       } catch {
-        rawIds = [];
+        parts = null;
       }
     }
-    const characterIds = toIds(rawIds);
-    await checkSpeakers(req.user, place, characterIds);
+    if (!Array.isArray(parts) || !parts.length) throw httpError(400, 'Aucun message à envoyer.');
+    if (parts.length > MAX_PARTS) throw httpError(400, `${MAX_PARTS} messages maximum à la fois.`);
 
-    const id = await sequelize.transaction(async (transaction) => {
-      const message = await RpMessage.create(
-        { placeId: place.id, universe_id: place.universe_id, userId: req.user.id, content, imagePath, isHrp: !imagePath && isHrpContent(content) },
-        { transaction },
-      );
-      await setSpeakers(message.id, characterIds, transaction);
-      return message.id;
+    const cleaned = [];
+    for (const [i, part] of parts.entries()) {
+      const withImage = Boolean(imagePath) && i === parts.length - 1;
+      const characterIds = toIds(part?.characterIds);
+      await checkSpeakers(req.user, place, characterIds);
+      const content = cleanContent(part?.content, { allowEmpty: withImage });
+      cleaned.push({ content, characterIds, imagePath: withImage ? imagePath : null });
+    }
+
+    const ids = await sequelize.transaction(async (transaction) => {
+      const created = [];
+      for (const { content, characterIds, imagePath: image } of cleaned) {
+        const message = await RpMessage.create(
+          { placeId: place.id, universe_id: place.universe_id, userId: req.user.id, content, imagePath: image, isHrp: !image && isHrpContent(content) },
+          { transaction },
+        );
+        await setSpeakers(message.id, characterIds, transaction);
+        created.push(message.id);
+      }
+      return created;
     });
-    const message = await loadMessage(id);
-    broadcast(place.id, { type: 'message:created', message });
-    res.status(201).json(message);
+    const messages = [];
+    for (const id of ids) {
+      const message = await loadMessage(id);
+      messages.push(message);
+      broadcast(place.id, { type: 'message:created', message });
+    }
+    res.status(201).json(messages);
   } catch (error) {
-    if (imagePath) deleteUpload(imagePath); // message refusé : l'image envoyée ne sert à rien
+    if (imagePath) deleteUpload(imagePath);
     throw error;
   }
 });

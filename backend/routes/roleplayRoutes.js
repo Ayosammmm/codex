@@ -9,7 +9,7 @@ const uploadImage = createUploadMiddleware(roleplay.IMAGE_FOLDER).single("image"
 // Roleplay écrit. Écriture : éditeurs et admins (middlewares/authorize.js), droits fins dans le contrôleur.
 router.get("/overview", roleplay.overview);
 router.get("/places/:placeId/messages", roleplay.listMessages);
-router.post("/places/:placeId/messages", uploadImage, roleplay.createMessage);
+router.post("/places/:placeId/messages", uploadImage, roleplay.createMessages);
 router.put("/places/:placeId/read", roleplay.markRead);
 router.put("/messages/:id", roleplay.updateMessage);
 router.delete("/messages/:id", roleplay.deleteMessage);

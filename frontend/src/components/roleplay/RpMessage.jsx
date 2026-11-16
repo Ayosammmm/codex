@@ -5,24 +5,39 @@ import { CharacterAvatar } from '@/components/characters/CharacterAvatar';
 import { characterName } from '@/config/characters';
 import { cx } from '@/components/ui/cx';
 import { universePath } from '@/utils/universe';
-import { formatRpDate, parseRp } from './rpMarkup';
+import { formatRpDate, parseRp, shoutLevel } from './rpMarkup';
 import { RpImage } from './RpImage';
+import { ShoutBubble } from './ShoutBubble';
 import styles from './Roleplay.module.scss';
 
 /**
  * Texte d'un message découpé selon les balises : chaque passage (narration, action, dialogue, pensée,
- * onomatopée, HRP) est sur sa propre ligne. `hideHrp` retire les passages HRP.
+ * chuchotement, onomatopée, HRP) est sur sa propre ligne. `hideHrp` retire les passages HRP.
+ * `plain` : type du texte sans balise ('dialogue' pour un personnage, 'narration' par défaut).
+ * Une bulle avec des « ! » est hérissée de piques, plus ou moins selon leur nombre.
  */
-export function RpContent({ content, hideHrp = false }) {
-  const segments = parseRp(content).filter((s) => !(hideHrp && s.type === 'hrp'));
+export function RpContent({ content, hideHrp = false, plain = 'narration' }) {
+  const segments = parseRp(content, { plain }).filter((s) => !(hideHrp && s.type === 'hrp'));
   return (
     <div className={styles.content}>
-      {segments.map((s, i) => (
-        <p key={i} className={styles[s.type]}>
-          {s.type === 'hrp' && <span className={styles.hrpTag}>HRP</span>}
-          {s.text}
-        </p>
-      ))}
+      {segments.map((s, i) => {
+        const level = shoutLevel(s);
+        // 2 « ! » et plus : bulle de cri (contour SVG à piques)
+        if (level >= 2) {
+          return (
+            <ShoutBubble key={i} level={level} className={cx(styles[s.type], styles.shout, styles[`shout${level}`])}>
+              {s.text}
+            </ShoutBubble>
+          );
+        }
+        return (
+          <p key={i} className={cx(styles[s.type], level > 0 && styles.shout, level > 0 && styles[`shout${level}`])}>
+            {level === 1 && <span className={styles.burst} aria-hidden />}
+            {s.type === 'hrp' && <span className={styles.hrpTag}>HRP</span>}
+            {s.text}
+          </p>
+        );
+      })}
     </div>
   );
 }
@@ -32,9 +47,9 @@ const shortTime = new Intl.DateTimeFormat('fr-FR', { hour: '2-digit', minute: '2
 /**
  * Un message du fil. Trois présentations :
  * - au nom de personnages : avatars, noms, rédacteur et heure ;
- * - sans personnage : narration, sans avatar ni nom (rédacteur et heure au survol) ;
+ * - sans personnage : narration (titre « Narration », sans avatar), rédacteur et heure ;
  * - sans personnage et entièrement HRP : hors roleplay, au nom du joueur.
- * `continued` : suite d'un message du même rédacteur, avec les mêmes personnages : l'en-tête n'est pas répété
+ * `continued` : suite d'un message du même rédacteur, avec les mêmes personnages (ou narration) : l'en-tête n'est pas répété
  * (heure au survol, dans la colonne des avatars).
  * - `canManage` : auteur ou admin (modifier / supprimer)
  * - `selectable` / `selected` / `onSelect(event)` : mode « scènes » (case à cocher ; un clic n'importe où sur
@@ -47,7 +62,7 @@ export function RpMessage({ universe, message, charactersById, hideHrp, continue
   const edited = new Date(message.updatedAt) - new Date(message.createdAt) > 2000;
   const authorName = message.author?.displayName || 'Compte supprimé';
   const narration = !speakers.length && !message.isHrp;
-  const compact = continued || narration; // pas d'en-tête
+  const compact = continued; // pas d'en-tête
 
   if (hideHrp && message.isHrp) return null;
 
@@ -77,7 +92,6 @@ export function RpMessage({ universe, message, charactersById, hideHrp, continue
       className={cx(
         styles.message,
         compact && styles.compact,
-        narration && styles.narrationMessage,
         message.isHrp && styles.messageHrp,
         selectable && styles.selectable,
         selected && styles.selected,
@@ -97,6 +111,8 @@ export function RpMessage({ universe, message, charactersById, hideHrp, continue
           </time>
         ) : speakers.length ? (
           speakers.slice(0, 3).map((c) => <CharacterAvatar key={c.id} character={c} round className={styles.avatar} />)
+        ) : narration ? (
+          <span className={styles.avatarSpacer} aria-hidden />
         ) : (
           <span className={cx(styles.avatar, styles.playerAvatar)} aria-hidden>{authorName.slice(0, 1).toUpperCase()}</span>
         )}
@@ -112,6 +128,11 @@ export function RpMessage({ universe, message, charactersById, hideHrp, continue
                     <Link to={universePath(universe, `personnages/${c.id}`)} className={styles.name}>{characterName(c)}</Link>
                   </span>
                 ))}
+                <span className={styles.by}>par {authorName}</span>
+              </span>
+            ) : narration ? (
+              <span className={styles.names}>
+                <span className={styles.narrationTitle}>Narration</span>
                 <span className={styles.by}>par {authorName}</span>
               </span>
             ) : (
@@ -147,7 +168,7 @@ export function RpMessage({ universe, message, charactersById, hideHrp, continue
           </div>
         ) : (
           <>
-            {message.content && <RpContent content={message.content} hideHrp={hideHrp} />}
+            {message.content && <RpContent content={message.content} hideHrp={hideHrp} plain={speakers.length ? 'dialogue' : 'narration'} />}
             {message.imagePath && <RpImage path={message.imagePath} />}
           </>
         )}

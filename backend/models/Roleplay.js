@@ -11,7 +11,8 @@ const User = require('./User');
  * - un fil de messages par lieu (rp_messages) ;
  * - un message est écrit par un compte, au nom de zéro, un ou plusieurs personnages (rp_message_characters) ;
  * - des messages d'un même lieu peuvent être regroupés en scènes (rp_scenes), rattachables à des épisodes.
- * Le texte utilise des balises (*action*, « dialogue », (pensée), ((HRP)), !!onomatopée!!) découpées à l'affichage.
+ * Le texte utilise des balises (*action*, « dialogue », (pensée), ~chuchotement~, ((HRP)), {onomatopée})
+ * découpées à l'affichage.
  * `universe_id` est redondant avec le lieu : il sert à l'export / la duplication / la suppression d'univers.
  */
 

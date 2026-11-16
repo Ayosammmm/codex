@@ -6,14 +6,14 @@ import { API_BASE, getToken, request } from './client';
 export const roleplayApi = {
   overview: (universeId) => request(`/roleplay/overview?universe_id=${universeId}`),
   messages: (placeId, { before } = {}) => request(`/roleplay/places/${placeId}/messages${before ? `?before=${before}` : ''}`),
-  /** { content, characterIds, image? } — avec une image (File), envoi en multipart. */
-  createMessage: (placeId, { image, ...data }) => {
-    if (!image) return request(`/roleplay/places/${placeId}/messages`, { method: 'POST', body: data });
+  /** Plusieurs messages d'un coup : { parts: [{ content, characterIds }], image? } (image jointe au dernier). */
+  createMessages: (placeId, { parts, image }) => {
+    const path = `/roleplay/places/${placeId}/messages`;
+    if (!image) return request(path, { method: 'POST', body: { parts } });
     const form = new FormData();
-    form.append('content', data.content || '');
-    form.append('characterIds', JSON.stringify(data.characterIds || []));
+    form.append('parts', JSON.stringify(parts));
     form.append('image', image);
-    return request(`/roleplay/places/${placeId}/messages`, { method: 'POST', body: form });
+    return request(path, { method: 'POST', body: form });
   },
   updateMessage: (id, data) => request(`/roleplay/messages/${id}`, { method: 'PUT', body: data }),
   deleteMessage: (id) => request(`/roleplay/messages/${id}`, { method: 'DELETE' }),
@@ -108,9 +108,9 @@ export const useRoleplayMutations = (placeId) => {
   const queryClient = useQueryClient();
   const apply = (event) => applyRoleplayEvent(queryClient, { placeId, ...event });
   return {
-    create: useMutation({
-      mutationFn: (data) => roleplayApi.createMessage(placeId, data),
-      onSuccess: (message) => apply({ type: 'message:created', message }),
+    createMany: useMutation({
+      mutationFn: (data) => roleplayApi.createMessages(placeId, data),
+      onSuccess: (messages) => messages.forEach((message) => apply({ type: 'message:created', message })),
     }),
     update: useMutation({
       mutationFn: ({ id, data }) => roleplayApi.updateMessage(id, data),

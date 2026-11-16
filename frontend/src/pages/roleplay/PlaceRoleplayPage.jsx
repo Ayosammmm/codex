@@ -149,7 +149,7 @@ export default function PlaceRoleplayPage() {
   };
 
   const send = (data) =>
-    mutations.create.mutateAsync(data).then(
+    mutations.createMany.mutateAsync(data).then(
       () => {
         nearBottom.current = true;
       },
@@ -275,7 +275,7 @@ export default function PlaceRoleplayPage() {
             storageKey={`almanach.rpSpeakers.${place.id}`}
             onSend={send}
             onError={toast.error}
-            sending={mutations.create.isPending}
+            sending={mutations.createMany.isPending}
           />
         ) : (
           <p className={styles.readOnly}>Lecture seule : seuls les éditeurs et les admins peuvent écrire.</p>
