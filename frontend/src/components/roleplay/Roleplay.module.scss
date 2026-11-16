@@ -878,6 +878,21 @@
   font-size: 0.625rem;
 }
 
+// Suggestion « Narrateur » : icône à la place d'un avatar
+.narratorIcon {
+  display: grid;
+  flex-shrink: 0;
+  place-items: center;
+  border-radius: 50%;
+  background: var(--surface-3);
+  color: var(--fg-muted);
+
+  svg {
+    width: 0.875rem;
+    height: 0.875rem;
+  }
+}
+
 .mentionName {
   font-weight: 600;
 }

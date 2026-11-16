@@ -1,5 +1,5 @@
 import { Fragment, useEffect, useRef, useState } from 'react';
-import { CircleHelp, Eye, ImagePlus, SendHorizontal, X } from '@/components/ui/icons';
+import { BookOpen, CircleHelp, Eye, ImagePlus, SendHorizontal, X } from '@/components/ui/icons';
 import { CharacterAvatar } from '@/components/characters/CharacterAvatar';
 import { characterName } from '@/config/characters';
 import { normalizeText } from '@/components/entity/useListState';
@@ -38,6 +38,10 @@ function mentionAt(text, caret) {
 }
 
 /** Personnages dont un mot du nom (ou le nom complet) commence par la recherche. */
+// Suggestion « /narrateur » : nouvelle ligne de narration (sans personnage)
+const NARRATOR = { narrator: true, id: 'narrateur' };
+const matchesNarrator = (query) => ['narrateur', 'narration'].some((word) => word.startsWith(normalizeText(query)));
+
 function matchCharacters(characters, query) {
   const q = normalizeText(query);
   return characters
@@ -98,7 +102,7 @@ export function RpComposer({ characters, storageKey, onSend, onError, sending })
     el.setSelectionRange(at, at);
   };
 
-  const suggestions = mention ? matchCharacters(characters, mention.query) : [];
+  const suggestions = mention ? [...(matchesNarrator(mention.query) ? [NARRATOR] : []), ...matchCharacters(characters, mention.query)] : [];
 
   const attach = (file) => {
     if (!file) return;
@@ -113,12 +117,12 @@ export function RpComposer({ characters, storageKey, onSend, onError, sending })
   const onChange = (seg, e) => {
     const { value, selectionStart } = e.target;
     update(seg.key, { text: value });
-    const found = characters.length ? mentionAt(value, selectionStart) : null;
+    const found = mentionAt(value, selectionStart);
     setMention(found ? { key: seg.key, ...found, active: 0 } : null);
   };
 
-  /** Choix d'un personnage pour le « /recherche » en cours. */
-  const choose = (character) => {
+  /** Choix d'un personnage (ou du narrateur) pour le « /recherche » en cours. */
+  const choose = (choice) => {
     const index = segments.findIndex((s) => s.key === mention.key);
     const seg = segments[index];
     const el = inputs.current.get(seg.key);
@@ -127,6 +131,18 @@ export function RpComposer({ characters, storageKey, onSend, onError, sending })
     const after = seg.text.slice(caret);
     setMention(null);
 
+    // Narrateur : la ligne devient de la narration (« / » en début de ligne), ou une ligne de narration commence
+    if (choice.narrator) {
+      if (!before.trim()) {
+        update(seg.key, { characterIds: [], text: after.replace(/^\s+/, '') });
+        return focus(seg.key, 0);
+      }
+      const next = segment([], after.replace(/^\s+/, ''));
+      setSegments((list) => [...list.slice(0, index), { ...seg, text: before.replace(/\s+$/, '') }, next, ...list.slice(index + 1)]);
+      return focus(next.key, 0);
+    }
+
+    const character = choice;
     // « / » en tout début de ligne : le personnage rejoint le groupe de cette ligne
     if (!before.trim()) {
       const characterIds = seg.characterIds.includes(character.id) ? seg.characterIds : [...seg.characterIds, character.id];
@@ -237,6 +253,11 @@ export function RpComposer({ characters, storageKey, onSend, onError, sending })
             <span className={styles.helpLabel}>Personnage</span>
             <span className={styles.helpText}>Nouvelle ligne à son nom · « // » au début d’une ligne : plusieurs personnages ensemble</span>
           </div>
+          <div className={styles.helpRow}>
+            <code>/narrateur</code>
+            <span className={styles.helpLabel}>Narrateur</span>
+            <span className={styles.helpText}>Nouvelle ligne de narration, sans personnage</span>
+          </div>
           {RP_MARKUP.map((m) => (
             <div key={m.type} className={styles.helpRow}>
               <code>{m.hint}</code>
@@ -283,9 +304,21 @@ export function RpComposer({ characters, storageKey, onSend, onError, sending })
                 }}
                 onMouseEnter={() => setMention((m) => ({ ...m, active: i }))}
               >
-                <CharacterAvatar character={c} round className={styles.mentionAvatar} />
-                <span className={styles.mentionName}>{characterName(c)}</span>
-                {c.title && <span className={styles.mentionTitle}>{c.title}</span>}
+                {c.narrator ? (
+                  <>
+                    <span className={cx(styles.mentionAvatar, styles.narratorIcon)}>
+                      <BookOpen aria-hidden />
+                    </span>
+                    <span className={styles.mentionName}>Narrateur</span>
+                    <span className={styles.mentionTitle}>Nouvelle ligne de narration</span>
+                  </>
+                ) : (
+                  <>
+                    <CharacterAvatar character={c} round className={styles.mentionAvatar} />
+                    <span className={styles.mentionName}>{characterName(c)}</span>
+                    {c.title && <span className={styles.mentionTitle}>{c.title}</span>}
+                  </>
+                )}
               </li>
             ))}
           </ul>
