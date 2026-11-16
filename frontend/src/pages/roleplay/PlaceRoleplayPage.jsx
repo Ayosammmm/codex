@@ -274,6 +274,7 @@ export default function PlaceRoleplayPage() {
             characters={playable}
             storageKey={`almanach.rpSpeakers.${place.id}`}
             onSend={send}
+            onError={toast.error}
             sending={mutations.create.isPending}
           />
         ) : (

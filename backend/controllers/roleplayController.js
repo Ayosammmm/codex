@@ -7,6 +7,11 @@ const User = require('../models/User');
 const { RpScene, RpMessage, RpMessageCharacter, RpSceneEpisode, RpRead, isHrpContent } = require('../models/Roleplay');
 const { isAdmin, canEditEntity } = require('../services/auth');
 const { broadcast } = require('../services/realtime');
+const { deleteUpload } = require('../services/universeTransfer');
+
+// Sous-dossier d'uploads des images envoyées dans les fils (voir routes/roleplayRoutes.js)
+const IMAGE_FOLDER = 'roleplay/images';
+exports.IMAGE_FOLDER = IMAGE_FOLDER;
 
 /*
  * Roleplay écrit : fil de messages par lieu, scènes, liens scène ↔ épisode.
@@ -57,6 +62,7 @@ async function serializeMessages(messages) {
     placeId: m.placeId,
     sceneId: m.sceneId,
     content: m.content,
+    imagePath: m.imagePath,
     isHrp: m.isHrp,
     author: m.author ? { id: m.author.id, displayName: m.author.displayName } : null,
     characterIds: speakers.get(m.id) || [],
@@ -120,9 +126,10 @@ async function checkSpeakers(user, place, characterIds) {
   }
 }
 
-const cleanContent = (content) => {
+/** Texte d'un message ; `allowEmpty` : message accompagné d'une image. */
+const cleanContent = (content, { allowEmpty = false } = {}) => {
   const text = typeof content === 'string' ? content.replace(/\r\n/g, '\n').trim() : '';
-  if (!text) throw httpError(400, 'Le message est vide.');
+  if (!text && !allowEmpty) throw httpError(400, 'Le message est vide.');
   if (text.length > MAX_CONTENT) throw httpError(400, `Message trop long (${MAX_CONTENT} caractères maximum).`);
   return text;
 };
@@ -155,23 +162,41 @@ exports.listMessages = handle('listMessages', async (req, res) => {
   res.json({ messages: await serializeMessages(rows.slice(0, limit).reverse()), hasMore });
 });
 
+/**
+ * Nouveau message : JSON { content, characterIds }, ou formulaire multipart avec une image (`image`) ;
+ * en multipart, `characterIds` est une liste JSON. Le texte peut alors être vide.
+ */
 exports.createMessage = handle('createMessage', async (req, res) => {
-  const place = await findPlace(req.params.placeId);
-  const content = cleanContent(req.body?.content);
-  const characterIds = toIds(req.body?.characterIds);
-  await checkSpeakers(req.user, place, characterIds);
+  const imagePath = req.file ? `/uploads/${IMAGE_FOLDER}/${req.file.filename}` : null;
+  try {
+    const place = await findPlace(req.params.placeId);
+    const content = cleanContent(req.body?.content, { allowEmpty: Boolean(imagePath) });
+    let rawIds = req.body?.characterIds;
+    if (typeof rawIds === 'string') {
+      try {
+        rawIds = JSON.parse(rawIds);
+      } catch {
+        rawIds = [];
+      }
+    }
+    const characterIds = toIds(rawIds);
+    await checkSpeakers(req.user, place, characterIds);
 
-  const id = await sequelize.transaction(async (transaction) => {
-    const message = await RpMessage.create(
-      { placeId: place.id, universe_id: place.universe_id, userId: req.user.id, content, isHrp: isHrpContent(content) },
-      { transaction },
-    );
-    await setSpeakers(message.id, characterIds, transaction);
-    return message.id;
-  });
-  const message = await loadMessage(id);
-  broadcast(place.id, { type: 'message:created', message });
-  res.status(201).json(message);
+    const id = await sequelize.transaction(async (transaction) => {
+      const message = await RpMessage.create(
+        { placeId: place.id, universe_id: place.universe_id, userId: req.user.id, content, imagePath, isHrp: !imagePath && isHrpContent(content) },
+        { transaction },
+      );
+      await setSpeakers(message.id, characterIds, transaction);
+      return message.id;
+    });
+    const message = await loadMessage(id);
+    broadcast(place.id, { type: 'message:created', message });
+    res.status(201).json(message);
+  } catch (error) {
+    if (imagePath) deleteUpload(imagePath); // message refusé : l'image envoyée ne sert à rien
+    throw error;
+  }
 });
 
 const findOwnMessage = async (req) => {
@@ -184,7 +209,7 @@ const findOwnMessage = async (req) => {
 exports.updateMessage = handle('updateMessage', async (req, res) => {
   const message = await findOwnMessage(req);
   const place = await findPlace(message.placeId);
-  const content = req.body?.content !== undefined ? cleanContent(req.body.content) : message.content;
+  const content = req.body?.content !== undefined ? cleanContent(req.body.content, { allowEmpty: Boolean(message.imagePath) }) : message.content;
   const characterIds = req.body?.characterIds !== undefined ? toIds(req.body.characterIds) : null;
 
   if (characterIds) {
@@ -193,7 +218,7 @@ exports.updateMessage = handle('updateMessage', async (req, res) => {
     await checkSpeakers(req.user, place, characterIds.filter((id) => !current.includes(id)));
   }
   await sequelize.transaction(async (transaction) => {
-    await message.update({ content, isHrp: isHrpContent(content) }, { transaction });
+    await message.update({ content, isHrp: !message.imagePath && isHrpContent(content) }, { transaction });
     if (characterIds) await setSpeakers(message.id, characterIds, transaction);
   });
   const updated = await loadMessage(message.id);
@@ -203,8 +228,9 @@ exports.updateMessage = handle('updateMessage', async (req, res) => {
 
 exports.deleteMessage = handle('deleteMessage', async (req, res) => {
   const message = await findOwnMessage(req);
-  const { id, placeId, sceneId } = message;
+  const { id, placeId, sceneId, imagePath } = message;
   await message.destroy();
+  if (imagePath) deleteUpload(imagePath);
   broadcast(placeId, { type: 'message:deleted', messageId: id, sceneId });
   res.json({ id });
 });

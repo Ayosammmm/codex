@@ -6,7 +6,15 @@ import { API_BASE, getToken, request } from './client';
 export const roleplayApi = {
   overview: (universeId) => request(`/roleplay/overview?universe_id=${universeId}`),
   messages: (placeId, { before } = {}) => request(`/roleplay/places/${placeId}/messages${before ? `?before=${before}` : ''}`),
-  createMessage: (placeId, data) => request(`/roleplay/places/${placeId}/messages`, { method: 'POST', body: data }),
+  /** { content, characterIds, image? } — avec une image (File), envoi en multipart. */
+  createMessage: (placeId, { image, ...data }) => {
+    if (!image) return request(`/roleplay/places/${placeId}/messages`, { method: 'POST', body: data });
+    const form = new FormData();
+    form.append('content', data.content || '');
+    form.append('characterIds', JSON.stringify(data.characterIds || []));
+    form.append('image', image);
+    return request(`/roleplay/places/${placeId}/messages`, { method: 'POST', body: form });
+  },
   updateMessage: (id, data) => request(`/roleplay/messages/${id}`, { method: 'PUT', body: data }),
   deleteMessage: (id) => request(`/roleplay/messages/${id}`, { method: 'DELETE' }),
   markRead: (placeId, messageId) => request(`/roleplay/places/${placeId}/read`, { method: 'PUT', body: { messageId } }),

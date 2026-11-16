@@ -37,7 +37,10 @@ const RpScene = sequelize.define('RpScene', {
 
 const RpMessage = sequelize.define('RpMessage', {
   id: { type: DataTypes.INTEGER, autoIncrement: true, primaryKey: true },
+  // Texte à balises ; vide si le message n'est qu'une image
   content: { type: DataTypes.TEXT, allowNull: false },
+  // Image jointe (/uploads/roleplay/images/...)
+  imagePath: { type: DataTypes.STRING, allowNull: true },
   // Message entièrement hors roleplay (((…)) uniquement) : masqué par le filtre « HRP »
   isHrp: { type: DataTypes.BOOLEAN, allowNull: false, defaultValue: false },
   placeId: { type: DataTypes.INTEGER, allowNull: false },

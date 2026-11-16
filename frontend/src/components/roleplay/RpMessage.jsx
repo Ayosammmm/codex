@@ -6,6 +6,7 @@ import { characterName } from '@/config/characters';
 import { cx } from '@/components/ui/cx';
 import { universePath } from '@/utils/universe';
 import { formatRpDate, parseRp } from './rpMarkup';
+import { RpImage } from './RpImage';
 import styles from './Roleplay.module.scss';
 
 /**
@@ -52,7 +53,8 @@ export function RpMessage({ universe, message, charactersById, hideHrp, continue
 
   const save = async () => {
     const text = draft.trim();
-    if (!text || text === message.content) return setEditing(false);
+    // Texte vide accepté si le message garde son image
+    if ((!text && !message.imagePath) || text === message.content) return setEditing(false);
     await onSave(text);
     setEditing(false);
   };
@@ -144,7 +146,10 @@ export function RpMessage({ universe, message, charactersById, hideHrp, continue
             <p className={styles.editHint}>Entrée pour enregistrer · Échap pour annuler</p>
           </div>
         ) : (
-          <RpContent content={message.content} hideHrp={hideHrp} />
+          <>
+            {message.content && <RpContent content={message.content} hideHrp={hideHrp} />}
+            {message.imagePath && <RpImage path={message.imagePath} />}
+          </>
         )}
       </div>
     </article>

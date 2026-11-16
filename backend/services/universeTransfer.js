@@ -74,7 +74,7 @@ const ENTITY_TABLES = [
   { key: 'episodes', model: Episode, files: ['background'] },
   { key: 'events', model: Event, files: ['image', 'background'] },
   { key: 'rpScenes', model: RpScene, refs: { placeId: 'places' }, users: ['createdBy'], keepTimestamps: true },
-  { key: 'rpMessages', model: RpMessage, refs: { placeId: 'places', sceneId: 'rpScenes' }, users: ['userId'], keepTimestamps: true },
+  { key: 'rpMessages', model: RpMessage, refs: { placeId: 'places', sceneId: 'rpScenes' }, users: ['userId'], keepTimestamps: true, files: ['imagePath'] },
 ];
 
 // La première colonne sert de filtre à l'export

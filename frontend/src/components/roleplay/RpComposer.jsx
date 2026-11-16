@@ -1,5 +1,5 @@
-import { useRef, useState } from 'react';
-import { CircleHelp, Eye, SendHorizontal } from '@/components/ui/icons';
+import { useEffect, useRef, useState } from 'react';
+import { CircleHelp, Eye, ImagePlus, SendHorizontal, X } from '@/components/ui/icons';
 import { uploadUrl } from '@/api/client';
 import { characterName } from '@/config/characters';
 import { Combobox } from '@/components/ui/Combobox';
@@ -24,19 +24,37 @@ const writeSpeakers = (key, ids) => {
   }
 };
 
+const MAX_IMAGE_SIZE = 5 * 1024 * 1024; // même limite que le serveur
+
 /**
  * Saisie d'un message : personnages au nom desquels on écrit (aucun = narration, ou HRP si tout est entre (( ))),
  * texte à balises.
+ * Une image peut être jointe : bouton, collage (Ctrl+V) ou glisser-déposer ; 5 Mo maximum.
  * Entrée envoie, Maj+Entrée va à la ligne. Les personnages choisis sont mémorisés par lieu (`storageKey`).
- * `characters` : personnages que l'utilisateur peut jouer.
+ * `characters` : personnages que l'utilisateur peut jouer ; `onError(message)` : image refusée.
  */
-export function RpComposer({ characters, storageKey, onSend, sending }) {
+export function RpComposer({ characters, storageKey, onSend, onError, sending }) {
   const playable = new Set(characters.map((c) => c.id));
   const [speakers, setSpeakers] = useState(() => readSpeakers(storageKey).filter((id) => playable.has(id)));
   const [text, setText] = useState('');
   const [help, setHelp] = useState(false);
   const [preview, setPreview] = useState(false);
+  const [image, setImage] = useState(null); // { file, url }
+  const [dragging, setDragging] = useState(false);
   const inputRef = useRef(null);
+  const fileRef = useRef(null);
+
+  // Aperçu local de l'image : URL libérée quand elle change ou à la fermeture
+  useEffect(() => () => image && URL.revokeObjectURL(image.url), [image]);
+
+  const attach = (file) => {
+    if (!file) return;
+    if (!file.type.startsWith('image/')) return onError?.('Seules les images peuvent être envoyées.');
+    if (file.size > MAX_IMAGE_SIZE) return onError?.('Image trop lourde (5 Mo maximum).');
+    setImage({ file, url: URL.createObjectURL(file) });
+    inputRef.current?.focus();
+  };
+  const imageFrom = (dataTransfer) => [...(dataTransfer?.files || [])].find((f) => f.type.startsWith('image/'));
 
   const options = characters.map((c) => ({ value: c.id, label: characterName(c), description: c.title || undefined, image: uploadUrl(c.avatar) }));
 
@@ -47,10 +65,11 @@ export function RpComposer({ characters, storageKey, onSend, sending }) {
 
   const send = async () => {
     const content = text.trim();
-    if (!content || sending) return;
+    if ((!content && !image) || sending) return;
     try {
-      await onSend({ content, characterIds: speakers });
+      await onSend({ content, characterIds: speakers, image: image?.file });
       setText('');
+      setImage(null);
       inputRef.current?.focus();
     } catch {
       /* erreur affichée par la page ; le texte est conservé */
@@ -58,7 +77,22 @@ export function RpComposer({ characters, storageKey, onSend, sending }) {
   };
 
   return (
-    <div className={styles.composer}>
+    <div
+      className={cx(styles.composer, dragging && styles.dropping)}
+      onDragOver={(e) => {
+        if (![...e.dataTransfer.types].includes('Files')) return;
+        e.preventDefault();
+        setDragging(true);
+      }}
+      onDragLeave={(e) => !e.currentTarget.contains(e.relatedTarget) && setDragging(false)}
+      onDrop={(e) => {
+        const file = imageFrom(e.dataTransfer);
+        setDragging(false);
+        if (!file) return;
+        e.preventDefault();
+        attach(file);
+      }}
+    >
       {help && (
         <div className={styles.help} role="note" aria-label="Balises du roleplay">
           {RP_MARKUP.map((m) => (
@@ -88,6 +122,16 @@ export function RpComposer({ characters, storageKey, onSend, sending }) {
           />
         </div>
       </div>
+      {image && (
+        <div className={styles.attachment}>
+          <span>
+            <img src={image.url} alt="Image jointe" />
+            <button type="button" onClick={() => setImage(null)} aria-label="Retirer l’image" title="Retirer l’image">
+              <X aria-hidden />
+            </button>
+          </span>
+        </div>
+      )}
       <div className={styles.composerRow}>
         <textarea
           ref={inputRef}
@@ -96,6 +140,12 @@ export function RpComposer({ characters, storageKey, onSend, sending }) {
           rows={Math.min(8, Math.max(2, text.split('\n').length))}
           placeholder="*action* « dialogue » (pensée) !!onomatopée!! ((HRP))"
           onChange={(e) => setText(e.target.value)}
+          onPaste={(e) => {
+            const file = imageFrom(e.clipboardData);
+            if (!file) return;
+            e.preventDefault();
+            attach(file);
+          }}
           onKeyDown={(e) => {
             if (e.key === 'Enter' && !e.shiftKey && !e.nativeEvent.isComposing) {
               e.preventDefault();
@@ -105,13 +155,26 @@ export function RpComposer({ characters, storageKey, onSend, sending }) {
           aria-label="Message"
         />
         <div className={styles.composerTools}>
+          <button type="button" className={styles.toolButton} onClick={() => fileRef.current?.click()} title="Joindre une image (ou coller, glisser-déposer)" aria-label="Joindre une image">
+            <ImagePlus aria-hidden />
+          </button>
+          <input
+            ref={fileRef}
+            type="file"
+            accept="image/*"
+            hidden
+            onChange={(e) => {
+              attach(e.target.files?.[0]);
+              e.target.value = '';
+            }}
+          />
           <button type="button" className={cx(styles.toolButton, help && styles.toolOn)} aria-pressed={help} onClick={() => setHelp((h) => !h)} title="Balises" aria-label="Afficher les balises">
             <CircleHelp aria-hidden />
           </button>
           <button type="button" className={cx(styles.toolButton, preview && styles.toolOn)} aria-pressed={preview} onClick={() => setPreview((p) => !p)} title="Aperçu" aria-label="Aperçu du message">
             <Eye aria-hidden />
           </button>
-          <button type="button" className={styles.sendButton} onClick={send} disabled={!text.trim() || sending} aria-label="Envoyer" title="Envoyer (Entrée)">
+          <button type="button" className={styles.sendButton} onClick={send} disabled={(!text.trim() && !image) || sending} aria-label="Envoyer" title="Envoyer (Entrée)">
             <SendHorizontal aria-hidden />
           </button>
         </div>
