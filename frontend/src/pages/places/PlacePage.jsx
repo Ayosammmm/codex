@@ -1,5 +1,5 @@
 import { Link } from 'react-router';
-import { ArrowLeft, Pencil } from '@/components/ui/icons';
+import { ArrowLeft, MessagesSquare, Pencil } from '@/components/ui/icons';
 import { uploadUrl } from '@/api/client';
 import { useEntityList } from '@/api/queries';
 import { getModulesState, isModuleEnabled } from '@/config/modules';
@@ -22,6 +22,7 @@ function PlaceView({ universe, place }) {
   const modulesState = getModulesState(universe);
   const groupsOn = isModuleEnabled(modulesState, 'groups');
   const creaturesOn = isModuleEnabled(modulesState, 'creatures');
+  const roleplayOn = isModuleEnabled(modulesState, 'roleplay');
   // Liste de l'univers : fil d'Ariane, sous-lieux (images, compteurs) et logos des groupes indirects
   const { data: places = [] } = useEntityList('places', universe.id);
   const { data: groups = [] } = useEntityList('groups', universe.id, { enabled: groupsOn });
@@ -51,11 +52,18 @@ function PlaceView({ universe, place }) {
             fauna={fauna}
             modules={{ groups: groupsOn, ranks: isModuleEnabled(modulesState, 'powerRanks'), map: isModuleEnabled(modulesState, 'map') }}
             actions={
-              canEdit('place', place.id) && (
-                <Button as={Link} to={universePath(universe, `lieux/${place.id}/modifier`)} variant="primary" icon={Pencil}>
-                  Modifier
-                </Button>
-              )
+              (roleplayOn || canEdit('place', place.id)) && <>
+                {roleplayOn && (
+                  <Button as={Link} to={universePath(universe, `roleplay/lieux/${place.id}`)} icon={MessagesSquare}>
+                    Roleplay
+                  </Button>
+                )}
+                {canEdit('place', place.id) && (
+                  <Button as={Link} to={universePath(universe, `lieux/${place.id}/modifier`)} variant="primary" icon={Pencil}>
+                    Modifier
+                  </Button>
+                )}
+              </>
             }
           />
         </div>

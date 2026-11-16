@@ -28,7 +28,7 @@ export default function EpisodePage() {
                 story={story}
                 episode={episode}
                 episodes={sortedEpisodes(story)}
-                modules={{ events: isModuleEnabled(getModulesState(universe), 'events') }}
+                modules={{ events: isModuleEnabled(getModulesState(universe), 'events'), roleplay: isModuleEnabled(getModulesState(universe), 'roleplay') }}
                 actions={
                   canEdit('story', story.id) && (
                     <Button as={Link} to={universePath(universe, `histoires/${story.id}/episodes/${episode.id}/modifier`)} variant="primary" icon={Pencil}>

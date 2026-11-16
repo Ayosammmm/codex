@@ -21,7 +21,7 @@ function CharacterView({ universe, character }) {
   const { canEdit } = usePermissions();
   const state = getModulesState(universe);
   const on = (key) => isModuleEnabled(state, key);
-  const modules = { groups: on('groups'), species: on('species'), personality: on('personality'), relations: on('relations'), powers: on('powers'), ranks: on('powerRanks') };
+  const modules = { groups: on('groups'), species: on('species'), personality: on('personality'), relations: on('relations'), powers: on('powers'), ranks: on('powerRanks'), roleplay: on('roleplay') };
   // Parcours : histoires et événements de l'univers (si leurs modules sont actifs)
   const { data: stories = [] } = useEntityList('stories', universe.id, { enabled: on('stories') });
   const { data: events = [] } = useEntityList('events', universe.id, { enabled: on('events') });

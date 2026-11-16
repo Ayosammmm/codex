@@ -26,6 +26,7 @@ import {
   ChevronRight as LucideChevronRight,
   CircleAlert as LucideCircleAlert,
   CircleCheck as LucideCircleCheck,
+  CircleHelp as LucideCircleHelp,
   Clapperboard as LucideClapperboard,
   Code as LucideCode,
   Columns3 as LucideColumns3,
@@ -38,6 +39,8 @@ import {
   Download as LucideDownload,
   Ellipsis as LucideEllipsis,
   ExternalLink as LucideExternalLink,
+  Eye as LucideEye,
+  EyeOff as LucideEyeOff,
   Filter as LucideFilter,
   GitCommitVertical as LucideGitCommitVertical,
   Heading2 as LucideHeading2,
@@ -65,6 +68,7 @@ import {
   MapPin as LucideMapPin,
   Medal as LucideMedal,
   Menu as LucideMenu,
+  MessagesSquare as LucideMessagesSquare,
   Minus as LucideMinus,
   Monitor as LucideMonitor,
   Moon as LucideMoon,
@@ -83,6 +87,7 @@ import {
   Ruler as LucideRuler,
   Scale as LucideScale,
   Search as LucideSearch,
+  SendHorizontal as LucideSendHorizontal,
   SeparatorHorizontal as LucideSeparatorHorizontal,
   Settings as LucideSettings,
   ShieldX as LucideShieldX,
@@ -253,6 +258,7 @@ export const ChevronLeft = themed('ChevronLeft', LucideChevronLeft);
 export const ChevronRight = themed('ChevronRight', LucideChevronRight);
 export const CircleAlert = themed('CircleAlert', LucideCircleAlert);
 export const CircleCheck = themed('CircleCheck', LucideCircleCheck);
+export const CircleHelp = themed('CircleHelp', LucideCircleHelp);
 export const Clapperboard = themed('Clapperboard', LucideClapperboard);
 export const Code = themed('Code', LucideCode);
 export const Columns3 = themed('Columns3', LucideColumns3);
@@ -265,6 +271,8 @@ export const Dna = themed('Dna', LucideDna);
 export const Download = themed('Download', LucideDownload);
 export const Ellipsis = themed('Ellipsis', LucideEllipsis);
 export const ExternalLink = themed('ExternalLink', LucideExternalLink);
+export const Eye = themed('Eye', LucideEye);
+export const EyeOff = themed('EyeOff', LucideEyeOff);
 export const Filter = themed('Filter', LucideFilter);
 export const GitCommitVertical = themed('GitCommitVertical', LucideGitCommitVertical);
 export const Heading2 = themed('Heading2', LucideHeading2);
@@ -292,6 +300,7 @@ export const MapIcon = themed('Map', LucideMap);
 export const MapPin = themed('MapPin', LucideMapPin);
 export const Medal = themed('Medal', LucideMedal);
 export const Menu = themed('Menu', LucideMenu);
+export const MessagesSquare = themed('MessagesSquare', LucideMessagesSquare);
 export const Minus = themed('Minus', LucideMinus);
 export const Monitor = themed('Monitor', LucideMonitor);
 export const Moon = themed('Moon', LucideMoon);
@@ -310,6 +319,7 @@ export const Rows3 = themed('Rows3', LucideRows3);
 export const Ruler = themed('Ruler', LucideRuler);
 export const Scale = themed('Scale', LucideScale);
 export const Search = themed('Search', LucideSearch);
+export const SendHorizontal = themed('SendHorizontal', LucideSendHorizontal);
 export const SeparatorHorizontal = themed('SeparatorHorizontal', LucideSeparatorHorizontal);
 export const Settings = themed('Settings', LucideSettings);
 export const ShieldX = themed('ShieldX', LucideShieldX);

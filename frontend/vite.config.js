@@ -22,7 +22,8 @@ export default defineConfig(({ mode }) => {
       host: true,
       port: 5174,
       proxy: {
-        '/api': backend,
+        // ws : temps réel du roleplay (WebSocket sur /api/ws)
+        '/api': { target: backend, ws: true },
         '/uploads': backend,
       },
     },

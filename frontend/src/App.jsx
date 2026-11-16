@@ -35,6 +35,9 @@ import { ModuleGate } from '@/pages/ModuleGate';
 import NotFoundPage from '@/pages/NotFoundPage';
 import LoginPage from '@/pages/LoginPage';
 import UsersPage from '@/pages/users/UsersPage';
+import RoleplayPage from '@/pages/roleplay/RoleplayPage';
+import PlaceRoleplayPage from '@/pages/roleplay/PlaceRoleplayPage';
+import RpScenePage from '@/pages/roleplay/RpScenePage';
 import { AdminOnly, RequireAuth } from '@/auth/RequireAuth';
 
 export const router = createBrowserRouter([
@@ -94,6 +97,9 @@ export const router = createBrowserRouter([
       { path: 'groupes/nouveau', element: <ModuleGate module="groups"><GroupEditPage /></ModuleGate> },
       { path: 'groupes/:groupId', element: <ModuleGate module="groups"><GroupPage /></ModuleGate> },
       { path: 'groupes/:groupId/modifier', element: <ModuleGate module="groups"><GroupEditPage /></ModuleGate> },
+      { path: 'roleplay', element: <ModuleGate module="roleplay"><RoleplayPage /></ModuleGate> },
+      { path: 'roleplay/lieux/:placeId', element: <ModuleGate module="roleplay"><PlaceRoleplayPage /></ModuleGate> },
+      { path: 'roleplay/scenes/:sceneId', element: <ModuleGate module="roleplay"><RpScenePage /></ModuleGate> },
       // Modules et référentiels : /personnages, /lieux, /genres... (voir src/config/modules.js)
       { path: ':section', element: <UniverseSectionPage /> },
     ],

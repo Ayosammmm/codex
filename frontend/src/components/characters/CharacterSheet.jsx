@@ -19,6 +19,7 @@ import { PhotoGallery } from '@/components/entity/PhotoGallery';
 import { SheetSection } from '@/components/entity/SheetSection';
 import { DynamicCard } from '@/components/relations/DynamicCard';
 import { CharacterAppearances } from './CharacterAppearances';
+import { CharacterRoleplaySection } from '@/components/roleplay/RoleplaySections';
 import { CharacterAvatar } from './CharacterAvatar';
 import styles from './CharacterSheet.module.scss';
 
@@ -40,7 +41,7 @@ function mergeRelations(character) {
 
 /**
  * Fiche d'un personnage en lecture seule.
- * - `modules` : modules actifs { groups, species, personality, relations, powers, ranks }
+ * - `modules` : modules actifs { groups, species, personality, relations, powers, ranks, roleplay }
  * - `actions` : boutons affichés en haut de la fiche (ex. « Modifier »)
  */
 export function CharacterSheet({ universe, character: c, modules, actions, stories = [], events = [], dynamics = null }) {
@@ -181,6 +182,7 @@ export function CharacterSheet({ universe, character: c, modules, actions, stori
         )}
 
         <CharacterAppearances universe={universe} character={c} stories={stories} events={events} />
+        {modules.roleplay && <CharacterRoleplaySection universe={universe} character={c} />}
 
         {photos.length > 0 && (
           <SheetSection id="album" title="Album photo">

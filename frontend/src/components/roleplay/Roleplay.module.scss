@@ -1,0 +1,765 @@
+@use '@/styles/mixins' as *;
+
+// =====================================================================
+// Fil de discussion d'un lieu : en-tête, messages (défilants), saisie
+// =====================================================================
+
+.thread {
+  display: flex;
+  flex-direction: column;
+  height: calc(100dvh - 3.5rem); // barre mobile
+  min-height: 24rem;
+
+  @include up(lg) {
+    height: 100dvh;
+  }
+}
+
+.threadHeader {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: space(2) space(3);
+  padding: space(3) space(4);
+  border-bottom: var(--border-w) solid var(--border);
+  background: color-mix(in oklab, var(--bg) 88%, transparent);
+  backdrop-filter: blur(8px);
+
+  @include up(sm) {
+    padding-inline: space(6);
+  }
+}
+
+.threadTitle {
+  flex: 1;
+  min-width: 12rem;
+
+  h1 {
+    @include truncate;
+    font-size: 1.25rem;
+  }
+
+  a {
+    font-size: 0.8125rem;
+    color: var(--fg-muted);
+
+    &:hover {
+      color: var(--fg);
+    }
+  }
+}
+
+.threadFilters {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: space(2);
+}
+
+.scroller {
+  flex: 1;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: space(3) space(2) space(4);
+
+  @include up(sm) {
+    padding-inline: space(4);
+  }
+}
+
+.list {
+  display: flex;
+  flex-direction: column;
+  gap: space(1);
+  max-width: 52rem;
+  margin-inline: auto;
+}
+
+.loadMore {
+  align-self: center;
+  margin-bottom: space(3);
+}
+
+.empty {
+  margin: auto;
+  padding: space(10) space(4);
+  text-align: center;
+  color: var(--fg-muted);
+}
+
+// Début d'une scène dans le fil
+.sceneDivider {
+  display: flex;
+  align-items: center;
+  gap: space(2);
+  margin: space(4) 0 space(1);
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--secondary-ink);
+
+  &::before,
+  &::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: color-mix(in oklab, var(--secondary) 40%, transparent);
+  }
+
+  a:hover {
+    text-decoration: underline;
+  }
+}
+
+.inScene {
+  border-left: 3px solid color-mix(in oklab, var(--secondary) 55%, transparent);
+}
+
+// Barre du mode « scènes » (sélection de messages)
+.selectionBar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: space(2);
+  padding: space(2) space(4);
+  border-top: var(--border-w) solid var(--border);
+  background: var(--primary-soft);
+  font-size: 0.875rem;
+
+  select {
+    height: 2rem;
+    padding: 0 space(2);
+    border: var(--border-w) solid var(--border);
+    border-radius: var(--r-sm);
+    background: var(--surface);
+    color: var(--fg);
+    font: inherit;
+    font-size: 0.8125rem;
+  }
+}
+
+.selectionCount {
+  font-weight: 600;
+  margin-right: auto;
+}
+
+// =====================================================================
+// Message
+// =====================================================================
+
+.message {
+  position: relative;
+  display: flex;
+  gap: space(3);
+  padding: space(2.5) space(3);
+  border-radius: var(--r);
+  transition: background-color 150ms;
+
+  &:hover {
+    background: color-mix(in oklab, var(--surface) 70%, transparent);
+
+    .actions {
+      opacity: 1;
+    }
+  }
+}
+
+.messageHrp {
+  opacity: 0.8;
+}
+
+// Suite d'un message (même rédacteur, mêmes personnages) ou narration : sans en-tête, plus serré
+.compact {
+  padding-block: space(1);
+
+  &:hover .sideTime {
+    opacity: 1;
+  }
+}
+
+// Un nouvel en-tête (ou une narration) marque une nouvelle prise de parole : un peu d'air au-dessus
+.message:not(.compact),
+.narrationMessage {
+  margin-top: space(1.5);
+}
+
+// Heure d'un message sans en-tête, dans la colonne des avatars, au survol
+.sideTime {
+  display: block;
+  width: 2.5rem;
+  padding-top: 0.2em;
+  font-size: 0.6875rem;
+  font-variant-numeric: tabular-nums;
+  text-align: center;
+  color: var(--fg-subtle);
+  opacity: 0;
+  transition: opacity 150ms;
+  cursor: default;
+
+  @media (hover: none) {
+    opacity: 1;
+  }
+}
+
+// Modifier / supprimer sans en-tête : en haut à droite du message
+.floatingActions {
+  position: absolute;
+  top: space(1);
+  right: space(2);
+  padding: 0.125rem;
+  border-radius: var(--r-sm);
+  background: var(--surface);
+  box-shadow: var(--elev-sm);
+}
+
+// Mode « scènes » : tout le message est cliquable ; Maj+clic ne surligne pas de texte
+.selectable {
+  cursor: pointer;
+  user-select: none;
+}
+
+.selected {
+  background: var(--primary-soft);
+
+  &:hover {
+    background: var(--primary-soft);
+  }
+}
+
+.select {
+  flex-shrink: 0;
+  margin-top: space(2);
+  accent-color: var(--primary);
+}
+
+.avatars {
+  display: flex;
+  flex-shrink: 0;
+  flex-direction: column;
+  gap: 0.125rem;
+}
+
+.avatar {
+  width: 2.5rem;
+  height: 2.5rem;
+  font-size: 0.875rem;
+}
+
+.playerAvatar {
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: var(--surface-3);
+  color: var(--fg-muted);
+  font-weight: 600;
+}
+
+.body {
+  flex: 1;
+  min-width: 0;
+}
+
+.header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: space(1) space(2);
+  margin-bottom: space(1);
+}
+
+.names {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0 space(1.5);
+}
+
+.name {
+  font-family: var(--font-title);
+  font-weight: 600;
+  color: var(--fg);
+
+  &:is(a):hover {
+    text-decoration: underline;
+  }
+}
+
+.amp {
+  color: var(--fg-subtle);
+}
+
+.by,
+.time {
+  font-size: 0.75rem;
+  color: var(--fg-subtle);
+}
+
+.playerTag {
+  @include pill;
+  font-size: 0.6875rem;
+}
+
+.actions {
+  display: inline-flex;
+  gap: 0.125rem;
+  margin-left: auto;
+  opacity: 0;
+  transition: opacity 150ms;
+
+  button {
+    display: grid;
+    place-items: center;
+    width: 1.75rem;
+    height: 1.75rem;
+    border-radius: var(--r-sm);
+    color: var(--fg-muted);
+
+    &:hover {
+      background: var(--surface-3);
+      color: var(--fg);
+    }
+
+    &:focus-visible {
+      opacity: 1;
+    }
+  }
+
+  svg {
+    width: 0.875rem;
+    height: 0.875rem;
+  }
+
+  @media (hover: none) {
+    opacity: 1;
+  }
+}
+
+.editBox textarea {
+  width: 100%;
+  padding: space(2);
+  border: var(--border-w) solid var(--primary);
+  border-radius: var(--r-sm);
+  background: var(--surface);
+  color: var(--fg);
+  font: inherit;
+  resize: vertical;
+}
+
+.editHint {
+  margin-top: space(1);
+  font-size: 0.75rem;
+  color: var(--fg-subtle);
+}
+
+// --- Texte d'un message (balises) ---
+.content {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: space(1.5);
+  line-height: 1.6;
+  overflow-wrap: anywhere;
+}
+
+.narration,
+.action,
+.hrp {
+  white-space: pre-wrap;
+}
+
+.narration {
+  color: var(--fg);
+}
+
+.action {
+  font-style: italic;
+  color: var(--fg-muted);
+}
+
+.hrp {
+  font-size: 0.8125rem;
+  color: var(--fg-subtle);
+}
+
+.hrpTag {
+  margin-right: space(1);
+  padding: 0 0.3em;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--r-sm);
+  font-size: 0.625rem;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  vertical-align: 0.1em;
+}
+
+// Bulle de dialogue
+.dialogue {
+  position: relative;
+  max-width: min(36rem, 100%);
+  padding: space(2) space(3);
+  border: var(--border-w) solid var(--border);
+  border-radius: 1rem 1rem 1rem 0.25rem;
+  background: var(--surface);
+  box-shadow: var(--elev-sm);
+  white-space: pre-wrap;
+}
+
+// Bulle de pensée : contour en pointillés, petites bulles qui s'échappent
+.thought {
+  position: relative;
+  max-width: min(36rem, 100%);
+  margin-left: space(3);
+  padding: space(2) space(3.5);
+  border: 2px dashed color-mix(in oklab, var(--fg-muted) 45%, transparent);
+  border-radius: 2rem;
+  background: color-mix(in oklab, var(--surface) 60%, transparent);
+  font-style: italic;
+  color: var(--fg-muted);
+  white-space: pre-wrap;
+
+  &::before,
+  &::after {
+    content: '';
+    position: absolute;
+    border: 2px dashed color-mix(in oklab, var(--fg-muted) 45%, transparent);
+    border-radius: 50%;
+  }
+
+  &::before {
+    left: -0.875rem;
+    bottom: 0.25rem;
+    width: 0.625rem;
+    height: 0.625rem;
+  }
+
+  &::after {
+    left: -1.375rem;
+    bottom: -0.25rem;
+    width: 0.375rem;
+    height: 0.375rem;
+  }
+}
+
+// Onomatopée
+.sound {
+  font-family: var(--font-title);
+  font-size: 1.625rem;
+  font-weight: 800;
+  line-height: 1.1;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--primary-ink);
+  transform: rotate(-3deg);
+  text-shadow: 2px 2px 0 color-mix(in oklab, var(--primary) 25%, transparent);
+}
+
+// =====================================================================
+// Saisie
+// =====================================================================
+
+.composer {
+  display: flex;
+  flex-direction: column;
+  gap: space(2);
+  padding: space(3) space(4) space(4);
+  border-top: var(--border-w) solid var(--border);
+  background: color-mix(in oklab, var(--bg) 92%, transparent);
+  backdrop-filter: blur(8px);
+
+  > * {
+    width: 100%;
+    max-width: 52rem;
+    margin-inline: auto;
+  }
+}
+
+.composerRow {
+  display: flex;
+  align-items: flex-end;
+  gap: space(2);
+}
+
+// Liste des personnages : ouverte vers le haut (la saisie est en bas de l'écran)
+.speakers {
+  flex: 1;
+  min-width: 0;
+
+  :global([role='listbox']) {
+    top: auto;
+    bottom: 100%;
+    margin-top: 0;
+    margin-bottom: space(1);
+  }
+}
+
+.input {
+  flex: 1;
+  min-height: 2.75rem;
+  max-height: 14rem;
+  padding: space(2) space(3);
+  border: var(--border-w) solid var(--border-strong);
+  border-radius: var(--r);
+  background: var(--surface);
+  color: var(--fg);
+  font: inherit;
+  line-height: 1.5;
+  resize: none;
+
+  &:focus {
+    outline: none;
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px var(--ring);
+  }
+}
+
+.composerTools {
+  display: flex;
+  gap: space(1);
+}
+
+.toolButton,
+.sendButton {
+  display: grid;
+  place-items: center;
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: var(--r);
+
+  svg {
+    width: 1.125rem;
+    height: 1.125rem;
+  }
+}
+
+.toolButton {
+  color: var(--fg-muted);
+
+  &:hover {
+    background: var(--surface-2);
+    color: var(--fg);
+  }
+}
+
+.toolOn {
+  background: var(--primary-soft);
+  color: var(--primary-ink);
+}
+
+.sendButton {
+  background: var(--primary);
+  color: var(--primary-fg);
+
+  &:hover:not(:disabled) {
+    background: var(--primary-hover);
+  }
+
+  &:disabled {
+    opacity: 0.45;
+    cursor: default;
+  }
+}
+
+.help,
+.preview {
+  max-height: 40vh;
+  overflow-y: auto;
+  padding: space(3);
+  border: var(--border-w) solid var(--border);
+  border-radius: var(--r);
+  background: var(--surface);
+}
+
+.help {
+  display: grid;
+  gap: space(2.5);
+}
+
+.helpRow {
+  display: grid;
+  grid-template-columns: 7rem 7rem minmax(0, 1fr);
+  align-items: center;
+  gap: space(3);
+  font-size: 0.875rem;
+
+  code {
+    font-size: 0.8125rem;
+    color: var(--primary-ink);
+  }
+
+  @media (max-width: 40rem) {
+    grid-template-columns: 6rem minmax(0, 1fr);
+
+    .helpLabel {
+      display: none;
+    }
+  }
+}
+
+.helpLabel {
+  color: var(--fg-muted);
+}
+
+.preview {
+  background: color-mix(in oklab, var(--surface) 80%, transparent);
+}
+
+.readOnly {
+  padding: space(3) space(4);
+  border-top: var(--border-w) solid var(--border);
+  text-align: center;
+  font-size: 0.875rem;
+  color: var(--fg-muted);
+}
+
+// =====================================================================
+// Page Roleplay (vue d'ensemble), scènes, sections de fiches
+// =====================================================================
+
+.overview {
+  display: grid;
+  gap: space(8);
+}
+
+.sectionHead {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: space(3);
+  margin-bottom: space(3);
+
+  h2 {
+    font-size: 1.25rem;
+  }
+}
+
+.threadToolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: space(2) space(3);
+  margin-bottom: space(3);
+}
+
+.threadSearch {
+  position: relative;
+  flex: 1;
+  min-width: min(16rem, 100%);
+
+  > svg {
+    position: absolute;
+    top: 50%;
+    left: space(3);
+    width: 1rem;
+    height: 1rem;
+    color: var(--fg-subtle);
+    transform: translateY(-50%);
+    pointer-events: none;
+  }
+
+  input {
+    width: 100%;
+    padding-left: space(9);
+  }
+}
+
+.sceneList {
+  display: grid;
+  gap: space(2);
+}
+
+.sceneCard {
+  @include card;
+  display: flex;
+  align-items: center;
+  gap: space(3);
+  padding: space(3) space(4);
+  transition: border-color 150ms, transform 150ms;
+
+  &:hover {
+    border-color: var(--border-strong);
+  }
+}
+
+.sceneTitle {
+  flex: 1;
+  min-width: 0;
+  font-family: var(--font-title);
+  font-weight: 600;
+}
+
+.sceneCard {
+  align-items: flex-start;
+  flex-direction: column;
+  gap: space(1.5);
+}
+
+// Bulle « messages non lus » (cartes des fils)
+.unreadDot {
+  display: inline-block;
+  width: 0.625rem;
+  height: 0.625rem;
+  margin-right: space(1.5);
+  border-radius: 50%;
+  background: var(--primary);
+  box-shadow: 0 0 0 3px color-mix(in oklab, var(--primary) 25%, transparent);
+  vertical-align: 0.05em;
+}
+
+.sceneMeta,
+.meta {
+  font-size: 0.8125rem;
+  color: var(--fg-muted);
+}
+
+.sceneDescription {
+  font-size: 0.875rem;
+  color: var(--fg-muted);
+  @include line-clamp(2);
+}
+
+.miniAvatars {
+  display: flex;
+
+  > * {
+    width: 1.75rem;
+    height: 1.75rem;
+    margin-right: -0.375rem;
+    border: 2px solid var(--surface);
+    font-size: 0.625rem;
+  }
+}
+
+.sceneHeader {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: space(3);
+  margin-bottom: space(4);
+}
+
+.sceneHeaderText {
+  flex: 1;
+  min-width: 14rem;
+}
+
+.sceneEpisodes {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: space(1) space(3);
+  margin-bottom: space(5);
+  font-size: 0.875rem;
+
+  a {
+    color: var(--primary-ink);
+    text-decoration: underline;
+    text-underline-offset: 2px;
+  }
+}
+
+.reading {
+  @include card;
+  padding: space(3);
+}

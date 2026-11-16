@@ -13,10 +13,16 @@ import { ColorModeToggle } from './ColorModeToggle';
 import { UserMenu } from './UserMenu';
 import styles from './UniverseSidebar.module.scss';
 
+// Sections de modules dans la barre latérale (voir `navSection` dans config/modules.js)
+const NAV_SECTIONS = [
+  { key: 'encyclopedia', label: 'Encyclopédie' },
+  { key: 'games', label: 'Jeux' },
+];
+
 /**
  * Navigation d'un univers.
  * - Le logo et le nom mènent à l'accueil de l'univers.
- * - « Encyclopédie » : pages des modules actifs (avec le nombre d'entrées).
+ * - « Encyclopédie » : pages des modules actifs (avec le nombre d'entrées) ; « Jeux » : roleplay…
  * - « Collection » (module Collections) : filtre appliqué aux listes et aux compteurs.
  * - « Référentiels » : listes de valeurs (genres, statuts...), repliables.
  * - En bas : paramètres (qui contiennent aussi le choix clair / sombre).
@@ -71,18 +77,24 @@ export function UniverseSidebar({ universe, open, onClose, collapsed = false, on
             <CollectionPicker filter={collectionFilter} onExpand={onToggleCollapsed} />
           )}
 
-          <nav aria-label="Univers" className={styles.section}>
-            <p className={styles.sectionLabel}>Encyclopédie</p>
-            {modules.map((m) => (
-              <NavLink key={m.key} to={`${base}/${m.path}`} className={cx(styles.link, m.parent && styles.child)} title={tip(m.navLabel || m.label)} {...navProps}>
-                <m.icon aria-hidden />
-                <span className={styles.label}>{m.navLabel || m.label}</span>
-                {stats[m.key] !== undefined && (
-                  <span className={styles.count}>{collectionFilter.count(COLLECTION_ENTITY_TYPES[m.key], stats[m.key])}</span>
-                )}
-              </NavLink>
-            ))}
-          </nav>
+          {NAV_SECTIONS.map(({ key, label }) => {
+            const items = modules.filter((m) => (m.navSection || 'encyclopedia') === key);
+            if (!items.length) return null;
+            return (
+              <nav key={key} aria-label={label} className={styles.section}>
+                <p className={styles.sectionLabel}>{label}</p>
+                {items.map((m) => (
+                  <NavLink key={m.key} to={`${base}/${m.path}`} className={cx(styles.link, m.parent && styles.child)} title={tip(m.navLabel || m.label)} {...navProps}>
+                    <m.icon aria-hidden />
+                    <span className={styles.label}>{m.navLabel || m.label}</span>
+                    {stats[m.key] !== undefined && (
+                      <span className={styles.count}>{collectionFilter.count(COLLECTION_ENTITY_TYPES[m.key], stats[m.key])}</span>
+                    )}
+                  </NavLink>
+                ))}
+              </nav>
+            );
+          })}
 
           {references.length > 0 && (
             <details

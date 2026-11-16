@@ -3,6 +3,7 @@ import { Link, useNavigate, useParams } from 'react-router';
 import { ArrowLeft, Trash2 } from '@/components/ui/icons';
 import { uploadUrl } from '@/api/client';
 import { useDeleteEntity, useSaveEntity } from '@/api/queries';
+import { useEpisodeScenes, useRoleplayOverview, useSetEpisodeScenes } from '@/api/roleplay';
 import { sortedEpisodes } from '@/config/stories';
 import { Button } from '@/components/ui/Button';
 import { Combobox } from '@/components/ui/Combobox';
@@ -57,7 +58,17 @@ function EpisodeEditor({ universe, story, episode }) {
   const remove = useDeleteEntity('episodes');
   const [errors, setErrors] = useState({});
   const [confirmDelete, setConfirmDelete] = useState(false);
-  const guard = useUnsavedChangesGuard(state.isDirty && !save.isPending);
+  // Scènes de roleplay liées : enregistrées avec le formulaire (`sceneDraft` : null tant qu'on n'y touche pas)
+  const { data: linkedScenes = [] } = useEpisodeScenes(episode?.id, { enabled: modules.roleplay });
+  const { data: roleplay } = useRoleplayOverview(universe.id, { enabled: modules.roleplay });
+  const setScenes = useSetEpisodeScenes();
+  const [sceneDraft, setSceneDraft] = useState(null);
+  const savedSceneIds = linkedScenes.map((s) => s.id);
+  const sceneIds = sceneDraft ?? savedSceneIds;
+  const scenesDirty = sceneDraft !== null && [...sceneDraft].sort().join() !== [...savedSceneIds].sort().join();
+  const isDirty = state.isDirty || scenesDirty;
+  const pending = save.isPending || setScenes.isPending;
+  const guard = useUnsavedChangesGuard(isDirty && !pending);
 
   const episodes = sortedEpisodes(story);
   const index = episode ? episodes.findIndex((e) => e.id === episode.id) : episodes.length;
@@ -72,6 +83,7 @@ function EpisodeEditor({ universe, story, episode }) {
         ? { backgroundColor: f.backgroundColor }
         : { background: uploadUrl(story.background), backgroundColor: story.backgroundColor };
   const charactersById = useMemo(() => new Map((characters.data || []).map((c) => [c.id, c])), [characters.data]);
+  const placeNames = new Map(options.places.map((o) => [o.value, o.label]));
 
   const submit = (e) => {
     e.preventDefault();
@@ -82,7 +94,15 @@ function EpisodeEditor({ universe, story, episode }) {
     save.mutate(
       { id: episode?.id, values, images },
       {
-        onSuccess: (saved) => {
+        onSuccess: async (saved) => {
+          if (scenesDirty) {
+            try {
+              await setScenes.mutateAsync({ episodeId: saved.id, sceneIds: sceneDraft });
+              setSceneDraft(null);
+            } catch (err) {
+              toast.error(`Scènes de roleplay non enregistrées : ${err.message}`);
+            }
+          }
           toast.success(isNew ? `« ${saved.title} » a été ajouté à l’histoire.` : 'Épisode enregistré.');
           if (isNew) {
             guard.allowNextNavigation();
@@ -151,6 +171,27 @@ function EpisodeEditor({ universe, story, episode }) {
               )}
             </FormSection>
 
+            {modules.roleplay && (
+              <FormSection id="roleplay" title="Scènes de roleplay" description="Les scènes de roleplay qui racontent cet épisode : elles apparaissent sur sa fiche.">
+                <Field
+                  label="Scènes liées"
+                  hint={roleplay && !roleplay.scenes.length ? 'Aucune scène dans cet univers : créez-en depuis un fil de roleplay (bouton « Scènes »).' : undefined}
+                >
+                  {(props) => (
+                    <Combobox
+                      {...props}
+                      multiple
+                      options={(roleplay?.scenes || []).map((s) => ({ value: s.id, label: s.title, description: placeNames.get(s.placeId) }))}
+                      value={sceneIds}
+                      onChange={setSceneDraft}
+                      placeholder="Lier une scène…"
+                      emptyText="Aucune scène"
+                    />
+                  )}
+                </Field>
+              </FormSection>
+            )}
+
             <AppearanceSection
               state={state}
               savedBackground={episode?.background}
@@ -176,11 +217,19 @@ function EpisodeEditor({ universe, story, episode }) {
             )}
           </div>
 
-          <FormActionBar visible={isNew || state.isDirty || save.isPending} message={!isNew && 'Modifications non enregistrées'}>
-            <Button variant="ghost" onClick={() => (isNew ? navigate(storyPath) : state.reset())} disabled={save.isPending}>
+          <FormActionBar visible={isNew || isDirty || pending} message={!isNew && 'Modifications non enregistrées'}>
+            <Button
+              variant="ghost"
+              onClick={() => {
+                if (isNew) return navigate(storyPath);
+                state.reset();
+                setSceneDraft(null);
+              }}
+              disabled={pending}
+            >
               Annuler
             </Button>
-            <Button type="submit" variant="primary" loading={save.isPending}>
+            <Button type="submit" variant="primary" loading={pending}>
               {isNew ? 'Ajouter l’épisode' : 'Enregistrer'}
             </Button>
           </FormActionBar>

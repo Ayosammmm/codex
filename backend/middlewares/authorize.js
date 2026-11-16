@@ -12,6 +12,7 @@ const { hasRole, isAdmin, canEditEntity, userFromToken, ENTITY_TYPES } = require
  * - univers, référentiels : admins ;
  * - entités : création par les éditeurs (qui y sont alors liés), modification / suppression
  *   par les admins ou les éditeurs liés à l'entité ;
+ * - roleplay : éditeurs et admins (personnages joués et auteur vérifiés par le contrôleur) ;
  * - épisodes : selon les droits sur leur histoire ; photos et collections d'une entité : selon les droits sur l'entité.
  * Les routes /auth, /users et /editors font leurs propres vérifications.
  */
@@ -76,6 +77,10 @@ async function authorize(req, res, next) {
     const deny = () => res.status(403).json({ error: "Vous n’avez pas les droits pour cette action." });
 
     if (ADMIN_RESOURCES.has(resource)) return isAdmin(req.user) ? next() : deny();
+
+    // --- Roleplay : éditeurs et admins ; droits fins (personnages joués, auteur) dans le contrôleur ---
+    // (marquer un fil comme lu : tout compte connecté, lecteurs compris)
+    if (resource === "roleplay") return hasRole(req.user, "editor") || (id === "places" && subId === "read") ? next() : deny();
 
     // --- Collections : le référentiel est réservé aux admins, les liens d'une entité suivent ses droits ---
     if (resource === "collections") {

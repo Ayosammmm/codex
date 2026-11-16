@@ -1,6 +1,6 @@
 import {
   Users, MapPin, Brain, HeartHandshake, MapIcon, Building2, Dna, PawPrint, BookOpen, CalendarClock,
-  VenusAndMars, Activity, Scale, Medal, Tags, Tag, Sparkles, Library,
+  VenusAndMars, Activity, Scale, Medal, Tags, Tag, Sparkles, Library, MessagesSquare,
 } from '@/components/ui/icons';
 
 /**
@@ -14,6 +14,7 @@ import {
  * - comingSoon    : prévu mais pas encore disponible
  * - path          : segment d'URL de la page du module dans l'univers (absent = pas de page dédiée)
  * - navLabel      : libellé dans la navigation, s'il diffère du nom du module
+ * - navSection    : section de la barre latérale ('games' : « Jeux ») ; absent = « Encyclopédie »
  */
 export const MODULES = [
   { key: 'characters', path: 'personnages', label: 'Personnages', icon: Users, core: true,
@@ -45,6 +46,9 @@ export const MODULES = [
     description: 'Histoires découpées en épisodes, avec leurs personnages et lieux.' },
   { key: 'events', path: 'evenements', label: 'Événements', icon: CalendarClock, parent: 'stories', defaultEnabled: false,
     description: 'Moments clés, partagés entre plusieurs épisodes.' },
+
+  { key: 'roleplay', path: 'roleplay', label: 'Roleplay', icon: MessagesSquare, defaultEnabled: false, navSection: 'games',
+    description: 'Roleplay écrit dans les lieux, au nom des personnages, avec scènes rattachables aux épisodes.' },
 
   { key: 'collections', label: 'Collections', icon: Library, defaultEnabled: false,
     description: 'Classez toutes les entités dans des ensembles libres (saison, jeu, ère, « WIP »…) et filtrez l’univers par collection.' },

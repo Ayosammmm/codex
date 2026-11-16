@@ -42,6 +42,8 @@ const Event = require('../models/Event');
 const EntityPhoto = require('../models/EntityPhoto');
 const Collection = require('../models/Collection');
 const EntityCollection = require('../models/EntityCollection');
+const User = require('../models/User');
+const { RpScene, RpMessage } = require('../models/Roleplay');
 
 const FORMAT = 'almanach-universe';
 const UPLOADS_ROOT = path.resolve(__dirname, '..', 'uploads');
@@ -50,6 +52,8 @@ const IMAGE_EXTENSIONS = new Set(['.jpg', '.jpeg', '.png', '.gif', '.webp', '.av
 // refs     : colonne -> clé de la table référencée
 // selfRef  : colonne de hiérarchie (parent dans la même table)
 // files    : colonnes contenant un chemin d'image
+// users    : colonnes contenant un id de compte (vidées à l'import si le compte n'existe pas sur ce serveur)
+// keepTimestamps : dates de création / modification conservées (messages de roleplay)
 const ENTITY_TABLES = [
   { key: 'genders', model: Gender },
   { key: 'statuses', model: Status },
@@ -69,6 +73,8 @@ const ENTITY_TABLES = [
   { key: 'stories', model: Story, files: ['image', 'background'] },
   { key: 'episodes', model: Episode, files: ['background'] },
   { key: 'events', model: Event, files: ['image', 'background'] },
+  { key: 'rpScenes', model: RpScene, refs: { placeId: 'places' }, users: ['createdBy'], keepTimestamps: true },
+  { key: 'rpMessages', model: RpMessage, refs: { placeId: 'places', sceneId: 'rpScenes' }, users: ['userId'], keepTimestamps: true },
 ];
 
 // La première colonne sert de filtre à l'export
@@ -86,6 +92,8 @@ const JOIN_TABLES = [
   { table: 'events_characters', refs: { event_id: 'events', character_id: 'characters' } },
   { table: 'events_places', refs: { event_id: 'events', place_id: 'places' } },
   { table: 'events_groups', refs: { event_id: 'events', group_id: 'groups' } },
+  { table: 'rp_message_characters', refs: { messageId: 'rpMessages', characterId: 'characters' } },
+  { table: 'rp_scene_episodes', refs: { sceneId: 'rpScenes', episodeId: 'episodes' } },
 ];
 
 const PHOTO_ENTITY_TABLES = { character: 'characters', creature: 'creatures', place: 'places', group: 'groups', specie: 'species' };
@@ -274,13 +282,17 @@ const importUniverse = async (data, { readFile, name, transaction: outerTransact
     const universe = await Univers.create(sanitizeUniverseData(data.universe, copyFile, name), { transaction });
 
     const idMaps = {};
-    for (const { key, model, refs = {}, selfRef, files = [] } of ENTITY_TABLES) {
+    // Comptes existants sur ce serveur (un export peut venir d'une autre installation)
+    const userIds = new Set((await User.findAll({ attributes: ['id'], raw: true, transaction })).map((u) => u.id));
+
+    for (const { key, model, refs = {}, selfRef, files = [], users = [], keepTimestamps } of ENTITY_TABLES) {
       const map = new Map();
       idMaps[key] = map;
       const pendingParents = [];
 
       for (const row of data.entities[key] || []) {
-        const values = withoutKeys(row, ['id', 'createdAt', 'updatedAt', 'universe_id']);
+        const values = withoutKeys(row, ['id', 'universe_id', ...(keepTimestamps ? [] : ['createdAt', 'updatedAt'])]);
+        for (const column of users) if (!userIds.has(values[column])) values[column] = null;
         for (const [column, refKey] of Object.entries(refs)) {
           values[column] = values[column] == null ? null : idMaps[refKey].get(values[column]) ?? null;
         }
@@ -290,7 +302,8 @@ const importUniverse = async (data, { readFile, name, transaction: outerTransact
         }
         for (const column of files) values[column] = copyFile(values[column]);
 
-        const created = await model.create({ ...values, universe_id: universe.id }, { transaction });
+        // `silent` : garde la date de modification d'origine
+        const created = await model.create({ ...values, universe_id: universe.id }, { transaction, silent: Boolean(keepTimestamps) });
         map.set(row.id, created.id);
       }
 

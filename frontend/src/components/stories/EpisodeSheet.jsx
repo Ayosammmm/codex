@@ -9,6 +9,7 @@ import { CharacterChip } from '@/components/characters/CharacterChip';
 import { SheetSection } from '@/components/entity/SheetSection';
 import { plainText, universePath } from '@/utils/universe';
 import styles from './EpisodeSheet.module.scss';
+import { EpisodeScenesSection } from '@/components/roleplay/RoleplaySections';
 
 /**
  * Fiche d'un épisode : sa place dans l'histoire, le récit, les personnages par rôle,
@@ -98,6 +99,8 @@ export function EpisodeSheet({ universe, story, episode: ep, episodes, modules, 
           </ul>
         </SheetSection>
       )}
+
+      {modules.roleplay && <EpisodeScenesSection universe={universe} episode={ep} />}
 
       {(prev || next) && (
         <nav aria-label="Épisodes voisins" className={styles.pager}>

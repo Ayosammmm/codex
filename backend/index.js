@@ -14,8 +14,10 @@ require("./models/EntityPhoto");
 require("./models/User");
 require("./models/EntityEditor");
 require("./models/EntityCollection");
+require("./models/Roleplay");
 const { authenticate, authorize } = require("./middlewares/authorize");
 const bootstrapAdmin = require("./services/bootstrapAdmin");
+const { setupRealtime } = require("./services/realtime");
 
 
 const characterRoutes = require("./routes/characterRoutes");
@@ -39,6 +41,7 @@ const authRoutes = require("./routes/authRoutes");
 const usersRoutes = require("./routes/usersRoutes");
 const editorsRoutes = require("./routes/editorsRoutes");
 const collectionsRoutes = require("./routes/collectionsRoutes");
+const roleplayRoutes = require("./routes/roleplayRoutes");
 
 const app = express();
 app.use(cors());
@@ -63,6 +66,7 @@ app.use("/api/statuses", statusesRoutes);
 app.use("/api/alignments", alignmentsRoutes);
 app.use("/api/power-ranks", powerRanksRoutes);
 app.use("/api/collections", collectionsRoutes);
+app.use("/api/roleplay", roleplayRoutes);
 app.use("/api/universes", universesRoutes);
 app.use("/api/creatures", creaturesRoutes);
 app.use("/api/episodes", episodesRoutes);
@@ -87,4 +91,6 @@ sequelize.sync({ alter: true }) // crée/maj la table automatiquement
   .catch((err) => console.error(err));
 
 const PORT = Number(process.env.PORT) || 5000;
-app.listen(PORT, () => console.log(`Server running on http://localhost:${PORT}`));
+const server = app.listen(PORT, () => console.log(`Server running on http://localhost:${PORT}`));
+// Temps réel du roleplay (WebSocket sur /api/ws)
+setupRealtime(server);
