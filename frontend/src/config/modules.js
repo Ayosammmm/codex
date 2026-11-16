@@ -1,6 +1,6 @@
 import {
   Users, MapPin, Brain, HeartHandshake, MapIcon, Building2, Dna, PawPrint, BookOpen, CalendarClock,
-  VenusAndMars, Activity, Scale, Medal, Tags, Tag, Sparkles, Library, MessagesSquare,
+  VenusAndMars, Activity, Scale, Medal, Tags, Tag, Sparkles, Library, MessagesSquare, Music,
 } from '@/components/ui/icons';
 
 /**
@@ -49,6 +49,9 @@ export const MODULES = [
 
   { key: 'roleplay', path: 'roleplay', label: 'Roleplay', icon: MessagesSquare, defaultEnabled: false, navSection: 'games',
     description: 'Roleplay écrit dans les lieux, au nom des personnages, avec scènes rattachables aux épisodes.' },
+
+  { key: 'sound', label: 'Son', icon: Music, defaultEnabled: false,
+    description: 'Thèmes musicaux des personnages, groupes et lieux ; ambiance des lieux et sons dans le roleplay.' },
 
   { key: 'collections', label: 'Collections', icon: Library, defaultEnabled: false,
     description: 'Classez toutes les entités dans des ensembles libres (saison, jeu, ère, « WIP »…) et filtrez l’univers par collection.' },

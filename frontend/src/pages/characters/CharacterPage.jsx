@@ -1,3 +1,4 @@
+import { SoundSheetSection } from '@/components/sound/SoundSections';
 import { Link } from 'react-router';
 import { ArrowLeft, Pencil } from '@/components/ui/icons';
 import { Button } from '@/components/ui/Button';
@@ -50,6 +51,7 @@ function CharacterView({ universe, character }) {
             universe={universe}
             character={character}
             modules={modules}
+            sound={on('sound') && <SoundSheetSection sounds={[{ label: 'Thème', path: character.themeSound, autoPlay: true }]} />}
             stories={on('stories') ? stories : []}
             events={on('events') ? events : []}
             dynamics={dynamics}

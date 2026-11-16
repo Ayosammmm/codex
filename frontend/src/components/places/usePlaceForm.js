@@ -35,7 +35,14 @@ export function usePlaceForm(place) {
   }
 
   const update = (patch) => setForm((f) => ({ ...f, ...patch }));
-  const setImage = (field, value) => setImages((imgs) => ({ ...imgs, [field]: value }));
+  // `undefined` : on revient au fichier enregistré (aucun changement à envoyer)
+  const setImage = (field, value) =>
+    setImages((imgs) => {
+      const next = { ...imgs };
+      if (value === undefined) delete next[field];
+      else next[field] = value;
+      return next;
+    });
   const isDirty = JSON.stringify(form) !== JSON.stringify(initial) || Object.keys(images).length > 0;
 
   const validate = () => (form.name.trim() ? {} : { name: 'Le nom du lieu est requis.' });

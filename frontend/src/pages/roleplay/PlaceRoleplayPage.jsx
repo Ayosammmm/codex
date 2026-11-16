@@ -1,4 +1,4 @@
-import { useLayoutEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { Link, useOutletContext, useParams } from 'react-router';
 import { ArrowLeft, Clapperboard, EyeOff, X } from '@/components/ui/icons';
 import { useEntityList } from '@/api/queries';
@@ -13,10 +13,15 @@ import { EmptyState, Spinner } from '@/components/ui/Feedback';
 import { Field, Input } from '@/components/ui/Field';
 import { useToast } from '@/components/ui/Toast';
 import { RpComposer } from '@/components/roleplay/RpComposer';
+import { AmbientSound } from '@/components/sound/AmbientSound';
+import { getModulesState, isModuleEnabled } from '@/config/modules';
 import { RpMessage } from '@/components/roleplay/RpMessage';
 import { continuesMessage } from '@/components/roleplay/rpMarkup';
 import styles from '@/components/roleplay/Roleplay.module.scss';
 import { universePath } from '@/utils/universe';
+
+// Volume des sons joués à l'arrivée d'un message (chaque lecteur se règle ensuite à part)
+const ARRIVING_SOUND_VOLUME = 0.5;
 
 const HRP_KEY = 'almanach.rpHideHrp';
 const readHideHrp = () => {
@@ -29,6 +34,7 @@ const readHideHrp = () => {
 
 /**
  * Fil de roleplay d'un lieu (/roleplay/lieux/:placeId) : messages en direct, masquage du HRP, et mode « scènes » pour regrouper des messages. Fond et couleurs : ceux du lieu.
+ * Module « Son » : ambiance du lieu en boucle (sinon son thème), et sons des messages joués à leur arrivée.
  */
 export default function PlaceRoleplayPage() {
   const { universe } = useOutletContext();
@@ -50,6 +56,29 @@ export default function PlaceRoleplayPage() {
   const thread = usePlaceMessages(placeId);
   const { messages } = thread;
   const mutations = useRoleplayMutations(Number(placeId));
+
+  // --- Son : ambiance du lieu, et sons des nouveaux messages des autres joués à leur arrivée ---
+  const soundOn = isModuleEnabled(getModulesState(universe), 'sound');
+  const ambientSrc = soundOn && place ? uploadUrl(place.ambientSound || place.themeSound) : null;
+  const lastHeard = useRef(null); // dernier message déjà « entendu » (null : fil pas encore chargé)
+  useEffect(() => {
+    if (!thread.isSuccess) return;
+    const top = messages.length ? messages[messages.length - 1].id : 0;
+    // Ouverture du fil : les messages déjà là ne sont pas joués
+    if (lastHeard.current === null) {
+      lastHeard.current = top;
+      return;
+    }
+    for (const m of messages) {
+      if (m.id <= lastHeard.current || !m.soundPath || m.author?.id === user?.id) continue;
+      if (soundOn) {
+        const sound = new Audio(uploadUrl(m.soundPath));
+        sound.volume = ARRIVING_SOUND_VOLUME;
+        sound.play().catch(() => {});
+      }
+    }
+    lastHeard.current = Math.max(lastHeard.current, top);
+  }, [thread.isSuccess, messages, soundOn, user]);
   const { data: overview } = useRoleplayOverview(universe.id);
   const scenes = (overview?.scenes || []).filter((s) => s.placeId === Number(placeId));
   const scenesById = new Map(scenes.map((s) => [s.id, s]));
@@ -180,6 +209,7 @@ export default function PlaceRoleplayPage() {
             <Link to={universePath(universe, `lieux/${place.id}`)}>Fiche du lieu</Link>
           </div>
           <div className={styles.threadFilters}>
+            {soundOn && <AmbientSound src={ambientSrc} />}
             <Button size="sm" variant={hideHrp ? 'primary' : 'secondary'} icon={EyeOff} aria-pressed={hideHrp} onClick={toggleHrp}>
               {hideHrp ? 'HRP masqué' : 'Masquer le HRP'}
             </Button>
@@ -276,6 +306,7 @@ export default function PlaceRoleplayPage() {
             onSend={send}
             onError={toast.error}
             sending={mutations.createMany.isPending}
+            soundEnabled={soundOn}
           />
         ) : (
           <p className={styles.readOnly}>Lecture seule : seuls les éditeurs et les admins peuvent écrire.</p>

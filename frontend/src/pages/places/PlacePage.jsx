@@ -7,6 +7,7 @@ import { entityAncestors } from '@/components/entity/tree';
 import { Button } from '@/components/ui/Button';
 import { EntityThemeZone } from '@/components/entity/EntityThemeZone';
 import { PlaceSheet } from '@/components/places/PlaceSheet';
+import { SoundSheetSection } from '@/components/sound/SoundSections';
 import { universePath } from '@/utils/universe';
 import page from '../Page.module.scss';
 import { PlaceLoader } from './PlaceLoader';
@@ -48,6 +49,16 @@ function PlaceView({ universe, place }) {
             universe={universe}
             place={enriched}
             ancestors={ancestors}
+            sound={
+              isModuleEnabled(modulesState, 'sound') && (
+                <SoundSheetSection
+                  sounds={[
+                    { label: 'Thème', path: place.themeSound, autoPlay: true },
+                    { label: 'Ambiance', path: place.ambientSound },
+                  ]}
+                />
+              )
+            }
             subplaces={subplaces}
             fauna={fauna}
             modules={{ groups: groupsOn, ranks: isModuleEnabled(modulesState, 'powerRanks'), map: isModuleEnabled(modulesState, 'map') }}

@@ -42,6 +42,8 @@ const RpMessage = sequelize.define('RpMessage', {
   content: { type: DataTypes.TEXT, allowNull: false },
   // Image jointe (/uploads/roleplay/images/...)
   imagePath: { type: DataTypes.STRING, allowNull: true },
+  // Son joint (/uploads/roleplay/sounds/...), joué chez les autres à son arrivée
+  soundPath: { type: DataTypes.STRING, allowNull: true },
   // Message entièrement hors roleplay (((…)) uniquement) : masqué par le filtre « HRP »
   isHrp: { type: DataTypes.BOOLEAN, allowNull: false, defaultValue: false },
   placeId: { type: DataTypes.INTEGER, allowNull: false },

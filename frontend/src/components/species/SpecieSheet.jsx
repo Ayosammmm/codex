@@ -69,7 +69,7 @@ export function SpecieSheet({ universe, specie: s, ancestors, subspecies, action
         {isEmpty && <p className={styles.empty}>Cette espèce n’a encore ni présentation, ni sous-espèces, ni représentants.</p>}
 
         {hasDescription && (
-          <SheetSection id="presentation" title="Présentation">
+          <SheetSection id="presentation">
             <RichText html={s.description} />
           </SheetSection>
         )}

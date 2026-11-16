@@ -17,7 +17,7 @@ import styles from './GroupSheet.module.scss';
  * - `subgroups` : groupes dont c'est le parent (depuis la liste de l'univers)
  * - `actions`   : boutons de l'en-tête (ex. « Modifier »)
  */
-export function GroupSheet({ universe, group: g, subgroups, actions }) {
+export function GroupSheet({ universe, group: g, subgroups, actions, sound = null }) {
   const { data: photos = [] } = usePhotos('group', g.id);
   const members = g.characters || [];
   const places = g.controlledPlaces || [];
@@ -53,10 +53,12 @@ export function GroupSheet({ universe, group: g, subgroups, actions }) {
       </header>
 
       {hasDescription && (
-        <SheetSection id="description" title="Présentation">
+        <SheetSection id="description">
           <RichText html={g.description} />
         </SheetSection>
       )}
+
+      {sound}
 
       <SheetSection id="organigramme" title="Organigramme">
         <GroupOrgChart universe={universe} group={g} subgroups={subgroups} />

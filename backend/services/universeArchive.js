@@ -91,7 +91,7 @@ const isZipFile = async (file) => {
 const entryTarget = (destDir, entryName) => {
   if (entryName === MANIFEST_NAME) return path.join(destDir, MANIFEST_NAME);
   if (!transfer.isLocalUpload('/' + entryName) || entryName.endsWith('/')) return null;
-  if (!transfer.IMAGE_EXTENSIONS.has(path.extname(entryName).toLowerCase())) return null;
+  if (!transfer.MEDIA_EXTENSIONS.has(path.extname(entryName).toLowerCase())) return null;
   const abs = path.resolve(destDir, entryName);
   return abs.startsWith(path.join(destDir, 'uploads') + path.sep) ? abs : null;
 };

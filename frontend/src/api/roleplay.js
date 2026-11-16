@@ -7,12 +7,13 @@ export const roleplayApi = {
   overview: (universeId) => request(`/roleplay/overview?universe_id=${universeId}`),
   messages: (placeId, { before } = {}) => request(`/roleplay/places/${placeId}/messages${before ? `?before=${before}` : ''}`),
   /** Plusieurs messages d'un coup : { parts: [{ content, characterIds }], image? } (image jointe au dernier). */
-  createMessages: (placeId, { parts, image }) => {
+  createMessages: (placeId, { parts, image, sound }) => {
     const path = `/roleplay/places/${placeId}/messages`;
-    if (!image) return request(path, { method: 'POST', body: { parts } });
+    if (!image && !sound) return request(path, { method: 'POST', body: { parts } });
     const form = new FormData();
     form.append('parts', JSON.stringify(parts));
-    form.append('image', image);
+    if (image) form.append('image', image);
+    if (sound) form.append('sound', sound);
     return request(path, { method: 'POST', body: form });
   },
   updateMessage: (id, data) => request(`/roleplay/messages/${id}`, { method: 'PUT', body: data }),

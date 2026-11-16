@@ -1,3 +1,5 @@
+import { SoundFormSection } from '@/components/sound/SoundSections';
+import { getModulesState, isModuleEnabled } from '@/config/modules';
 import { useState } from 'react';
 import { usePermissions } from '@/auth/auth';
 import { Forbidden } from '@/auth/RequireAuth';
@@ -44,6 +46,7 @@ function CharacterEditor({ universe, character }) {
   const navigate = useNavigate();
   const toast = useToast();
   const state = useCharacterForm(character);
+  const soundOn = isModuleEnabled(getModulesState(universe), 'sound');
   const { options, modules, characters } = useCharacterReferences(universe);
   const save = useSaveEntity('characters');
   const { enabled: collectionsOn } = useCollectionFilter();
@@ -109,6 +112,7 @@ function CharacterEditor({ universe, character }) {
             refs={refs}
             modules={modules}
             errors={errors}
+            sound={soundOn && <SoundFormSection entity={character} fields={[{ field: 'themeSound', label: 'Thème', hint: 'À écouter depuis sa fiche.' }]} images={state.images} setImage={(field, v) => state.setImages((imgs) => { const next = { ...imgs }; if (v === undefined) delete next[field]; else next[field] = v; return next; })} onError={toast.error} />}
             collections={!isNew && collectionsOn && <CollectionsSection universe={universe} entityType="character" entityId={character.id} />}
             editors={!isNew && <EditorsSection entityType="character" entityId={character.id} />}
             dangerZone={

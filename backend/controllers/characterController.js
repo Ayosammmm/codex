@@ -12,6 +12,7 @@ const Specie = require("../models/Specie");
 const CharacterRelation = require("../models/CharacterRelation");
 const EntityPhoto = require("../models/EntityPhoto");
 const { deleteUpload } = require("../services/universeTransfer");
+const { imageHandlers } = require("../utils/entityImages");
 const { cleanColors } = require("../utils/colors");
 
 // Relations entre personnages : nature (texte), archétype, intensité, ton, évolution
@@ -356,6 +357,7 @@ exports.deleteCharacter = async (req, res) => {
 
     deleteUpload(character.avatar);
     deleteUpload(character.background);
+    deleteUpload(character.themeSound);
     photos.forEach((photo) => deleteUpload(photo.imagePath));
 
     res.json({ message: "Character deleted", deleted: character });
@@ -481,3 +483,13 @@ exports.deleteBackground = async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 };
+
+// THÈME MUSICAL (module « Son ») : remplace l'ancien fichier, ou le retire
+const sounds = imageHandlers({
+  Model: Character,
+  folders: { themeSound: "characters/sounds" },
+  loadDetail: async (id) => normalizeRelations(await Character.findByPk(id, { include: defaultIncludes })),
+  notFound: "Character not found",
+});
+exports.uploadThemeSound = sounds.upload("themeSound");
+exports.deleteThemeSound = sounds.remove("themeSound");

@@ -7,6 +7,9 @@ import { cx } from '@/components/ui/cx';
 import { universePath } from '@/utils/universe';
 import { formatRpDate, parseRp, shoutLevel } from './rpMarkup';
 import { RpImage } from './RpImage';
+import { uploadUrl } from '@/api/client';
+import { SoundPlayer } from '@/components/sound/SoundPlayer';
+import { soundName } from '@/components/sound/soundFiles';
 import { ShoutBubble } from './ShoutBubble';
 import styles from './Roleplay.module.scss';
 
@@ -170,6 +173,7 @@ export function RpMessage({ universe, message, charactersById, hideHrp, continue
           <>
             {message.content && <RpContent content={message.content} hideHrp={hideHrp} plain={speakers.length ? 'dialogue' : 'narration'} />}
             {message.imagePath && <RpImage path={message.imagePath} />}
+            {message.soundPath && <SoundPlayer src={uploadUrl(message.soundPath)} label={soundName(message.soundPath)} volume={0.5} className={styles.messageSound} />}
           </>
         )}
       </div>

@@ -9,6 +9,8 @@ const { cleanColors, isHexColor } = require("../utils/colors");
 const { imageHandlers } = require("../utils/entityImages");
 
 const IMAGE_FOLDERS = { banner: "places/banners", background: "places/backgrounds", mapImage: "places/maps" };
+// Module « Son » : thème musical et ambiance (jouée dans le fil de roleplay du lieu)
+const SOUND_FOLDERS = { themeSound: "places/sounds", ambientSound: "places/sounds" };
 const CHARACTER_ATTRIBUTES = ["id", "firstname", "name", "title", "avatar", "colors"];
 const GROUP_ATTRIBUTES = ["id", "name", "image", "colors"];
 const PLACE_CARD_ATTRIBUTES = ["id", "name", "banner", "background", "colors", "placeTypeId", "parentId", "mapImage", "mapX", "mapY"];
@@ -328,6 +330,7 @@ exports.delete = async (req, res) => {
     await place.destroy();
 
     Object.keys(IMAGE_FOLDERS).forEach((field) => deleteUpload(place[field]));
+    Object.keys(SOUND_FOLDERS).forEach((field) => deleteUpload(place[field]));
     photos.forEach((photo) => deleteUpload(photo.imagePath));
     res.json({ message: "Lieu supprimé avec succès" });
   } catch (error) {
@@ -342,3 +345,8 @@ exports.uploadImageField = images.upload;
 exports.deleteImageField = images.remove;
 exports.uploadBackground = images.upload("background");
 exports.deleteBackground = images.remove("background");
+
+// 🔹 Sons : thème musical, ambiance
+const sounds = imageHandlers({ Model: Place, folders: SOUND_FOLDERS, loadDetail: loadPlaceDetail, notFound: "Lieu non trouvé" });
+exports.uploadSound = sounds.upload;
+exports.deleteSound = sounds.remove;

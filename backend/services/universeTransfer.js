@@ -48,6 +48,8 @@ const { RpScene, RpMessage } = require('../models/Roleplay');
 const FORMAT = 'almanach-universe';
 const UPLOADS_ROOT = path.resolve(__dirname, '..', 'uploads');
 const IMAGE_EXTENSIONS = new Set(['.jpg', '.jpeg', '.png', '.gif', '.webp', '.avif', '.svg', '.bmp']);
+// Fichiers copiés avec un univers : images et sons (module « Son »)
+const MEDIA_EXTENSIONS = new Set([...IMAGE_EXTENSIONS, ...require('../middlewares/upload').AUDIO_EXTENSIONS]);
 
 // refs     : colonne -> clé de la table référencée
 // selfRef  : colonne de hiérarchie (parent dans la même table)
@@ -63,10 +65,10 @@ const ENTITY_TABLES = [
   { key: 'groupTypes', model: GroupType },
   { key: 'collections', model: Collection },
   { key: 'species', model: Specie, selfRef: 'parentId', files: ['image', 'background'] },
-  { key: 'places', model: Place, selfRef: 'parentId', refs: { placeTypeId: 'placeTypes' }, files: ['banner', 'background', 'mapImage'] },
-  { key: 'groups', model: Group, selfRef: 'parentId', refs: { groupTypeId: 'groupTypes' }, files: ['image', 'banner', 'background'] },
+  { key: 'places', model: Place, selfRef: 'parentId', refs: { placeTypeId: 'placeTypes' }, files: ['banner', 'background', 'mapImage', 'themeSound', 'ambientSound'] },
+  { key: 'groups', model: Group, selfRef: 'parentId', refs: { groupTypeId: 'groupTypes' }, files: ['image', 'banner', 'background', 'themeSound'] },
   {
-    key: 'characters', model: Character, files: ['avatar', 'background'],
+    key: 'characters', model: Character, files: ['avatar', 'background', 'themeSound'],
     refs: { sexe_id: 'genders', statut_id: 'statuses', rank_id: 'powerRanks', alignment_id: 'alignments' },
   },
   { key: 'creatures', model: Creature, refs: { powerRankId: 'powerRanks' }, files: ['image', 'background'] },
@@ -74,7 +76,7 @@ const ENTITY_TABLES = [
   { key: 'episodes', model: Episode, files: ['background'] },
   { key: 'events', model: Event, files: ['image', 'background'] },
   { key: 'rpScenes', model: RpScene, refs: { placeId: 'places' }, users: ['createdBy'], keepTimestamps: true },
-  { key: 'rpMessages', model: RpMessage, refs: { placeId: 'places', sceneId: 'rpScenes' }, users: ['userId'], keepTimestamps: true, files: ['imagePath'] },
+  { key: 'rpMessages', model: RpMessage, refs: { placeId: 'places', sceneId: 'rpScenes' }, users: ['userId'], keepTimestamps: true, files: ['imagePath', 'soundPath'] },
 ];
 
 // La première colonne sert de filtre à l'export
@@ -151,7 +153,7 @@ const makeFileCopier = (readFile, written) => (uploadPath) => {
 
   const original = resolveUpload(uploadPath);
   const ext = path.extname(uploadPath).toLowerCase();
-  if (!original || !IMAGE_EXTENSIONS.has(ext)) return null;
+  if (!original || !MEDIA_EXTENSIONS.has(ext)) return null;
 
   const buffer = readFile(uploadPath);
   if (!buffer) return null;
@@ -446,6 +448,7 @@ module.exports = {
   // utilisés par l'archive ZIP (universeArchive.js), les tests et les scripts
   FORMAT,
   IMAGE_EXTENSIONS,
+  MEDIA_EXTENSIONS,
   collectUniverse,
   listFiles,
   isLocalUpload,

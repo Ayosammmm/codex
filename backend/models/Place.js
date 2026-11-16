@@ -48,6 +48,16 @@ const Place = sequelize.define('Place', {
     type: DataTypes.STRING,
     allowNull: true,
   },
+  // Thème musical (module « Son »)
+  themeSound: {
+    type: DataTypes.STRING,
+    allowNull: true,
+  },
+  // Ambiance d'environnement, jouée en boucle dans son fil de roleplay (module « Son »)
+  ambientSound: {
+    type: DataTypes.STRING,
+    allowNull: true,
+  },
   backgroundColor: {
     type: DataTypes.STRING(7),
     allowNull: true,

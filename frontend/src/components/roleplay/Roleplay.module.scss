@@ -626,6 +626,11 @@
   background: var(--surface-2);
 }
 
+// Son envoyé dans un message
+.messageSound {
+  margin-top: space(1.5);
+}
+
 // Visionneuse plein écran
 .viewer {
   max-width: 100vw;
@@ -698,6 +703,20 @@
   outline-offset: -6px;
 }
 
+// Pièces jointes avant l'envoi : image et/ou son, côte à côte
+.attachments {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: space(3);
+}
+
+.soundAttachment {
+  position: relative;
+  display: block;
+  min-width: min(20rem, 100%);
+}
+
 // Image jointe, avant l'envoi (alignée à gauche, comme le champ de saisie)
 .attachment > span {
   position: relative;
@@ -713,7 +732,7 @@
     border-radius: var(--r);
   }
 
-  button {
+  > button {
     position: absolute;
     top: -0.5rem;
     right: -0.5rem;

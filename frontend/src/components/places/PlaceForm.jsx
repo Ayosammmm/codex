@@ -24,7 +24,7 @@ import styles from './PlaceForm.module.scss';
  * - `state` : usePlaceForm() ; `refs` : options (usePlaceReferences) + `allPlaces`
  * - `modules` : { groups } ; `dangerZone` : zone de suppression (édition uniquement)
  */
-export function PlaceForm({ universe, place, state, refs, modules, errors, collections, editors, dangerZone }) {
+export function PlaceForm({ universe, place, state, refs, modules, errors, sound, collections, editors, dangerZone }) {
   const { form: f, update, images, setImage } = state;
   const toast = useToast();
   const isEdit = Boolean(place?.id);
@@ -52,6 +52,7 @@ export function PlaceForm({ universe, place, state, refs, modules, errors, colle
     modules.map && { id: 'carte', label: 'Carte' },
     { id: 'apparence', label: 'Apparence' },
     { id: 'album', label: 'Album photo' },
+    sound && { id: 'son', label: 'Son' },
     collections && { id: 'collections', label: 'Collections' },
     editors && { id: 'editeurs', label: 'Éditeurs' },
   ].filter(Boolean);
@@ -130,6 +131,7 @@ export function PlaceForm({ universe, place, state, refs, modules, errors, colle
           {isEdit ? <PhotoAlbum entityType="place" entityId={place.id} /> : <p className={form.note}>L’album sera disponible une fois le lieu créé.</p>}
         </FormSection>
 
+        {sound}
         {collections}
         {editors}
         {dangerZone}

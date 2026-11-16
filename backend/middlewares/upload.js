@@ -66,6 +66,53 @@ function createUploadMiddleware(subfolder = "", useIdNaming = false) {
   });
 }
 
+// --- Sons (module « Son ») : fichiers audio, 20 Mo max ---
+const AUDIO_EXTENSIONS = new Set([".mp3", ".ogg", ".oga", ".wav", ".m4a", ".aac", ".flac", ".opus", ".weba", ".webm"]);
+const MAX_AUDIO_SIZE = 20 * 1024 * 1024;
+const MAX_IMAGE_SIZE = 5 * 1024 * 1024;
+
+const isAudio = (file) => file.mimetype.startsWith("audio/") || AUDIO_EXTENSIONS.has(getFileExtension(file.originalname));
+
+/** Stockage dans un sous-dossier d'uploads, nom unique horodaté (le nom d'origine est gardé, sans espaces). */
+function diskStorage(subfolder) {
+  const dir = path.join(baseUploadDir, subfolder);
+  if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
+  return multer.diskStorage({
+    destination: (req, file, cb) => cb(null, dir),
+    filename: (req, file, cb) => cb(null, Date.now() + "-" + file.originalname.replace(/\s+/g, "_")),
+  });
+}
+
+/** Middleware d'envoi d'un fichier audio (champ unique) dans un sous-dossier d'uploads. */
+function createAudioUploadMiddleware(subfolder) {
+  return multer({
+    storage: diskStorage(subfolder),
+    fileFilter: (req, file, cb) => (isAudio(file) ? cb(null, true) : cb(new Error("Le fichier doit être un son (mp3, ogg, wav…)"))),
+    limits: { fileSize: MAX_AUDIO_SIZE },
+  });
+}
+
+/**
+ * Pièces jointes d'un message : `image` (5 Mo, vérifié par le contrôleur) et/ou `sound` (20 Mo),
+ * chacune dans son sous-dossier.
+ */
+function createAttachmentsMiddleware({ imageFolder, soundFolder }) {
+  const storages = { image: diskStorage(imageFolder), sound: diskStorage(soundFolder) };
+  const storage = {
+    _handleFile: (req, file, cb) => storages[file.fieldname]._handleFile(req, file, cb),
+    _removeFile: (req, file, cb) => storages[file.fieldname]._removeFile(req, file, cb),
+  };
+  return multer({
+    storage,
+    fileFilter: (req, file, cb) => {
+      if (file.fieldname === "image" && file.mimetype.startsWith("image/")) return cb(null, true);
+      if (file.fieldname === "sound" && isAudio(file)) return cb(null, true);
+      cb(new Error(file.fieldname === "sound" ? "Le fichier doit être un son (mp3, ogg, wav…)" : "Le fichier doit être une image"));
+    },
+    limits: { fileSize: MAX_AUDIO_SIZE },
+  }).fields([{ name: "image", maxCount: 1 }, { name: "sound", maxCount: 1 }]);
+}
+
 // Middleware par défaut (pour rétrocompatibilité)
 const upload = createUploadMiddleware();
 
@@ -94,4 +141,8 @@ module.exports = {
   uploadPlacePhoto,
   uploadGroupPhoto,
   createUploadMiddleware, // Export pour usage personnalisé si besoin
+  createAudioUploadMiddleware,
+  createAttachmentsMiddleware,
+  AUDIO_EXTENSIONS,
+  MAX_IMAGE_SIZE,
 };

@@ -107,6 +107,11 @@ const Character = sequelize.define("Character", {
     type: DataTypes.STRING,
     allowNull: true,
   },
+  // Thème musical (module « Son »)
+  themeSound: {
+    type: DataTypes.STRING,
+    allowNull: true,
+  },
   story: {
     type: DataTypes.TEXT,
     allowNull: true,

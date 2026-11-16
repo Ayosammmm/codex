@@ -44,7 +44,7 @@ function mergeRelations(character) {
  * - `modules` : modules actifs { groups, species, personality, relations, powers, ranks, roleplay }
  * - `actions` : boutons affichés en haut de la fiche (ex. « Modifier »)
  */
-export function CharacterSheet({ universe, character: c, modules, actions, stories = [], events = [], dynamics = null }) {
+export function CharacterSheet({ universe, character: c, modules, actions, stories = [], events = [], dynamics = null, sound = null }) {
   const { data: photos = [] } = usePhotos('character', c.id);
   const relations = useMemo(() => (modules.relations ? mergeRelations(c) : []), [c, modules.relations]);
   const story = STORY_FIELDS.filter((f) => (!f.module || modules[f.module]) && plainText(c[f.key]));
@@ -181,6 +181,7 @@ export function CharacterSheet({ universe, character: c, modules, actions, stori
           </SheetSection>
         )}
 
+        {sound}
         <CharacterAppearances universe={universe} character={c} stories={stories} events={events} />
         {modules.roleplay && <CharacterRoleplaySection universe={universe} character={c} />}
 

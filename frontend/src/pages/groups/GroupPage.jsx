@@ -5,6 +5,8 @@ import { useEntityList } from '@/api/queries';
 import { Button } from '@/components/ui/Button';
 import { EntityThemeZone } from '@/components/entity/EntityThemeZone';
 import { GroupSheet } from '@/components/groups/GroupSheet';
+import { SoundSheetSection } from '@/components/sound/SoundSections';
+import { getModulesState, isModuleEnabled } from '@/config/modules';
 import { universePath } from '@/utils/universe';
 import page from '../Page.module.scss';
 import { GroupLoader } from './GroupLoader';
@@ -32,6 +34,11 @@ function GroupView({ universe, group }) {
             universe={universe}
             group={group}
             subgroups={subgroups}
+            sound={
+              isModuleEnabled(getModulesState(universe), 'sound') && (
+                <SoundSheetSection sounds={[{ label: 'Thème', path: group.themeSound, autoPlay: true }]} />
+              )
+            }
             actions={
               canEdit('group', group.id) && (
                 <Button as={Link} to={universePath(universe, `groupes/${group.id}/modifier`)} variant="primary" icon={Pencil}>

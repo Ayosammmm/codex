@@ -2,7 +2,9 @@ const express = require("express");
 const router = express.Router();
 const controller = require("../controllers/characterController");
 const { uploadAvatar, createUploadMiddleware } = require("../middlewares/upload.js");
+const { createAudioUploadMiddleware } = require("../middlewares/upload.js");
 const uploadCharacterBackground = createUploadMiddleware("characters/backgrounds", true);
+const uploadThemeSound = createAudioUploadMiddleware("characters/sounds");
 
 router.post("/", controller.createCharacter);
 router.get("/", controller.getCharacters);
@@ -13,5 +15,8 @@ router.post("/:id/avatar", uploadAvatar.single("avatar"), controller.uploadAvata
 router.delete("/:id/avatar", controller.deleteAvatar);
 router.post("/:id/background", uploadCharacterBackground.single("background"), controller.uploadBackground);
 router.delete("/:id/background", controller.deleteBackground);
+// Thème musical (module « Son »)
+router.post("/:id/themeSound", uploadThemeSound.single("themeSound"), controller.uploadThemeSound);
+router.delete("/:id/themeSound", controller.deleteThemeSound);
 
 module.exports = router;

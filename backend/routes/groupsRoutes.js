@@ -1,7 +1,7 @@
 const express = require("express");
 const router = express.Router();
 const groupsController = require("../controllers/groupsController");
-const { uploadGroupImage, createUploadMiddleware } = require("../middlewares/upload");
+const { uploadGroupImage, createUploadMiddleware, createAudioUploadMiddleware } = require("../middlewares/upload");
 
 const uploadGroupBanner = createUploadMiddleware("groups/banners", true);
 const uploadGroupBackground = createUploadMiddleware("groups/backgrounds", true);
@@ -19,5 +19,10 @@ router.post("/:id/banner", uploadGroupBanner.single("banner"), groupsController.
 router.delete("/:id/banner", groupsController.deleteImageField("banner"));
 router.post("/:id/background", uploadGroupBackground.single("background"), groupsController.uploadImageField("background"));
 router.delete("/:id/background", groupsController.deleteImageField("background"));
+
+// Thème musical (module « Son »)
+const uploadThemeSound = createAudioUploadMiddleware("groups/sounds");
+router.post("/:id/themeSound", uploadThemeSound.single("themeSound"), groupsController.uploadThemeSound);
+router.delete("/:id/themeSound", groupsController.deleteThemeSound);
 
 module.exports = router;

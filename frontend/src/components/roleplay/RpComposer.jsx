@@ -1,5 +1,7 @@
 import { Fragment, useEffect, useRef, useState } from 'react';
-import { BookOpen, CircleHelp, Eye, ImagePlus, SendHorizontal, X } from '@/components/ui/icons';
+import { BookOpen, CircleHelp, Eye, ImagePlus, Music, SendHorizontal, X } from '@/components/ui/icons';
+import { SoundPlayer } from '@/components/sound/SoundPlayer';
+import { MAX_SOUND_SIZE, SOUND_ACCEPT, isSoundFile } from '@/components/sound/soundFiles';
 import { CharacterAvatar } from '@/components/characters/CharacterAvatar';
 import { characterName } from '@/config/characters';
 import { normalizeText } from '@/components/entity/useListState';
@@ -60,17 +62,20 @@ function matchCharacters(characters, query) {
  *   (« // » : plusieurs personnages parlent en même temps).
  * - Retour arrière en début de ligne : retire le dernier badge, puis fusionne avec la ligne précédente.
  * - Entrée envoie toutes les lignes d'un coup, Maj+Entrée va à la ligne.
- * - Une image peut être jointe (bouton, collage, glisser-déposer ; 5 Mo max), au dernier message.
+ * - Une image peut être jointe (bouton, collage, glisser-déposer ; 5 Mo max), au dernier message ;
+ *   de même pour un son (20 Mo max) si le module « Son » est actif (`soundEnabled`).
  * Le groupe de la dernière ligne est repris pour le message suivant (mémorisé par lieu : `storageKey`).
- * `characters` : personnages que l'utilisateur peut jouer ; `onSend({ parts, image })` ; `onError(message)`.
+ * `characters` : personnages que l'utilisateur peut jouer ; `onSend({ parts, image, sound })` ; `onError(message)`.
  */
-export function RpComposer({ characters, storageKey, onSend, onError, sending }) {
+export function RpComposer({ characters, storageKey, onSend, onError, sending, soundEnabled = false }) {
   const byId = new Map(characters.map((c) => [c.id, c]));
   const [segments, setSegments] = useState(() => [segment(readSpeakers(storageKey).filter((id) => byId.has(id)))]);
   const [mention, setMention] = useState(null); // { key, start, query, active }
   const [help, setHelp] = useState(false);
   const [preview, setPreview] = useState(false);
   const [image, setImage] = useState(null); // { file, url }
+  const [sound, setSound] = useState(null); // { file, url }
+  const soundRef = useRef(null);
   const [dragging, setDragging] = useState(false);
   const inputs = useRef(new Map());
   const focusRequest = useRef(null); // { key, caret } appliqué après le rendu
@@ -78,6 +83,7 @@ export function RpComposer({ characters, storageKey, onSend, onError, sending })
 
   // Aperçu local de l'image : URL libérée quand elle change ou à la fermeture
   useEffect(() => () => image && URL.revokeObjectURL(image.url), [image]);
+  useEffect(() => () => sound && URL.revokeObjectURL(sound.url), [sound]);
 
   // Focus demandé par une action (nouvelle ligne, fusion...) : une fois la ligne affichée
   useEffect(() => {
@@ -104,13 +110,19 @@ export function RpComposer({ characters, storageKey, onSend, onError, sending })
 
   const suggestions = mention ? [...(matchesNarrator(mention.query) ? [NARRATOR] : []), ...matchCharacters(characters, mention.query)] : [];
 
+  // Image, ou son si le module « Son » est actif
   const attach = (file) => {
     if (!file) return;
-    if (!file.type.startsWith('image/')) return onError?.('Seules les images peuvent être envoyées.');
+    if (soundEnabled && isSoundFile(file)) {
+      if (file.size > MAX_SOUND_SIZE) return onError?.('Son trop lourd (20 Mo maximum).');
+      return setSound({ file, url: URL.createObjectURL(file) });
+    }
+    if (!file.type.startsWith('image/')) return onError?.(soundEnabled ? 'Seuls les images et les sons peuvent être envoyés.' : 'Seules les images peuvent être envoyées.');
     if (file.size > MAX_IMAGE_SIZE) return onError?.('Image trop lourde (5 Mo maximum).');
     setImage({ file, url: URL.createObjectURL(file) });
   };
-  const imageFrom = (dataTransfer) => [...(dataTransfer?.files || [])].find((f) => f.type.startsWith('image/'));
+  const imageFrom = (dataTransfer) =>
+    [...(dataTransfer?.files || [])].find((f) => f.type.startsWith('image/') || (soundEnabled && isSoundFile(f)));
 
   const update = (key, patch) => setSegments((list) => list.map((s) => (s.key === key ? { ...s, ...patch } : s)));
 
@@ -207,21 +219,22 @@ export function RpComposer({ characters, storageKey, onSend, onError, sending })
     }
   };
 
-  // Messages à envoyer : une ligne = un message (lignes vides ignorées ; l'image va au dernier)
+  // Messages à envoyer : une ligne = un message (lignes vides ignorées ; image et son vont au dernier)
   const parts = segments.map((s) => ({ content: s.text.trim(), characterIds: s.characterIds })).filter((p) => p.content);
-  if (image && !parts.length) parts.push({ content: '', characterIds: segments[segments.length - 1].characterIds });
+  if ((image || sound) && !parts.length) parts.push({ content: '', characterIds: segments[segments.length - 1].characterIds });
   const canSend = parts.length > 0 && !sending;
 
   const send = async () => {
     if (!canSend) return;
     try {
-      await onSend({ parts, image: image?.file });
+      await onSend({ parts, image: image?.file, sound: sound?.file });
       // Le groupe de la dernière ligne est repris pour la suite
       const keep = segments[segments.length - 1].characterIds;
       writeSpeakers(storageKey, keep);
       const fresh = segment(keep);
       setSegments([fresh]);
       setImage(null);
+      setSound(null);
       setMention(null);
       focus(fresh.key, 0);
     } catch {
@@ -277,14 +290,24 @@ export function RpComposer({ characters, storageKey, onSend, onError, sending })
           ))}
         </div>
       )}
-      {image && (
-        <div className={styles.attachment}>
-          <span>
-            <img src={image.url} alt="Image jointe" />
-            <button type="button" onClick={() => setImage(null)} aria-label="Retirer l’image" title="Retirer l’image">
-              <X aria-hidden />
-            </button>
-          </span>
+      {(image || sound) && (
+        <div className={cx(styles.attachment, styles.attachments)}>
+          {image && (
+            <span>
+              <img src={image.url} alt="Image jointe" />
+              <button type="button" onClick={() => setImage(null)} aria-label="Retirer l’image" title="Retirer l’image">
+                <X aria-hidden />
+              </button>
+            </span>
+          )}
+          {sound && (
+            <span className={styles.soundAttachment}>
+              <SoundPlayer src={sound.url} label={sound.file.name} />
+              <button type="button" onClick={() => setSound(null)} aria-label="Retirer le son" title="Retirer le son">
+                <X aria-hidden />
+              </button>
+            </span>
+          )}
         </div>
       )}
       <div className={cx(styles.composerRow, styles.inputRow)}>
@@ -389,6 +412,23 @@ export function RpComposer({ characters, storageKey, onSend, onError, sending })
               e.target.value = '';
             }}
           />
+          {soundEnabled && (
+            <>
+              <button type="button" className={styles.toolButton} onClick={() => soundRef.current?.click()} title="Joindre un son (joué chez les autres à son arrivée)" aria-label="Joindre un son">
+                <Music aria-hidden />
+              </button>
+              <input
+                ref={soundRef}
+                type="file"
+                accept={SOUND_ACCEPT}
+                hidden
+                onChange={(e) => {
+                  attach(e.target.files?.[0]);
+                  e.target.value = '';
+                }}
+              />
+            </>
+          )}
           <button type="button" className={cx(styles.toolButton, help && styles.toolOn)} aria-pressed={help} onClick={() => setHelp((h) => !h)} title="Balises" aria-label="Afficher les balises">
             <CircleHelp aria-hidden />
           </button>

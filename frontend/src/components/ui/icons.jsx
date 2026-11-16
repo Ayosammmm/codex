@@ -72,10 +72,13 @@ import {
   Minus as LucideMinus,
   Monitor as LucideMonitor,
   Moon as LucideMoon,
+  Music as LucideMusic,
   Network as LucideNetwork,
+  Pause as LucidePause,
   PawPrint as LucidePawPrint,
   Pencil as LucidePencil,
   PencilLine as LucidePencilLine,
+  Play as LucidePlay,
   Plus as LucidePlus,
   PowerOff as LucidePowerOff,
   Quote as LucideQuote,
@@ -111,6 +114,8 @@ import {
   Users as LucideUsers,
   UsersRound as LucideUsersRound,
   VenusAndMars as LucideVenusAndMars,
+  Volume2 as LucideVolume2,
+  VolumeX as LucideVolumeX,
   X as LucideX,
 } from 'lucide-react';
 import { MEDIEVAL_ICONS } from './medievalIcons';
@@ -304,10 +309,13 @@ export const MessagesSquare = themed('MessagesSquare', LucideMessagesSquare);
 export const Minus = themed('Minus', LucideMinus);
 export const Monitor = themed('Monitor', LucideMonitor);
 export const Moon = themed('Moon', LucideMoon);
+export const Music = themed('Music', LucideMusic);
 export const Network = themed('Network', LucideNetwork);
+export const Pause = themed('Pause', LucidePause);
 export const PawPrint = themed('PawPrint', LucidePawPrint);
 export const Pencil = themed('Pencil', LucidePencil);
 export const PencilLine = themed('PencilLine', LucidePencilLine);
+export const Play = themed('Play', LucidePlay);
 export const Plus = themed('Plus', LucidePlus);
 export const PowerOff = themed('PowerOff', LucidePowerOff);
 export const Quote = themed('Quote', LucideQuote);
@@ -343,6 +351,8 @@ export const UserPlus = themed('UserPlus', LucideUserPlus);
 export const Users = themed('Users', LucideUsers);
 export const UsersRound = themed('UsersRound', LucideUsersRound);
 export const VenusAndMars = themed('VenusAndMars', LucideVenusAndMars);
+export const Volume2 = themed('Volume2', LucideVolume2);
+export const VolumeX = themed('VolumeX', LucideVolumeX);
 export const X = themed('X', LucideX);
 
 /**

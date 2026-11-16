@@ -289,15 +289,18 @@
 }
 
 // --- Modules ---
+// Modules sur 2 colonnes (1 sur écran étroit) ; un module garde ses sous-modules avec lui
 .moduleList {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 20rem), 1fr));
+  column-gap: space(6);
   margin-block: space(-2);
+  // Trait sous chaque ligne de la grille, sauf la dernière (masqué par la découpe du bas)
+  clip-path: inset(-1rem -1rem var(--border-w) -1rem);
 
   > li {
     padding-block: space(2);
-
-    & + li {
-      border-top: var(--border-w) solid var(--border);
-    }
+    border-bottom: var(--border-w) solid var(--border);
   }
 }
 

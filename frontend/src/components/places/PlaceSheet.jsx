@@ -25,7 +25,7 @@ const byName = (a, b) => a.name.localeCompare(b.name, 'fr');
  * - `fauna` : créatures qui vivent ici (module Bestiaire)
  * - `modules` : { groups } ; `actions` : boutons de l'en-tête (ex. « Modifier »)
  */
-export function PlaceSheet({ universe, place: p, ancestors, subplaces, fauna = [], modules, actions }) {
+export function PlaceSheet({ universe, place: p, ancestors, subplaces, fauna = [], modules, actions, sound = null }) {
   const { data: photos = [] } = usePhotos('place', p.id);
   const image = placeImage(p);
   const navigate = useNavigate();
@@ -69,10 +69,12 @@ export function PlaceSheet({ universe, place: p, ancestors, subplaces, fauna = [
       </header>
 
       {plainText(p.description) && (
-        <SheetSection id="presentation" title="Présentation">
+        <SheetSection id="presentation">
           <RichText html={p.description} />
         </SheetSection>
       )}
+
+      {sound}
 
       {modules.map && p.mapImage && (
         <SheetSection id="carte" title="Carte">

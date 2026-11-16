@@ -65,6 +65,11 @@ const Group = sequelize.define('Group', {
     type: DataTypes.STRING,
     allowNull: true,
   },
+  // Thème musical (module « Son »)
+  themeSound: {
+    type: DataTypes.STRING,
+    allowNull: true,
+  },
   backgroundColor: {
     type: DataTypes.STRING(7),
     allowNull: true,

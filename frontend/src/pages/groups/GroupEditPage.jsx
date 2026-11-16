@@ -1,3 +1,5 @@
+import { SoundFormSection } from '@/components/sound/SoundSections';
+import { getModulesState, isModuleEnabled } from '@/config/modules';
 import { useState } from 'react';
 import { usePermissions } from '@/auth/auth';
 import { Forbidden } from '@/auth/RequireAuth';
@@ -42,6 +44,7 @@ function GroupEditor({ universe, group }) {
   const navigate = useNavigate();
   const toast = useToast();
   const state = useGroupForm(group);
+  const soundOn = isModuleEnabled(getModulesState(universe), 'sound');
   const { options, groups, characters } = useGroupReferences(universe);
   const save = useSaveEntity('groups');
   const { enabled: collectionsOn } = useCollectionFilter();
@@ -111,6 +114,7 @@ function GroupEditor({ universe, group }) {
             state={state}
             refs={refs}
             errors={errors}
+            sound={soundOn && <SoundFormSection entity={group} fields={[{ field: 'themeSound', label: 'Thème', hint: 'À écouter depuis sa fiche.' }]} images={state.images} setImage={state.setImage} onError={toast.error} />}
             collections={!isNew && collectionsOn && <CollectionsSection universe={universe} entityType="group" entityId={group.id} />}
             editors={!isNew && <EditorsSection entityType="group" entityId={group.id} />}
             dangerZone={

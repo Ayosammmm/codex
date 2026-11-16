@@ -1,3 +1,11 @@
+import { SoundFormSection } from '@/components/sound/SoundSections';
+import { getModulesState, isModuleEnabled } from '@/config/modules';
+
+// Module « Son » : thème du lieu et ambiance de son fil de roleplay
+const PLACE_SOUNDS = [
+  { field: 'themeSound', label: 'Thème', hint: 'À écouter depuis sa fiche.' },
+  { field: 'ambientSound', label: 'Ambiance', hint: 'Jouée en boucle dans son fil de roleplay (sinon, son thème musical).' },
+];
 import { useState } from 'react';
 import { usePermissions } from '@/auth/auth';
 import { Forbidden } from '@/auth/RequireAuth';
@@ -42,6 +50,7 @@ function PlaceEditor({ universe, place }) {
   const navigate = useNavigate();
   const toast = useToast();
   const state = usePlaceForm(place);
+  const soundOn = isModuleEnabled(getModulesState(universe), 'sound');
   const { options, places, modules } = usePlaceReferences(universe);
   const save = useSaveEntity('places');
   const { enabled: collectionsOn } = useCollectionFilter();
@@ -112,6 +121,7 @@ function PlaceEditor({ universe, place }) {
             refs={refs}
             modules={modules}
             errors={errors}
+            sound={soundOn && <SoundFormSection entity={place} fields={PLACE_SOUNDS} images={state.images} setImage={state.setImage} onError={toast.error} />}
             collections={!isNew && collectionsOn && <CollectionsSection universe={universe} entityType="place" entityId={place.id} />}
             editors={!isNew && <EditorsSection entityType="place" entityId={place.id} />}
             dangerZone={

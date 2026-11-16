@@ -289,6 +289,7 @@ exports.delete = async (req, res) => {
     await group.destroy();
 
     Object.keys(IMAGE_FIELDS).forEach((field) => deleteUpload(group[field]));
+    deleteUpload(group.themeSound);
     photos.forEach((photo) => deleteUpload(photo.imagePath));
     res.json({ message: "Groupe supprimé avec succès" });
   } catch (error) {
@@ -302,6 +303,11 @@ const imageFolders = Object.fromEntries(Object.entries(IMAGE_FIELDS).map(([field
 const images = imageHandlers({ Model: Group, folders: imageFolders, loadDetail: loadGroupDetail, notFound: "Groupe non trouvé" });
 exports.uploadImageField = images.upload;
 exports.deleteImageField = images.remove;
+
+// Thème musical (module « Son »)
+const sounds = imageHandlers({ Model: Group, folders: { themeSound: "groups/sounds" }, loadDetail: loadGroupDetail, notFound: "Groupe non trouvé" });
+exports.uploadThemeSound = sounds.upload("themeSound");
+exports.deleteThemeSound = sounds.remove("themeSound");
 
 // Anciennes routes (logo)
 exports.uploadImage = images.upload("image");

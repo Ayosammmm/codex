@@ -11,7 +11,10 @@ const { deleteUpload } = require('../services/universeTransfer');
 
 // Sous-dossier d'uploads des images envoyées dans les fils (voir routes/roleplayRoutes.js)
 const IMAGE_FOLDER = 'roleplay/images';
+const SOUND_FOLDER = 'roleplay/sounds';
 exports.IMAGE_FOLDER = IMAGE_FOLDER;
+exports.SOUND_FOLDER = SOUND_FOLDER;
+const { MAX_IMAGE_SIZE } = require('../middlewares/upload');
 
 /*
  * Roleplay écrit : fil de messages par lieu, scènes, liens scène ↔ épisode.
@@ -63,6 +66,7 @@ async function serializeMessages(messages) {
     sceneId: m.sceneId,
     content: m.content,
     imagePath: m.imagePath,
+    soundPath: m.soundPath,
     isHrp: m.isHrp,
     author: m.author ? { id: m.author.id, displayName: m.author.displayName } : null,
     characterIds: speakers.get(m.id) || [],
@@ -170,8 +174,12 @@ const MAX_PARTS = 20;
  * Tout ou rien : un message refusé annule les autres.
  */
 exports.createMessages = handle('createMessages', async (req, res) => {
-  const imagePath = req.file ? `/uploads/${IMAGE_FOLDER}/${req.file.filename}` : null;
+  const imageFile = req.files?.image?.[0];
+  const soundFile = req.files?.sound?.[0];
+  const imagePath = imageFile ? `/uploads/${IMAGE_FOLDER}/${imageFile.filename}` : null;
+  const soundPath = soundFile ? `/uploads/${SOUND_FOLDER}/${soundFile.filename}` : null;
   try {
+    if (imageFile && imageFile.size > MAX_IMAGE_SIZE) throw httpError(400, 'Image trop lourde (5 Mo maximum).');
     const place = await findPlace(req.params.placeId);
     let parts = req.body?.parts;
     if (typeof parts === 'string') {
@@ -186,18 +194,22 @@ exports.createMessages = handle('createMessages', async (req, res) => {
 
     const cleaned = [];
     for (const [i, part] of parts.entries()) {
-      const withImage = Boolean(imagePath) && i === parts.length - 1;
+      // Image et son vont au dernier message
+      const last = i === parts.length - 1;
       const characterIds = toIds(part?.characterIds);
       await checkSpeakers(req.user, place, characterIds);
-      const content = cleanContent(part?.content, { allowEmpty: withImage });
-      cleaned.push({ content, characterIds, imagePath: withImage ? imagePath : null });
+      const content = cleanContent(part?.content, { allowEmpty: last && Boolean(imagePath || soundPath) });
+      cleaned.push({ content, characterIds, imagePath: last ? imagePath : null, soundPath: last ? soundPath : null });
     }
 
     const ids = await sequelize.transaction(async (transaction) => {
       const created = [];
-      for (const { content, characterIds, imagePath: image } of cleaned) {
+      for (const { content, characterIds, imagePath: image, soundPath: sound } of cleaned) {
         const message = await RpMessage.create(
-          { placeId: place.id, universe_id: place.universe_id, userId: req.user.id, content, imagePath: image, isHrp: !image && isHrpContent(content) },
+          {
+            placeId: place.id, universe_id: place.universe_id, userId: req.user.id, content,
+            imagePath: image, soundPath: sound, isHrp: !image && !sound && isHrpContent(content),
+          },
           { transaction },
         );
         await setSpeakers(message.id, characterIds, transaction);
@@ -213,7 +225,9 @@ exports.createMessages = handle('createMessages', async (req, res) => {
     }
     res.status(201).json(messages);
   } catch (error) {
+    // Envoi refusé : les fichiers reçus ne servent à rien
     if (imagePath) deleteUpload(imagePath);
+    if (soundPath) deleteUpload(soundPath);
     throw error;
   }
 });
@@ -228,7 +242,7 @@ const findOwnMessage = async (req) => {
 exports.updateMessage = handle('updateMessage', async (req, res) => {
   const message = await findOwnMessage(req);
   const place = await findPlace(message.placeId);
-  const content = req.body?.content !== undefined ? cleanContent(req.body.content, { allowEmpty: Boolean(message.imagePath) }) : message.content;
+  const content = req.body?.content !== undefined ? cleanContent(req.body.content, { allowEmpty: Boolean(message.imagePath || message.soundPath) }) : message.content;
   const characterIds = req.body?.characterIds !== undefined ? toIds(req.body.characterIds) : null;
 
   if (characterIds) {
@@ -237,7 +251,7 @@ exports.updateMessage = handle('updateMessage', async (req, res) => {
     await checkSpeakers(req.user, place, characterIds.filter((id) => !current.includes(id)));
   }
   await sequelize.transaction(async (transaction) => {
-    await message.update({ content, isHrp: !message.imagePath && isHrpContent(content) }, { transaction });
+    await message.update({ content, isHrp: !message.imagePath && !message.soundPath && isHrpContent(content) }, { transaction });
     if (characterIds) await setSpeakers(message.id, characterIds, transaction);
   });
   const updated = await loadMessage(message.id);
@@ -247,9 +261,10 @@ exports.updateMessage = handle('updateMessage', async (req, res) => {
 
 exports.deleteMessage = handle('deleteMessage', async (req, res) => {
   const message = await findOwnMessage(req);
-  const { id, placeId, sceneId, imagePath } = message;
+  const { id, placeId, sceneId, imagePath, soundPath } = message;
   await message.destroy();
   if (imagePath) deleteUpload(imagePath);
+  if (soundPath) deleteUpload(soundPath);
   broadcast(placeId, { type: 'message:deleted', messageId: id, sceneId });
   res.json({ id });
 });
