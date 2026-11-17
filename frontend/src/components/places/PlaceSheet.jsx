@@ -9,6 +9,7 @@ import { RichText } from '@/components/ui/RichText';
 import { CharacterChip } from '@/components/characters/CharacterChip';
 import { EntityBanner } from '@/components/entity/EntityBanner';
 import { PhotoGallery } from '@/components/entity/PhotoGallery';
+import { ModFieldsSheetSections } from '@/mods/ModFieldsSections';
 import { SheetSection } from '@/components/entity/SheetSection';
 import { GroupLogo } from '@/components/groups/GroupLogo';
 import { entityColorVars } from '@/theme/universeTheme';
@@ -154,6 +155,8 @@ export function PlaceSheet({ universe, place: p, ancestors, subplaces, fauna = [
           </ul>
         </SheetSection>
       )}
+
+      <ModFieldsSheetSections entityType="place" entityId={p.id} />
 
       {photos.length > 0 && (
         <SheetSection id="album" title="Album photo">

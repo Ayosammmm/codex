@@ -2,6 +2,8 @@ import { useState } from 'react';
 import { usePermissions } from '@/auth/auth';
 import { Forbidden } from '@/auth/RequireAuth';
 import { EditorsSection } from '@/components/entity/EditorsSection';
+import { ModFieldsFormSection } from '@/mods/ModFieldsSections';
+import { useModFieldsToc } from '@/mods/useModFieldColumns';
 import { CollectionsSection } from '@/components/collections/CollectionsSection';
 import { useCollectionFilter } from '@/components/collections/collectionFilter';
 import { Link, useNavigate, useOutletContext, useParams } from 'react-router';
@@ -45,6 +47,7 @@ function CreatureEditor({ universe, creature }) {
   const { options, modules } = useCreatureReferences(universe);
   const save = useSaveEntity('creatures');
   const { enabled: collectionsOn } = useCollectionFilter();
+  const modFieldsOn = Boolean(useModFieldsToc('creature'));
   const remove = useDeleteEntity('creatures');
   const [errors, setErrors] = useState({});
   const [confirmDelete, setConfirmDelete] = useState(false);
@@ -112,6 +115,7 @@ function CreatureEditor({ universe, creature }) {
             refs={refs}
             modules={modules}
             errors={errors}
+            modFields={modFieldsOn && <ModFieldsFormSection universe={universe} entityType="creature" entityId={creature?.id} />}
             collections={!isNew && collectionsOn && <CollectionsSection universe={universe} entityType="creature" entityId={creature.id} />}
             editors={!isNew && <EditorsSection entityType="creature" entityId={creature.id} />}
             dangerZone={

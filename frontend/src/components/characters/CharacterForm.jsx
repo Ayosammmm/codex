@@ -29,7 +29,7 @@ import styles from '@/components/entity/EntityForm.module.scss';
  * - `modules`    : modules actifs { groups, species, personality, relations, powers, ranks }
  * - `dangerZone` : contenu de la zone de suppression (édition uniquement)
  */
-export function CharacterForm({ universe, character, state, refs, modules, errors, sound, collections, editors, dangerZone }) {
+export function CharacterForm({ universe, character, state, refs, modules, errors, sound, modFields, collections, editors, dangerZone }) {
   const { form, update, images, setImages } = state;
   const toast = useToast();
   const avatar = useImagePreview(character?.avatar, images.avatar);
@@ -57,6 +57,7 @@ export function CharacterForm({ universe, character, state, refs, modules, error
     { id: 'apparence', label: 'Apparence' },
     { id: 'album', label: 'Album photo' },
     sound && { id: 'son', label: 'Son' },
+    modFields && { id: 'champs-mods', label: 'Champs des mods' },
     collections && { id: 'collections', label: 'Collections' },
     editors && { id: 'editeurs', label: 'Éditeurs' },
   ].filter(Boolean);
@@ -221,6 +222,7 @@ export function CharacterForm({ universe, character, state, refs, modules, error
         </FormSection>
 
         {sound}
+        {modFields}
         {collections}
         {editors}
         {dangerZone}

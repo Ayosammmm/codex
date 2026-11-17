@@ -12,7 +12,7 @@ const EntityPhoto = sequelize.define('EntityPhoto', {
     primaryKey: true,
   },
   entityType: {
-    type: DataTypes.ENUM('character', 'creature', 'place', 'group', 'specie'),
+    type: DataTypes.ENUM('character', 'creature', 'place', 'group', 'specie', 'custom'),
     allowNull: false,
   },
   entityId: {

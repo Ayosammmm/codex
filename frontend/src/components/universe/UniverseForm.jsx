@@ -10,6 +10,8 @@ import { Switch } from '@/components/ui/Switch';
 import { cx } from '@/components/ui/cx';
 import { useToast } from '@/components/ui/Toast';
 import { UniversePreview } from './UniversePreview';
+import { ModsSection } from '@/mods/ModsSection';
+import { useMods } from '@/api/mods';
 import styles from './UniverseForm.module.scss';
 import entityStyles from '@/components/entity/EntityForm.module.scss';
 
@@ -41,6 +43,7 @@ export function UniverseForm({
 }) {
   const { form, update, images, setImage } = state;
   const toast = useToast();
+  const { data: installedMods = [] } = useMods();
 
   // Aperçu : image enregistrée, sauf si elle a été retirée (les fichiers choisis sont gérés par l'aperçu)
   const savedImage = (field) => (images[field] === null ? null : uploadUrl(universe?.[field]));
@@ -51,6 +54,7 @@ export function UniverseForm({
     ...beforeAppearanceToc,
     { id: 'apparence', label: 'Apparence' },
     { id: 'modules', label: 'Modules' },
+    { id: 'mods', label: 'Mods' },
     ...extraToc,
   ];
 
@@ -62,6 +66,7 @@ export function UniverseForm({
         {beforeAppearance}
         <AppearanceSection form={form} update={update} />
         <ModulesSection form={form} update={update} />
+        <ModsSection mods={installedMods} value={form.mods} onChange={(mods) => update({ mods })} />
         {extraSections}
       </div>
 

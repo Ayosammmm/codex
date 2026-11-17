@@ -1,0 +1,46 @@
+{
+  "id": "artefacts",
+  "name": "Artefacts",
+  "version": "1.0.0",
+  "author": "Almanach",
+  "description": "Exemple de mod : un type de fiche « Artefact », un champ « Mana » sur les personnages et une page « Trésor » qui tire un artefact au sort.",
+  "icon": "Gem",
+  "entityTypes": [
+    {
+      "key": "artefact",
+      "label": "Artefact",
+      "plural": "Artefacts",
+      "icon": "Gem",
+      "hierarchy": true,
+      "description": "Objets de pouvoir, reliques et armes légendaires.",
+      "fields": [
+        {
+          "key": "rarete",
+          "label": "Rareté",
+          "type": "select",
+          "card": true,
+          "options": [
+            { "value": "commun", "label": "Commun", "color": "#8a8478" },
+            { "value": "rare", "label": "Rare", "color": "#2b6cb0" },
+            { "value": "legendaire", "label": "Légendaire", "color": "#d4a017" }
+          ]
+        },
+        { "key": "porteur", "label": "Porteur", "type": "ref", "entity": "character", "card": true },
+        { "key": "lieu", "label": "Lieu de repos", "type": "ref", "entity": "place" },
+        { "key": "puissance", "label": "Puissance", "type": "number", "min": 0, "max": 10 },
+        { "key": "maudit", "label": "Maudit", "type": "boolean" },
+        { "key": "composants", "label": "Composants", "type": "ref", "entity": "artefact", "multiple": true, "table": false },
+        { "key": "legende", "label": "Légende", "type": "richtext" }
+      ]
+    }
+  ],
+  "fields": {
+    "character": [
+      { "key": "mana", "label": "Mana", "type": "number", "min": 0, "unit": "pts" },
+      { "key": "affinite", "label": "Affinité", "type": "multiselect", "options": ["Feu", "Eau", "Terre", "Air", "Ombre"] }
+    ]
+  },
+  "pages": [
+    { "key": "tresor", "label": "Trésor", "icon": "Trophy", "entry": "index.html", "navSection": "games" }
+  ]
+}

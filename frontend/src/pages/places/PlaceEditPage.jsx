@@ -10,6 +10,8 @@ import { useState } from 'react';
 import { usePermissions } from '@/auth/auth';
 import { Forbidden } from '@/auth/RequireAuth';
 import { EditorsSection } from '@/components/entity/EditorsSection';
+import { ModFieldsFormSection } from '@/mods/ModFieldsSections';
+import { useModFieldsToc } from '@/mods/useModFieldColumns';
 import { CollectionsSection } from '@/components/collections/CollectionsSection';
 import { useCollectionFilter } from '@/components/collections/collectionFilter';
 import { Link, useNavigate, useOutletContext, useParams } from 'react-router';
@@ -54,6 +56,7 @@ function PlaceEditor({ universe, place }) {
   const { options, places, modules } = usePlaceReferences(universe);
   const save = useSaveEntity('places');
   const { enabled: collectionsOn } = useCollectionFilter();
+  const modFieldsOn = Boolean(useModFieldsToc('place'));
   const remove = useDeleteEntity('places');
   const [errors, setErrors] = useState({});
   const [confirmDelete, setConfirmDelete] = useState(false);
@@ -122,6 +125,7 @@ function PlaceEditor({ universe, place }) {
             modules={modules}
             errors={errors}
             sound={soundOn && <SoundFormSection entity={place} fields={PLACE_SOUNDS} images={state.images} setImage={state.setImage} onError={toast.error} />}
+            modFields={modFieldsOn && <ModFieldsFormSection universe={universe} entityType="place" entityId={place?.id} />}
             collections={!isNew && collectionsOn && <CollectionsSection universe={universe} entityType="place" entityId={place.id} />}
             editors={!isNew && <EditorsSection entityType="place" entityId={place.id} />}
             dangerZone={

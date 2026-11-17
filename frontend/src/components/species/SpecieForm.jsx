@@ -22,7 +22,7 @@ import styles from './SpecieForm.module.scss';
  * - `state` : useSpecieForm() ; `refs` : options (useSpeciesReferences) + `allSpecies`
  * - `dangerZone` : zone de suppression (édition uniquement)
  */
-export function SpecieForm({ specie, state, refs, errors, collections, editors, dangerZone }) {
+export function SpecieForm({ specie, state, refs, errors, modFields, collections, editors, dangerZone }) {
   const { form: f, update, images, setImage } = state;
   const toast = useToast();
   const isEdit = Boolean(specie?.id);
@@ -43,6 +43,7 @@ export function SpecieForm({ specie, state, refs, errors, collections, editors, 
     { id: 'personnages', label: 'Personnages' },
     { id: 'apparence', label: 'Apparence' },
     { id: 'album', label: 'Album photo' },
+    modFields && { id: 'champs-mods', label: 'Champs des mods' },
     collections && { id: 'collections', label: 'Collections' },
     editors && { id: 'editeurs', label: 'Éditeurs' },
   ].filter(Boolean);
@@ -91,6 +92,7 @@ export function SpecieForm({ specie, state, refs, errors, collections, editors, 
           {isEdit ? <PhotoAlbum entityType="specie" entityId={specie.id} /> : <p className={form.note}>L’album sera disponible une fois l’espèce créée.</p>}
         </FormSection>
 
+        {modFields}
         {collections}
         {editors}
         {dangerZone}

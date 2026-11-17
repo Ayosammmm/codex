@@ -15,6 +15,7 @@
  *   joins:    { characters_groups: [...], ... },
  *   photos:   [...],
  *   collectionLinks: [...],
+ *   metadata: [...],          // champs ajoutés par les mods aux entités de base (entity_metadata)
  *   files:    { '/uploads/...': 'data:image/png;base64,...' }   // anciens exports JSON (version 1) uniquement
  * }
  */
@@ -44,6 +45,7 @@ const Collection = require('../models/Collection');
 const EntityCollection = require('../models/EntityCollection');
 const User = require('../models/User');
 const { RpScene, RpMessage } = require('../models/Roleplay');
+const { CustomEntity, EntityMetadata, ModRecord } = require('../models/Mod');
 
 const FORMAT = 'almanach-universe';
 const UPLOADS_ROOT = path.resolve(__dirname, '..', 'uploads');
@@ -56,6 +58,7 @@ const MEDIA_EXTENSIONS = new Set([...IMAGE_EXTENSIONS, ...require('../middleware
 // files    : colonnes contenant un chemin d'image
 // users    : colonnes contenant un id de compte (vidées à l'import si le compte n'existe pas sur ce serveur)
 // keepTimestamps : dates de création / modification conservées (messages de roleplay)
+// jsonRefs : colonnes JSON pouvant contenir des références { type, id } vers des entités (données des mods)
 const ENTITY_TABLES = [
   { key: 'genders', model: Gender },
   { key: 'statuses', model: Status },
@@ -75,8 +78,10 @@ const ENTITY_TABLES = [
   { key: 'stories', model: Story, files: ['image', 'background'] },
   { key: 'episodes', model: Episode, files: ['background'] },
   { key: 'events', model: Event, files: ['image', 'background'] },
+  { key: 'customEntities', model: CustomEntity, selfRef: 'parentId', files: ['image', 'background'], jsonRefs: ['data'], keepTimestamps: true },
   { key: 'rpScenes', model: RpScene, refs: { placeId: 'places' }, users: ['createdBy'], keepTimestamps: true },
   { key: 'rpMessages', model: RpMessage, refs: { placeId: 'places', sceneId: 'rpScenes' }, users: ['userId'], keepTimestamps: true, files: ['imagePath', 'soundPath'] },
+  { key: 'modRecords', model: ModRecord, users: ['createdBy'], keepTimestamps: true, jsonRefs: ['data'] },
 ];
 
 // La première colonne sert de filtre à l'export
@@ -98,12 +103,14 @@ const JOIN_TABLES = [
   { table: 'rp_scene_episodes', refs: { sceneId: 'rpScenes', episodeId: 'episodes' } },
 ];
 
-const PHOTO_ENTITY_TABLES = { character: 'characters', creature: 'creatures', place: 'places', group: 'groups', specie: 'species' };
+const PHOTO_ENTITY_TABLES = { character: 'characters', creature: 'creatures', place: 'places', group: 'groups', specie: 'species', custom: 'customEntities' };
 // Entités pouvant être rangées dans une collection
 const COLLECTION_ENTITY_TABLES = { ...PHOTO_ENTITY_TABLES, story: 'stories', event: 'events' };
+// Références { type, id } dans les données des mods (et entités portant des métadonnées)
+const REF_ENTITY_TABLES = { ...COLLECTION_ENTITY_TABLES, episode: 'episodes' };
 const UNIVERSE_FILES = ['logo', 'banner', 'background'];
 const UNIVERSE_FIELDS = [
-  'name', 'description', 'theme', 'colors', 'backgroundColor', 'scrimColor', 'modules',
+  'name', 'description', 'theme', 'colors', 'backgroundColor', 'scrimColor', 'modules', 'mods',
   'personalityModuleEnabled', 'bestiaryEnabled', 'storiesEnabled',
 ];
 
@@ -216,7 +223,9 @@ const collectUniverse = async (universeId, { transaction } = {}) => {
     ? await EntityCollection.findAll({ where: { collectionId: { [Op.in]: ids.collections } }, raw: true, transaction })
     : [];
 
-  return { universe: plainUniverse(universe), entities, joins, photos, collectionLinks };
+  const metadata = await EntityMetadata.findAll({ where: { universe_id: universeId }, raw: true, transaction });
+
+  return { universe: plainUniverse(universe), entities, joins, photos, collectionLinks, metadata };
 };
 
 /** Liste de tous les chemins d'images référencés par un univers. */
@@ -235,6 +244,28 @@ const listFiles = (data) => {
 // Import
 // ---------------------------------------------------------------------------
 
+const parseJson = (value) => {
+  if (typeof value !== 'string') return value;
+  try { return JSON.parse(value); } catch { return null; }
+};
+
+/**
+ * Copie d'une valeur JSON dont les références { type, id } sont renvoyées vers les nouvelles entités.
+ * Une référence vers une entité absente de l'import est retirée (des listes) ou mise à null.
+ */
+const remapRefs = (value, idMaps) => {
+  if (Array.isArray(value)) {
+    return value.map((v) => remapRefs(v, idMaps)).filter((v, i) => v !== null || value[i] === null);
+  }
+  if (!value || typeof value !== 'object') return value;
+  const keys = Object.keys(value);
+  if (keys.length === 2 && REF_ENTITY_TABLES[value.type] && Number.isInteger(value.id)) {
+    const id = idMaps[REF_ENTITY_TABLES[value.type]]?.get(value.id);
+    return id ? { type: value.type, id } : null;
+  }
+  return Object.fromEntries(keys.map((k) => [k, remapRefs(value[k], idMaps)]));
+};
+
 const withoutKeys = (row, keys) => {
   const out = { ...row };
   for (const key of keys) delete out[key];
@@ -246,7 +277,7 @@ const sanitizeUniverseData = (source, copyFile, nameOverride) => {
   for (const field of UNIVERSE_FIELDS) {
     if (source[field] !== undefined) data[field] = source[field];
   }
-  for (const field of ['modules', 'colors']) {
+  for (const field of ['modules', 'colors', 'mods']) {
     if (typeof data[field] === 'string') {
       try { data[field] = JSON.parse(data[field]); } catch { data[field] = null; }
     }
@@ -287,7 +318,8 @@ const importUniverse = async (data, { readFile, name, transaction: outerTransact
     // Comptes existants sur ce serveur (un export peut venir d'une autre installation)
     const userIds = new Set((await User.findAll({ attributes: ['id'], raw: true, transaction })).map((u) => u.id));
 
-    for (const { key, model, refs = {}, selfRef, files = [], users = [], keepTimestamps } of ENTITY_TABLES) {
+    const withJsonRefs = [];
+    for (const { key, model, refs = {}, selfRef, files = [], users = [], keepTimestamps, jsonRefs = [] } of ENTITY_TABLES) {
       const map = new Map();
       idMaps[key] = map;
       const pendingParents = [];
@@ -303,16 +335,24 @@ const importUniverse = async (data, { readFile, name, transaction: outerTransact
           values[selfRef] = null;
         }
         for (const column of files) values[column] = copyFile(values[column]);
+        for (const column of jsonRefs) values[column] = parseJson(values[column]);
 
         // `silent` : garde la date de modification d'origine
         const created = await model.create({ ...values, universe_id: universe.id }, { transaction, silent: Boolean(keepTimestamps) });
         map.set(row.id, created.id);
+        if (jsonRefs.length) withJsonRefs.push({ model, id: created.id, values, jsonRefs });
       }
 
       for (const { oldId, oldParent } of pendingParents) {
         const parentId = map.get(oldParent);
         if (parentId) await model.update({ [selfRef]: parentId }, { where: { id: map.get(oldId) }, transaction });
       }
+    }
+
+    // Références des données de mods : toutes les entités existent maintenant
+    for (const { model, id, values, jsonRefs } of withJsonRefs) {
+      const patch = Object.fromEntries(jsonRefs.map((column) => [column, remapRefs(values[column], idMaps)]));
+      await model.update(patch, { where: { id }, transaction, silent: true });
     }
 
     const now = new Date();
@@ -354,6 +394,13 @@ const importUniverse = async (data, { readFile, name, transaction: outerTransact
     }
     if (links.length) await EntityCollection.bulkCreate(links, { transaction, ignoreDuplicates: true });
 
+    for (const row of data.metadata || []) {
+      const entityId = idMaps[REF_ENTITY_TABLES[row.entityType]]?.get(row.entityId);
+      const values = remapRefs(parseJson(row.data), idMaps);
+      if (!entityId || !values) continue;
+      await EntityMetadata.create({ entityType: row.entityType, entityId, universe_id: universe.id, data: values }, { transaction });
+    }
+
     return universe;
   };
 
@@ -389,6 +436,7 @@ const deleteUniverse = async (universeId) => {
     for (const photo of data.photos) {
       await EntityPhoto.destroy({ where: { id: photo.id }, transaction });
     }
+    await EntityMetadata.destroy({ where: { universe_id: universeId }, transaction });
     if (data.collectionLinks.length) {
       await EntityCollection.destroy({ where: { collectionId: { [Op.in]: data.entities.collections.map((c) => c.id) } }, transaction });
     }
@@ -436,6 +484,17 @@ const countByUniverse = async () => {
       stats[id][key] = Number(count);
     }
   }
+  // Entités des types de mods : un compteur par type (clé « custom:<modId>.<typeKey> »)
+  const custom = await CustomEntity.findAll({
+    attributes: ['universe_id', 'modId', 'typeKey', [sequelize.fn('COUNT', sequelize.col('id')), 'count']],
+    where: { universe_id: { [Op.ne]: null } },
+    group: ['universe_id', 'modId', 'typeKey'],
+    raw: true,
+  });
+  for (const { universe_id: id, modId, typeKey, count } of custom) {
+    stats[id] ??= {};
+    stats[id][`custom:${modId}.${typeKey}`] = Number(count);
+  }
   return stats;
 };
 
@@ -455,4 +514,5 @@ module.exports = {
   resolveUpload,
   importUniverse,
   readUploadFromDisk,
+  remapRefs,
 };

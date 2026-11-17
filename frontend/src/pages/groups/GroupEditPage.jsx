@@ -4,6 +4,8 @@ import { useState } from 'react';
 import { usePermissions } from '@/auth/auth';
 import { Forbidden } from '@/auth/RequireAuth';
 import { EditorsSection } from '@/components/entity/EditorsSection';
+import { ModFieldsFormSection } from '@/mods/ModFieldsSections';
+import { useModFieldsToc } from '@/mods/useModFieldColumns';
 import { CollectionsSection } from '@/components/collections/CollectionsSection';
 import { useCollectionFilter } from '@/components/collections/collectionFilter';
 import { Link, useNavigate, useOutletContext, useParams } from 'react-router';
@@ -48,6 +50,7 @@ function GroupEditor({ universe, group }) {
   const { options, groups, characters } = useGroupReferences(universe);
   const save = useSaveEntity('groups');
   const { enabled: collectionsOn } = useCollectionFilter();
+  const modFieldsOn = Boolean(useModFieldsToc('group'));
   const remove = useDeleteEntity('groups');
   const [errors, setErrors] = useState({});
   const [confirmDelete, setConfirmDelete] = useState(false);
@@ -115,6 +118,7 @@ function GroupEditor({ universe, group }) {
             refs={refs}
             errors={errors}
             sound={soundOn && <SoundFormSection entity={group} fields={[{ field: 'themeSound', label: 'Thème', hint: 'À écouter depuis sa fiche.' }]} images={state.images} setImage={state.setImage} onError={toast.error} />}
+            modFields={modFieldsOn && <ModFieldsFormSection universe={universe} entityType="group" entityId={group?.id} />}
             collections={!isNew && collectionsOn && <CollectionsSection universe={universe} entityType="group" entityId={group.id} />}
             editors={!isNew && <EditorsSection entityType="group" entityId={group.id} />}
             dangerZone={

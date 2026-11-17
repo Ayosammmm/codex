@@ -1,6 +1,7 @@
 const EntityEditor = require("../models/EntityEditor");
 const EntityCollection = require("../models/EntityCollection");
 const EntityPhoto = require("../models/EntityPhoto");
+const { EntityMetadata } = require("../models/Mod");
 const Episode = require("../models/Episode");
 const Story = require("../models/Story");
 const { hasRole, isAdmin, canEditEntity, userFromToken, ENTITY_TYPES } = require("../services/auth");
@@ -13,7 +14,10 @@ const { hasRole, isAdmin, canEditEntity, userFromToken, ENTITY_TYPES } = require
  * - entités : création par les éditeurs (qui y sont alors liés), modification / suppression
  *   par les admins ou les éditeurs liés à l'entité ;
  * - roleplay : éditeurs et admins (personnages joués et auteur vérifiés par le contrôleur) ;
- * - épisodes : selon les droits sur leur histoire ; photos et collections d'une entité : selon les droits sur l'entité.
+ * - épisodes : selon les droits sur leur histoire ; photos, collections et métadonnées de mods d'une entité :
+ *   selon les droits sur l'entité ;
+ * - mods : installation / désinstallation par les super admins ; données des pages de mods : éditeurs
+ *   (auteur ou admin vérifiés par le contrôleur).
  * Les routes /auth, /users et /editors font leurs propres vérifications.
  */
 
@@ -25,6 +29,7 @@ const ENTITY_RESOURCES = {
   creatures: "creature",
   stories: "story",
   events: "event",
+  "custom-entities": "custom",
 };
 const ADMIN_RESOURCES = new Set(["universes", "genders", "statuses", "alignments", "power-ranks", "places_type", "groups_type"]);
 const SELF_CHECKED = new Set(["auth", "users", "editors"]);
@@ -88,6 +93,13 @@ async function authorize(req, res, next) {
       return isAdmin(req.user) ? next() : deny();
     }
 
+    // --- Mods : installés par les super admins ; activés par univers dans ses paramètres (admins) ---
+    if (resource === "mods") return req.user.role === "superadmin" ? next() : deny();
+    if (resource === "mod-records") return hasRole(req.user, "editor") ? next() : deny();
+    if (resource === "entity-metadata") {
+      return ENTITY_TYPES.includes(id) && (await canEditEntity(req.user, id, toId(sub))) ? next() : deny();
+    }
+
     // --- Entités ---
     const entityType = ENTITY_RESOURCES[resource];
     if (entityType) {
@@ -105,6 +117,7 @@ async function authorize(req, res, next) {
         afterSuccess(res, () => Promise.all([
           EntityEditor.destroy({ where: { entityType, entityId: toId(id) } }),
           EntityCollection.destroy({ where: { entityType, entityId: toId(id) } }),
+          EntityMetadata.destroy({ where: { entityType, entityId: toId(id) } }),
         ]));
       }
       return next();

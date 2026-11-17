@@ -27,7 +27,7 @@ import styles from './GroupForm.module.scss';
  * - `state` : useGroupForm() ; `refs` : options (useGroupReferences) + `allGroups`, `allCharacters`
  * - `dangerZone` : zone de suppression (édition uniquement)
  */
-export function GroupForm({ universe, group, state, refs, errors, sound, collections, editors, dangerZone }) {
+export function GroupForm({ universe, group, state, refs, errors, sound, modFields, collections, editors, dangerZone }) {
   const { form: f, update, images, setImage } = state;
   const toast = useToast();
   const isEdit = Boolean(group?.id);
@@ -54,6 +54,7 @@ export function GroupForm({ universe, group, state, refs, errors, sound, collect
     { id: 'apparence', label: 'Apparence' },
     { id: 'album', label: 'Album photo' },
     sound && { id: 'son', label: 'Son' },
+    modFields && { id: 'champs-mods', label: 'Champs des mods' },
     collections && { id: 'collections', label: 'Collections' },
     editors && { id: 'editeurs', label: 'Éditeurs' },
   ].filter(Boolean);
@@ -130,6 +131,7 @@ export function GroupForm({ universe, group, state, refs, errors, sound, collect
         </FormSection>
 
         {sound}
+        {modFields}
         {collections}
         {editors}
         {dangerZone}

@@ -15,6 +15,7 @@ require("./models/User");
 require("./models/EntityEditor");
 require("./models/EntityCollection");
 require("./models/Roleplay");
+require("./models/Mod");
 const { authenticate, authorize } = require("./middlewares/authorize");
 const bootstrapAdmin = require("./services/bootstrapAdmin");
 const { setupRealtime } = require("./services/realtime");
@@ -42,12 +43,24 @@ const usersRoutes = require("./routes/usersRoutes");
 const editorsRoutes = require("./routes/editorsRoutes");
 const collectionsRoutes = require("./routes/collectionsRoutes");
 const roleplayRoutes = require("./routes/roleplayRoutes");
+const modsRoutes = require("./routes/modsRoutes");
+const customEntitiesRoutes = require("./routes/customEntitiesRoutes");
+const entityMetadataRoutes = require("./routes/entityMetadataRoutes");
+const modRecordsRoutes = require("./routes/modRecordsRoutes");
+const { serveModFiles } = require("./services/modFiles");
 
 const app = express();
 app.use(cors());
-// L'import d'univers lit lui-même le corps brut (archive ZIP ou ancien JSON) : pas de parsing ici
+// L'import d'univers et l'installation d'un mod lisent eux-mêmes le corps brut (archive ZIP) : pas de parsing ici
+const RAW_BODY = new Set(["/api/universes/import", "/api/mods"]);
 const jsonParser = express.json();
-app.use((req, res, next) => (req.path === "/api/universes/import" ? next() : jsonParser(req, res, next)));
+// Données des pages de mods (ex. simulations complètes) : corps plus volumineux
+const largeJsonParser = express.json({ limit: "5mb" });
+app.use((req, res, next) => {
+  if (RAW_BODY.has(req.path) && req.method === "POST") return next();
+  if (req.path.startsWith("/api/mod-records")) return largeJsonParser(req, res, next);
+  return jsonParser(req, res, next);
+});
 
 // Comptes et droits : toute l'API demande une connexion (voir middlewares/authorize.js)
 app.use("/api", authenticate, authorize);
@@ -67,6 +80,10 @@ app.use("/api/alignments", alignmentsRoutes);
 app.use("/api/power-ranks", powerRanksRoutes);
 app.use("/api/collections", collectionsRoutes);
 app.use("/api/roleplay", roleplayRoutes);
+app.use("/api/mods", modsRoutes);
+app.use("/api/custom-entities", customEntitiesRoutes);
+app.use("/api/entity-metadata", entityMetadataRoutes);
+app.use("/api/mod-records", modRecordsRoutes);
 app.use("/api/universes", universesRoutes);
 app.use("/api/creatures", creaturesRoutes);
 app.use("/api/episodes", episodesRoutes);
@@ -76,6 +93,8 @@ app.use("/api/entity-photos", entityPhotosRoutes);
 app.use("/api/image-proxy", imageProxyRoutes);
 
 app.use("/uploads", express.static("uploads"));
+// Fichiers des mods installés (pages en iframe isolée, sans accès à la session : voir services/modFiles.js)
+app.use("/mod-files", serveModFiles);
 
 // Erreurs non gérées par les contrôleurs (upload refusé, JSON trop volumineux...) : réponse JSON
 app.use((err, req, res, next) => {

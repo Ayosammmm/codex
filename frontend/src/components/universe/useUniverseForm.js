@@ -15,6 +15,8 @@ const toFormState = (universe) => ({
   backgroundColor: universe?.backgroundColor || null,
   scrimColor: universe?.scrimColor || null,
   modules: getModulesState(universe),
+  // Mods activés : { [modId]: true }
+  mods: universe?.mods || {},
 });
 
 /**
@@ -56,6 +58,7 @@ export function useUniverseForm(universe) {
         backgroundColor: form.backgroundMode === 'color' ? form.backgroundColor || getTheme(form.theme).colors.primary : null,
         scrimColor: form.backgroundMode === 'none' ? null : form.scrimColor,
         modules: toModulesPayload(form.modules),
+        mods: form.mods,
       },
       images: finalImages,
     };

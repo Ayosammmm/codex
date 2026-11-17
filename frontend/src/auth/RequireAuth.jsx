@@ -43,3 +43,9 @@ export function AdminOnly({ children }) {
   const { isAdmin } = usePermissions();
   return isAdmin ? children : <Forbidden>Cette page est réservée aux administrateurs.</Forbidden>;
 }
+
+/** Page réservée aux super admins (installation des mods). */
+export function SuperAdminOnly({ children }) {
+  const { user } = usePermissions();
+  return user?.role === 'superadmin' ? children : <Forbidden>Cette page est réservée aux super administrateurs.</Forbidden>;
+}

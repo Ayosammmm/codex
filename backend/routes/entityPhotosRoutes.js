@@ -10,6 +10,7 @@ const {
 } = require('../middlewares/upload');
 
 const uploadSpeciePhoto = createUploadMiddleware('species/photos', false);
+const uploadCustomPhoto = createUploadMiddleware('custom/photos', false);
 
 // Middleware pour sélectionner le bon upload selon le type d'entité
 const getUploadMiddleware = (req, res, next) => {
@@ -26,6 +27,8 @@ const getUploadMiddleware = (req, res, next) => {
       return uploadGroupPhoto.single('photo')(req, res, next);
     case 'specie':
       return uploadSpeciePhoto.single('photo')(req, res, next);
+    case 'custom':
+      return uploadCustomPhoto.single('photo')(req, res, next);
     default:
       return res.status(400).json({ error: 'Type d\'entité invalide' });
   }

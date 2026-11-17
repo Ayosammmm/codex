@@ -4,6 +4,8 @@ import { useState } from 'react';
 import { usePermissions } from '@/auth/auth';
 import { Forbidden } from '@/auth/RequireAuth';
 import { EditorsSection } from '@/components/entity/EditorsSection';
+import { ModFieldsFormSection } from '@/mods/ModFieldsSections';
+import { useModFieldsToc } from '@/mods/useModFieldColumns';
 import { CollectionsSection } from '@/components/collections/CollectionsSection';
 import { useCollectionFilter } from '@/components/collections/collectionFilter';
 import { Link, useNavigate, useOutletContext, useParams } from 'react-router';
@@ -50,6 +52,7 @@ function CharacterEditor({ universe, character }) {
   const { options, modules, characters } = useCharacterReferences(universe);
   const save = useSaveEntity('characters');
   const { enabled: collectionsOn } = useCollectionFilter();
+  const modFieldsOn = Boolean(useModFieldsToc('character'));
   const remove = useDeleteEntity('characters');
   const [errors, setErrors] = useState({});
   const [confirmDelete, setConfirmDelete] = useState(false);
@@ -113,6 +116,7 @@ function CharacterEditor({ universe, character }) {
             modules={modules}
             errors={errors}
             sound={soundOn && <SoundFormSection entity={character} fields={[{ field: 'themeSound', label: 'Thème', hint: 'À écouter depuis sa fiche.' }]} images={state.images} setImage={(field, v) => state.setImages((imgs) => { const next = { ...imgs }; if (v === undefined) delete next[field]; else next[field] = v; return next; })} onError={toast.error} />}
+            modFields={modFieldsOn && <ModFieldsFormSection universe={universe} entityType="character" entityId={character?.id} />}
             collections={!isNew && collectionsOn && <CollectionsSection universe={universe} entityType="character" entityId={character.id} />}
             editors={!isNew && <EditorsSection entityType="character" entityId={character.id} />}
             dangerZone={

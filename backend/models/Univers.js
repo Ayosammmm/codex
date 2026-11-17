@@ -84,6 +84,18 @@ const Univers = sequelize.define('Univers', {
       return value;
     },
   },
+  // Mods activés dans l'univers : { [modId]: true } (voir models/Mod.js)
+  mods: {
+    type: DataTypes.JSON,
+    allowNull: true,
+    get() {
+      const value = this.getDataValue('mods');
+      if (typeof value === 'string') {
+        try { return JSON.parse(value); } catch { return null; }
+      }
+      return value;
+    },
+  },
 }, {
   tableName: 'universes',
   timestamps: false,

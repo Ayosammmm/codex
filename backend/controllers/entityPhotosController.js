@@ -4,6 +4,7 @@ const Creature = require('../models/Creature');
 const Place = require('../models/Place');
 const Group = require('../models/Group');
 const Specie = require('../models/Specie');
+const { CustomEntity } = require('../models/Mod');
 const fs = require('fs');
 const path = require('path');
 
@@ -25,6 +26,9 @@ const validateEntity = async (entityType, entityId) => {
       break;
     case 'specie':
       entity = await Specie.findByPk(entityId);
+      break;
+    case 'custom':
+      entity = await CustomEntity.findByPk(entityId);
       break;
     default:
       return null;
@@ -77,6 +81,7 @@ exports.uploadPhoto = async (req, res) => {
         'place': 'places',
         'group': 'groups',
         'specie': 'species',
+        'custom': 'custom',
       };
       const folderName = folderMap[entityType] || entityType;
       const filePath = path.join(__dirname, '..', 'uploads', folderName, 'photos', req.file.filename);
@@ -93,6 +98,7 @@ exports.uploadPhoto = async (req, res) => {
       'place': 'places',
       'group': 'groups',
       'specie': 'species',
+      'custom': 'custom',
     };
     const folderName = folderMap[entityType] || entityType;
     const imagePath = `/uploads/${folderName}/photos/${req.file.filename}`;

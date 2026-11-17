@@ -9,6 +9,7 @@ import { EntityTable } from '@/components/entity/EntityTable';
 import { TableControls } from '@/components/entity/TableControls';
 import { useTableState } from '@/components/entity/useTableState';
 import { useEditorsColumn } from '@/components/entity/useEditorsColumn';
+import { useModFieldColumns } from '@/mods/useModFieldColumns';
 import { useCollectionsColumn } from '@/components/collections/useCollectionsColumn';
 import { GroupedSections } from '@/components/entity/GroupedSections';
 import { characterSorts, groupCharacters, useCharacterList } from '@/components/characters/useCharacterList';
@@ -30,7 +31,8 @@ export default function CharactersPage() {
   const show = { groups: modules.groups, species: modules.species, ranks: modules.ranks };
   const editorsColumn = useEditorsColumn('character');
   const collectionsColumn = useCollectionsColumn('character');
-  const columns = [...characterColumns({ linkTo, show }), collectionsColumn, editorsColumn].filter(Boolean);
+  const modColumns = useModFieldColumns('character');
+  const columns = [...characterColumns({ linkTo, show }), ...modColumns, collectionsColumn, editorsColumn].filter(Boolean);
   const table = useTableState({ storageKey: 'almanach:characters-columns', columns, items: results, entityType: 'character' });
   const newButton = canCreate && (
     <Button as={Link} to={universePath(universe, 'personnages/nouveau')} variant="primary" icon={UserPlus}>

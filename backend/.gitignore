@@ -24,3 +24,5 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+# Mods installés (fichiers envoyés depuis l’interface)
+installed-mods

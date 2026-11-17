@@ -37,9 +37,11 @@ export const RESOURCES = {
   placeTypes: createResource('/places_type'),
   groupTypes: createResource('/groups_type'),
   collections: createResource('/collections'),
+  // Entités des types déclarés par les mods (toutes celles de l'univers ; filtrées par modId / typeKey)
+  customEntities: createResource('/custom-entities'),
 };
 
-/** Albums photo (personnages, créatures, lieux, groupes). */
+/** Albums photo (personnages, créatures, lieux, groupes, espèces, entités de mods). */
 export const photosApi = {
   list: (entityType, entityId) => request(`/entity-photos/${entityType}/${entityId}`),
   upload: (entityType, entityId, file) => {

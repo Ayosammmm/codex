@@ -8,6 +8,7 @@ const Specie = require('../models/Specie');
 const Creature = require('../models/Creature');
 const Story = require('../models/Story');
 const Event = require('../models/Event');
+const { CustomEntity } = require('../models/Mod');
 const { referenceController } = require('../utils/referenceController');
 
 // Référentiel « Collection » : liste ordonnée, création, modification, suppression, réordonnancement
@@ -21,6 +22,7 @@ const ENTITY_MODELS = {
   creature: Creature,
   story: Story,
   event: Event,
+  custom: CustomEntity,
 };
 
 /** Tous les liens entité ↔ collection d'un univers : [{ collectionId, entityType, entityId }]. */

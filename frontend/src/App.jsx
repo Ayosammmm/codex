@@ -38,7 +38,9 @@ import UsersPage from '@/pages/users/UsersPage';
 import RoleplayPage from '@/pages/roleplay/RoleplayPage';
 import PlaceRoleplayPage from '@/pages/roleplay/PlaceRoleplayPage';
 import RpScenePage from '@/pages/roleplay/RpScenePage';
-import { AdminOnly, RequireAuth } from '@/auth/RequireAuth';
+import { AdminOnly, RequireAuth, SuperAdminOnly } from '@/auth/RequireAuth';
+import ModsAdminPage from '@/mods/ModsAdminPage';
+import { CustomEntityEditPage, CustomEntityPage, ModSectionPage } from '@/mods/CustomEntityPages';
 
 export const router = createBrowserRouter([
   { path: '/connexion', element: <LoginPage /> },
@@ -49,6 +51,7 @@ export const router = createBrowserRouter([
   { path: '/', element: <HomePage /> },
   { path: '/utilisateurs', element: <AdminOnly><UsersPage /></AdminOnly> },
   { path: '/nouvel-univers', element: <AdminOnly><CreateUniversePage /></AdminOnly> },
+  { path: '/mods', element: <SuperAdminOnly><ModsAdminPage /></SuperAdminOnly> },
   {
     // :universeRef = « 12-nom-de-l-univers » (l'id fait foi)
     path: '/univers/:universeRef',
@@ -100,6 +103,11 @@ export const router = createBrowserRouter([
       { path: 'roleplay', element: <ModuleGate module="roleplay"><RoleplayPage /></ModuleGate> },
       { path: 'roleplay/lieux/:placeId', element: <ModuleGate module="roleplay"><PlaceRoleplayPage /></ModuleGate> },
       { path: 'roleplay/scenes/:sceneId', element: <ModuleGate module="roleplay"><RpScenePage /></ModuleGate> },
+      // Mods : types d'entités et pages de code (voir src/mods)
+      { path: 'mods/:modId/:modPath', element: <ModSectionPage /> },
+      { path: 'mods/:modId/:modPath/nouveau', element: <CustomEntityEditPage /> },
+      { path: 'mods/:modId/:modPath/:entityId', element: <CustomEntityPage /> },
+      { path: 'mods/:modId/:modPath/:entityId/modifier', element: <CustomEntityEditPage /> },
       // Modules et référentiels : /personnages, /lieux, /genres... (voir src/config/modules.js)
       { path: ':section', element: <UniverseSectionPage /> },
     ],

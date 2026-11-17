@@ -2,6 +2,8 @@ import { useState } from 'react';
 import { usePermissions } from '@/auth/auth';
 import { Forbidden } from '@/auth/RequireAuth';
 import { EditorsSection } from '@/components/entity/EditorsSection';
+import { ModFieldsFormSection } from '@/mods/ModFieldsSections';
+import { useModFieldsToc } from '@/mods/useModFieldColumns';
 import { CollectionsSection } from '@/components/collections/CollectionsSection';
 import { useCollectionFilter } from '@/components/collections/collectionFilter';
 import { Link, useNavigate, useOutletContext, useParams } from 'react-router';
@@ -43,6 +45,7 @@ function StoryEditor({ universe, story }) {
   const state = useStoryForm(story);
   const save = useSaveEntity('stories');
   const { enabled: collectionsOn } = useCollectionFilter();
+  const modFieldsOn = Boolean(useModFieldsToc('story'));
   const remove = useDeleteEntity('stories');
   const [errors, setErrors] = useState({});
   const [confirmDelete, setConfirmDelete] = useState(false);
@@ -107,6 +110,7 @@ function StoryEditor({ universe, story }) {
             story={story}
             state={state}
             errors={errors}
+            modFields={modFieldsOn && <ModFieldsFormSection universe={universe} entityType="story" entityId={story?.id} />}
             collections={!isNew && collectionsOn && <CollectionsSection universe={universe} entityType="story" entityId={story.id} />}
             editors={!isNew && <EditorsSection entityType="story" entityId={story.id} />}
             dangerZone={

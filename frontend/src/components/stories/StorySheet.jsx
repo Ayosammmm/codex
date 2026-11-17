@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/Button';
 import { RichText } from '@/components/ui/RichText';
 import { CharacterChip } from '@/components/characters/CharacterChip';
 import { AvatarStack, EntityBanner } from '@/components/entity/EntityBanner';
+import { ModFieldsSheetSections } from '@/mods/ModFieldsSections';
 import { SheetSection } from '@/components/entity/SheetSection';
 import { plainText, plural, universePath } from '@/utils/universe';
 import styles from './StorySheet.module.scss';
@@ -150,6 +151,8 @@ export function StorySheet({ universe, story: s, modules, actions }) {
           </ul>
         </SheetSection>
       )}
+
+      <ModFieldsSheetSections entityType="story" entityId={s.id} />
     </article>
   );
 }

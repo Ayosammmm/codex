@@ -8,6 +8,7 @@ import { RichText } from '@/components/ui/RichText';
 import { CharacterChip } from '@/components/characters/CharacterChip';
 import { EntityBanner } from '@/components/entity/EntityBanner';
 import { PhotoGallery } from '@/components/entity/PhotoGallery';
+import { ModFieldsSheetSections } from '@/mods/ModFieldsSections';
 import { SheetSection } from '@/components/entity/SheetSection';
 import { entityColorVars } from '@/theme/universeTheme';
 import { plainText, plural, universePath } from '@/utils/universe';
@@ -105,6 +106,8 @@ export function SpecieSheet({ universe, specie: s, ancestors, subspecies, action
             </ul>
           </SheetSection>
         )}
+
+        <ModFieldsSheetSections entityType="specie" entityId={s.id} />
 
         {photos.length > 0 && (
           <SheetSection id="album" title="Album photo">

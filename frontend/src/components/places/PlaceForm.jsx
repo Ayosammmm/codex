@@ -24,7 +24,7 @@ import styles from './PlaceForm.module.scss';
  * - `state` : usePlaceForm() ; `refs` : options (usePlaceReferences) + `allPlaces`
  * - `modules` : { groups } ; `dangerZone` : zone de suppression (édition uniquement)
  */
-export function PlaceForm({ universe, place, state, refs, modules, errors, sound, collections, editors, dangerZone }) {
+export function PlaceForm({ universe, place, state, refs, modules, errors, sound, modFields, collections, editors, dangerZone }) {
   const { form: f, update, images, setImage } = state;
   const toast = useToast();
   const isEdit = Boolean(place?.id);
@@ -53,6 +53,7 @@ export function PlaceForm({ universe, place, state, refs, modules, errors, sound
     { id: 'apparence', label: 'Apparence' },
     { id: 'album', label: 'Album photo' },
     sound && { id: 'son', label: 'Son' },
+    modFields && { id: 'champs-mods', label: 'Champs des mods' },
     collections && { id: 'collections', label: 'Collections' },
     editors && { id: 'editeurs', label: 'Éditeurs' },
   ].filter(Boolean);
@@ -132,6 +133,7 @@ export function PlaceForm({ universe, place, state, refs, modules, errors, sound
         </FormSection>
 
         {sound}
+        {modFields}
         {collections}
         {editors}
         {dangerZone}

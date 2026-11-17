@@ -11,6 +11,7 @@ import { usePermissions } from '@/auth/auth';
 import { COLLECTION_ENTITY_TYPES, useCollectionFilter } from '@/components/collections/collectionFilter';
 import { ColorModeToggle } from './ColorModeToggle';
 import { UserMenu } from './UserMenu';
+import { useUniverseMods } from '@/mods/modsContext';
 import styles from './UniverseSidebar.module.scss';
 
 // Sections de modules dans la barre latérale (voir `navSection` dans config/modules.js)
@@ -36,6 +37,10 @@ export function UniverseSidebar({ universe, open, onClose, collapsed = false, on
   const { data: universes } = useUniverses();
   const stats = universes?.find((u) => u.id === universe.id)?.stats || {};
   const collectionFilter = useCollectionFilter();
+  const { types: modTypes, pages: modPages, customEntities, customLoading } = useUniverseMods();
+  // Nombre de fiches d'un type de mod (filtre de collection compris)
+  const modTypeCount = (t) =>
+    customLoading ? undefined : customEntities.filter((e) => e.modId === t.modId && e.typeKey === t.key && collectionFilter.matches('custom', e.id)).length;
 
   const modulesState = getModulesState(universe);
   const modules = getNavModules(modulesState);
@@ -79,7 +84,9 @@ export function UniverseSidebar({ universe, open, onClose, collapsed = false, on
 
           {NAV_SECTIONS.map(({ key, label }) => {
             const items = modules.filter((m) => (m.navSection || 'encyclopedia') === key);
-            if (!items.length) return null;
+            // Mods actifs : types d'entités et pages de code, après les modules
+            const modItems = [...modTypes, ...modPages].filter((m) => m.navSection === key);
+            if (!items.length && !modItems.length) return null;
             return (
               <nav key={key} aria-label={label} className={styles.section}>
                 <p className={styles.sectionLabel}>{label}</p>
@@ -90,6 +97,13 @@ export function UniverseSidebar({ universe, open, onClose, collapsed = false, on
                     {stats[m.key] !== undefined && (
                       <span className={styles.count}>{collectionFilter.count(COLLECTION_ENTITY_TYPES[m.key], stats[m.key])}</span>
                     )}
+                  </NavLink>
+                ))}
+                {modItems.map((m) => (
+                  <NavLink key={m.id} to={`${base}/${m.basePath}`} className={styles.link} title={tip(m.plural || m.label)} {...navProps}>
+                    <m.Icon aria-hidden />
+                    <span className={styles.label}>{m.plural || m.label}</span>
+                    {m.fields && modTypeCount(m) !== undefined && <span className={styles.count}>{modTypeCount(m)}</span>}
                   </NavLink>
                 ))}
               </nav>

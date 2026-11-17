@@ -4,6 +4,7 @@ import { CircleAlert, Menu } from '@/components/ui/icons';
 import { useUniverse } from '@/api/queries';
 import { UniverseSidebar } from '@/components/layout/UniverseSidebar';
 import { CollectionFilterProvider } from '@/components/collections/CollectionFilterProvider';
+import { ModsProvider } from '@/mods/ModsProvider';
 import { Button } from '@/components/ui/Button';
 import { EmptyState, Spinner } from '@/components/ui/Feedback';
 import { cx } from '@/components/ui/cx';
@@ -105,6 +106,8 @@ export default function UniverseLayout() {
     <ThemeKeyContext value={theme['data-theme']}>
       {/* Filtre de collection (sidebar) partagé par les listes ; `key` : état propre à chaque univers */}
       <CollectionFilterProvider key={universe.id} universe={universe}>
+        {/* Mods actifs : types d'entités, champs supplémentaires et pages (voir src/mods) */}
+        <ModsProvider key={universe.id} universe={universe}>
         <div {...theme} className={styles.root}>
           {backdrop && <div aria-hidden className={styles.backdrop} style={backdrop} />}
           <div className={cx(styles.shell, backdrop && styles.scrim)}>
@@ -136,6 +139,7 @@ export default function UniverseLayout() {
             </div>
           </div>
         </div>
+        </ModsProvider>
       </CollectionFilterProvider>
     </ThemeKeyContext>
   );

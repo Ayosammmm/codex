@@ -2,6 +2,8 @@ import { useState } from 'react';
 import { usePermissions } from '@/auth/auth';
 import { Forbidden } from '@/auth/RequireAuth';
 import { EditorsSection } from '@/components/entity/EditorsSection';
+import { ModFieldsFormSection } from '@/mods/ModFieldsSections';
+import { useModFieldsToc } from '@/mods/useModFieldColumns';
 import { CollectionsSection } from '@/components/collections/CollectionsSection';
 import { useCollectionFilter } from '@/components/collections/collectionFilter';
 import { Link, useNavigate, useOutletContext, useParams } from 'react-router';
@@ -45,6 +47,7 @@ function EventEditor({ universe, event }) {
   const { options, modules } = useNarrativeReferences(universe);
   const save = useSaveEntity('events');
   const { enabled: collectionsOn } = useCollectionFilter();
+  const modFieldsOn = Boolean(useModFieldsToc('event'));
   const remove = useDeleteEntity('events');
   const [errors, setErrors] = useState({});
   const [confirmDelete, setConfirmDelete] = useState(false);
@@ -110,6 +113,7 @@ function EventEditor({ universe, event }) {
             refs={options}
             modules={modules}
             errors={errors}
+            modFields={modFieldsOn && <ModFieldsFormSection universe={universe} entityType="event" entityId={event?.id} />}
             collections={!isNew && collectionsOn && <CollectionsSection universe={universe} entityType="event" entityId={event.id} />}
             editors={!isNew && <EditorsSection entityType="event" entityId={event.id} />}
             dangerZone={

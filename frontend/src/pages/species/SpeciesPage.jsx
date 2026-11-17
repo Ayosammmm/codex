@@ -12,6 +12,7 @@ import { EntityTable } from '@/components/entity/EntityTable';
 import { TableControls } from '@/components/entity/TableControls';
 import { useTableState } from '@/components/entity/useTableState';
 import { useEditorsColumn } from '@/components/entity/useEditorsColumn';
+import { useModFieldColumns } from '@/mods/useModFieldColumns';
 import { useCollectionsColumn } from '@/components/collections/useCollectionsColumn';
 import { plural, universePath } from '@/utils/universe';
 import styles from '../ListPage.module.scss';
@@ -31,7 +32,8 @@ export default function SpeciesPage() {
   const linkTo = (s) => universePath(universe, `especes/${s.id}`);
   const editorsColumn = useEditorsColumn('specie');
   const collectionsColumn = useCollectionsColumn('specie');
-  const columns = [...specieColumns({ linkTo }), collectionsColumn, editorsColumn].filter(Boolean);
+  const modColumns = useModFieldColumns('specie');
+  const columns = [...specieColumns({ linkTo }), ...modColumns, collectionsColumn, editorsColumn].filter(Boolean);
   const table = useTableState({ storageKey: 'almanach:species-columns', columns, items: results, entityType: 'specie' });
   const groupCriterion = criteria.find((c) => c.key === state.groupBy);
   // Tableau seul : la page tient dans l'écran et seul le tableau défile

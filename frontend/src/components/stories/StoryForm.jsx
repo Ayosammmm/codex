@@ -14,7 +14,7 @@ import { EpisodesField } from './EpisodesField';
 import styles from './StoryForm.module.scss';
 
 /** Formulaire complet d'une histoire. `state` : useStoryForm() ; `dangerZone` : édition uniquement. */
-export function StoryForm({ universe, story, state, errors, collections, editors, dangerZone }) {
+export function StoryForm({ universe, story, state, errors, modFields, collections, editors, dangerZone }) {
   const { form: f, update, images, setImage } = state;
   const toast = useToast();
   const cover = useImagePreview(story?.image, images.image);
@@ -26,6 +26,7 @@ export function StoryForm({ universe, story, state, errors, collections, editors
     { id: 'presentation', label: 'Présentation' },
     { id: 'episodes', label: 'Épisodes' },
     { id: 'apparence', label: 'Apparence' },
+    modFields && { id: 'champs-mods', label: 'Champs des mods' },
     collections && { id: 'collections', label: 'Collections' },
     editors && { id: 'editeurs', label: 'Éditeurs' },
   ].filter(Boolean);
@@ -71,6 +72,7 @@ export function StoryForm({ universe, story, state, errors, collections, editors
 
         <AppearanceSection state={state} savedBackground={story?.background} subject="de l’histoire" />
 
+        {modFields}
         {collections}
         {editors}
         {dangerZone}

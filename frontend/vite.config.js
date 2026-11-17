@@ -25,6 +25,8 @@ export default defineConfig(({ mode }) => {
         // ws : temps réel du roleplay (WebSocket sur /api/ws)
         '/api': { target: backend, ws: true },
         '/uploads': backend,
+        // Fichiers des mods (pages en iframe isolée) et SDK
+        '/mod-files': backend,
       },
     },
   };

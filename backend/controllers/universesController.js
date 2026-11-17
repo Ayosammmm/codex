@@ -60,6 +60,14 @@ const buildAppearanceData = (body) => {
   return data;
 };
 
+// Mods activés : { [modId]: true } (seuls les mods activés sont gardés)
+const buildModsData = (mods) => {
+  if (!mods || typeof mods !== 'object' || Array.isArray(mods)) return null;
+  const clean = {};
+  for (const [id, on] of Object.entries(mods)) if (on === true && /^[a-z0-9][a-z0-9-]{1,39}$/.test(id)) clean[id] = true;
+  return Object.keys(clean).length ? clean : null;
+};
+
 const sendError = (res, error, label) => {
   if (!error.status) console.error(`Erreur ${label}:`, error);
   res.status(error.status || 500).json({ error: error.message });
@@ -109,6 +117,7 @@ exports.create = async (req, res) => {
       bestiaryEnabled: !!bestiaryEnabled,
       storiesEnabled: !!storiesEnabled,
       ...(modules && typeof modules === 'object' ? buildModuleData(modules) : {}),
+      ...(req.body.mods !== undefined && { mods: buildModsData(req.body.mods) }),
       ...buildAppearanceData(req.body),
     });
     // Valeurs de départ (genres, statuts, rangs...), sauf si on les refuse explicitement
@@ -137,6 +146,7 @@ exports.update = async (req, res) => {
     if (bestiaryEnabled !== undefined) updateData.bestiaryEnabled = bestiaryEnabled;
     if (storiesEnabled !== undefined) updateData.storiesEnabled = storiesEnabled;
     if (modules && typeof modules === 'object') Object.assign(updateData, buildModuleData(modules));
+    if (req.body.mods !== undefined) updateData.mods = buildModsData(req.body.mods);
     Object.assign(updateData, buildAppearanceData(req.body));
 
     await universe.update(updateData);

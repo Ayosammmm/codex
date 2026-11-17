@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router';
-import { KeyRound, LogOut, UsersRound } from '@/components/ui/icons';
+import { KeyRound, LogOut, Puzzle, UsersRound } from '@/components/ui/icons';
 import { useChangePassword } from '@/api/users';
 import { initials, roleLabel, useAuth, usePermissions } from '@/auth/auth';
 import { Button } from '@/components/ui/Button';
@@ -48,6 +48,7 @@ export function UserMenu({ expanded = false, placement = 'bottom', align = 'end'
         )}
         items={[
           isAdmin && { label: 'Comptes utilisateurs', icon: UsersRound, onSelect: () => navigate('/utilisateurs') },
+          user.role === 'superadmin' && { label: 'Mods', icon: Puzzle, onSelect: () => navigate('/mods') },
           { label: 'Changer de mot de passe', icon: KeyRound, onSelect: () => setPasswordOpen(true) },
           { separator: true },
           { label: 'Se déconnecter', icon: LogOut, onSelect: logout },

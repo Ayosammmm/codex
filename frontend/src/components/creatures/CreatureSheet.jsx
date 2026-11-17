@@ -15,6 +15,7 @@ import { RichText } from '@/components/ui/RichText';
 import { EntityBanner } from '@/components/entity/EntityBanner';
 import layout from '@/components/entity/InfoboxSheet.module.scss';
 import { PhotoGallery } from '@/components/entity/PhotoGallery';
+import { ModFieldsSheetSections } from '@/mods/ModFieldsSections';
 import { SheetSection } from '@/components/entity/SheetSection';
 import { plainText, universePath } from '@/utils/universe';
 import styles from './CreatureSheet.module.scss';
@@ -171,6 +172,8 @@ export function CreatureSheet({ universe, creature: c, modules = {}, actions }) 
             <RichText html={c.moreDetails} />
           </SheetSection>
         )}
+
+        <ModFieldsSheetSections entityType="creature" entityId={c.id} />
 
         {photos.length > 0 && (
           <SheetSection id="album" title="Album photo">

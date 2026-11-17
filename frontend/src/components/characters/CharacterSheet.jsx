@@ -16,6 +16,7 @@ import { cx } from '@/components/ui/cx';
 import { entityColorVars } from '@/theme/universeTheme';
 import { plainText, universePath } from '@/utils/universe';
 import { PhotoGallery } from '@/components/entity/PhotoGallery';
+import { ModFieldsSheetSections } from '@/mods/ModFieldsSections';
 import { SheetSection } from '@/components/entity/SheetSection';
 import { DynamicCard } from '@/components/relations/DynamicCard';
 import { CharacterAppearances } from './CharacterAppearances';
@@ -184,6 +185,8 @@ export function CharacterSheet({ universe, character: c, modules, actions, stori
         {sound}
         <CharacterAppearances universe={universe} character={c} stories={stories} events={events} />
         {modules.roleplay && <CharacterRoleplaySection universe={universe} character={c} />}
+
+        <ModFieldsSheetSections entityType="character" entityId={c.id} />
 
         {photos.length > 0 && (
           <SheetSection id="album" title="Album photo">

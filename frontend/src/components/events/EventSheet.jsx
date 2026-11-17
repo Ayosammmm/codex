@@ -6,6 +6,7 @@ import { Badge } from '@/components/ui/Badge';
 import { RichText } from '@/components/ui/RichText';
 import { CharacterChip } from '@/components/characters/CharacterChip';
 import { EntityBanner } from '@/components/entity/EntityBanner';
+import { ModFieldsSheetSections } from '@/mods/ModFieldsSections';
 import { SheetSection } from '@/components/entity/SheetSection';
 import { GroupLogo } from '@/components/groups/GroupLogo';
 import { entityColorVars } from '@/theme/universeTheme';
@@ -123,6 +124,8 @@ export function EventSheet({ universe, event: e, prev, next, modules, actions })
           </ul>
         </SheetSection>
       )}
+
+      <ModFieldsSheetSections entityType="event" entityId={e.id} />
 
       {(prev || next) && (
         <nav aria-label="Événements voisins dans la chronologie" className={styles.pager}>

@@ -2,6 +2,30 @@
 import { forwardRef } from 'react';
 import {
   Activity as LucideActivity,
+  Anchor as LucideAnchor,
+  Boxes as LucideBoxes,
+  Castle as LucideCastle,
+  Crown as LucideCrown,
+  Feather as LucideFeather,
+  Flag as LucideFlag,
+  Flame as LucideFlame,
+  Gamepad2 as LucideGamepad2,
+  Gem as LucideGem,
+  Globe as LucideGlobe,
+  Key as LucideKey,
+  Package as LucidePackage,
+  Puzzle as LucidePuzzle,
+  Rocket as LucideRocket,
+  Scroll as LucideScroll,
+  Shield as LucideShield,
+  Ship as LucideShip,
+  Skull as LucideSkull,
+  Star as LucideStar,
+  Sword as LucideSword,
+  Swords as LucideSwords,
+  Trophy as LucideTrophy,
+  WandSparkles as LucideWandSparkles,
+  Zap as LucideZap,
   AlignCenter as LucideAlignCenter,
   AlignJustify as LucideAlignJustify,
   AlignLeft as LucideAlignLeft,
@@ -377,3 +401,29 @@ export function SketchFilter() {
     </svg>
   );
 }
+
+// Icônes proposées aux mods (voir src/mods/modIcons.js)
+export const Anchor = themed('Anchor', LucideAnchor);
+export const Boxes = themed('Boxes', LucideBoxes);
+export const Castle = themed('Castle', LucideCastle);
+export const Crown = themed('Crown', LucideCrown);
+export const Feather = themed('Feather', LucideFeather);
+export const Flag = themed('Flag', LucideFlag);
+export const Flame = themed('Flame', LucideFlame);
+export const Gamepad2 = themed('Gamepad2', LucideGamepad2);
+export const Gem = themed('Gem', LucideGem);
+export const Globe = themed('Globe', LucideGlobe);
+export const Key = themed('Key', LucideKey);
+export const Package = themed('Package', LucidePackage);
+export const Puzzle = themed('Puzzle', LucidePuzzle);
+export const Rocket = themed('Rocket', LucideRocket);
+export const Scroll = themed('Scroll', LucideScroll);
+export const Shield = themed('Shield', LucideShield);
+export const Ship = themed('Ship', LucideShip);
+export const Skull = themed('Skull', LucideSkull);
+export const Star = themed('Star', LucideStar);
+export const Sword = themed('Sword', LucideSword);
+export const Swords = themed('Swords', LucideSwords);
+export const Trophy = themed('Trophy', LucideTrophy);
+export const WandSparkles = themed('WandSparkles', LucideWandSparkles);
+export const Zap = themed('Zap', LucideZap);

@@ -5,7 +5,7 @@ const EntityEditor = require("../models/EntityEditor");
 
 const ROLES = ["superadmin", "admin", "editor", "reader"];
 const RANK = { superadmin: 3, admin: 2, editor: 1, reader: 0 };
-const ENTITY_TYPES = ["character", "place", "group", "specie", "creature", "story", "event"];
+const ENTITY_TYPES = ["character", "place", "group", "specie", "creature", "story", "event", "custom"];
 const TOKEN_TTL = "7d";
 
 const secret = () => {

@@ -41,7 +41,7 @@ const PHYSICAL = [
  * - `state` : useCreatureForm() ; `refs` : options (useCreatureReferences) ; `modules` : { ranks }
  * - `dangerZone` : zone de suppression (édition uniquement)
  */
-export function CreatureForm({ universe, creature, state, refs, modules, errors, collections, editors, dangerZone }) {
+export function CreatureForm({ universe, creature, state, refs, modules, errors, modFields, collections, editors, dangerZone }) {
   const { form: f, update, images, setImage } = state;
   const toast = useToast();
   const isEdit = Boolean(creature?.id);
@@ -57,6 +57,7 @@ export function CreatureForm({ universe, creature, state, refs, modules, errors,
     { id: 'attaques', label: 'Attaques et détails' },
     { id: 'apparence', label: 'Apparence' },
     { id: 'album', label: 'Album photo' },
+    modFields && { id: 'champs-mods', label: 'Champs des mods' },
     collections && { id: 'collections', label: 'Collections' },
     editors && { id: 'editeurs', label: 'Éditeurs' },
   ].filter(Boolean);
@@ -172,6 +173,7 @@ export function CreatureForm({ universe, creature, state, refs, modules, errors,
           {isEdit ? <PhotoAlbum entityType="creature" entityId={creature.id} /> : <p className={form.note}>L’album sera disponible une fois la créature créée.</p>}
         </FormSection>
 
+        {modFields}
         {collections}
         {editors}
         {dangerZone}

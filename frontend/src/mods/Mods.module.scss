@@ -1,0 +1,355 @@
+@use '@/styles/mixins' as *;
+
+// Modding : champs des mods, fiches, pages de code, administration des mods
+
+// --- Valeurs de champs ---
+.refs,
+.badges {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: space(1) space(2);
+}
+
+.ref {
+  display: inline-flex;
+  align-items: center;
+  gap: space(1.5);
+  color: inherit;
+  font-weight: 500;
+  text-decoration: underline;
+  text-decoration-color: color-mix(in oklab, currentColor 30%, transparent);
+  text-underline-offset: 2px;
+
+  &:hover {
+    text-decoration-color: currentColor;
+  }
+}
+
+.refThumb {
+  width: 1.375rem;
+  height: 1.375rem;
+  border-radius: 50%;
+  object-fit: cover;
+  flex: none;
+}
+
+.clamp {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  max-width: 24rem;
+}
+
+.color {
+  display: inline-flex;
+  align-items: center;
+  gap: space(1.5);
+  font-family: var(--font-mono, monospace);
+  font-size: 0.875em;
+}
+
+.swatch {
+  width: 1rem;
+  height: 1rem;
+  border-radius: var(--r-sm);
+  border: 1px solid var(--border-strong);
+}
+
+.url {
+  display: inline-flex;
+  align-items: center;
+  gap: space(1);
+  word-break: break-all;
+
+  svg {
+    width: 0.875em;
+    height: 0.875em;
+    flex: none;
+  }
+}
+
+// --- Saisie ---
+.fieldsGrid {
+  display: grid;
+  gap: space(4);
+
+  @include up(md) {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+.wide {
+  grid-column: 1 / -1;
+}
+
+.modBlock + .modBlock {
+  margin-top: space(5);
+  padding-top: space(5);
+  border-top: 1px dashed var(--border);
+}
+
+.modBlockTitle {
+  display: flex;
+  align-items: center;
+  gap: space(2);
+  margin: 0 0 space(3);
+  font-size: 0.8125rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--fg-muted);
+
+  svg {
+    width: 1rem;
+    height: 1rem;
+  }
+}
+
+.saveRow {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: space(3);
+  margin-top: space(4);
+}
+
+// --- Cartes de galerie ---
+.cardFields {
+  display: flex;
+  flex-direction: column;
+  gap: space(1);
+  margin-top: space(1.5);
+  font-size: 0.8125rem;
+  color: var(--fg-muted);
+}
+
+.cardField {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: space(1.5);
+}
+
+.cardLabel {
+  font-weight: 600;
+  color: var(--fg-subtle);
+
+  &::after {
+    content: ' :';
+  }
+}
+
+// --- Fiches ---
+.typeFact {
+  display: inline-flex;
+  align-items: center;
+  gap: space(1.5);
+
+  svg {
+    width: 1rem;
+    height: 1rem;
+  }
+}
+
+.facts {
+  display: grid;
+  gap: space(2) space(6);
+  margin: 0;
+
+  @include up(md) {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+.fact {
+  display: flex;
+  flex-direction: column;
+  gap: space(0.5);
+  min-width: 0;
+
+  dt {
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--fg-subtle);
+  }
+
+  dd {
+    margin: 0;
+  }
+}
+
+.richHeading {
+  margin: space(4) 0 space(2);
+  font-size: 0.9375rem;
+  font-weight: 600;
+}
+
+// --- Page de code d'un mod (iframe isolée) ---
+.modPage {
+  display: flex;
+  flex-direction: column;
+  min-height: 100%;
+  flex: 1;
+}
+
+.modFrame {
+  display: block;
+  width: 100%;
+  min-height: calc(100dvh - 3.5rem);
+  border: 0;
+  background: transparent;
+  flex: 1;
+
+  @include up(lg) {
+    min-height: 100dvh;
+  }
+}
+
+// --- Administration et paramètres ---
+.modList {
+  display: flex;
+  flex-direction: column;
+  gap: space(3);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.modRow {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  gap: space(3) space(4);
+  align-items: start;
+  padding: space(4);
+  border: var(--border-w, 1px) solid var(--border);
+  border-radius: var(--r);
+  background: var(--surface);
+}
+
+.modIcon {
+  display: grid;
+  place-items: center;
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: var(--r);
+  background: var(--surface-2);
+  color: var(--fg-muted);
+
+  svg {
+    width: 1.25rem;
+    height: 1.25rem;
+  }
+}
+
+.modIconOn {
+  background: color-mix(in oklab, var(--primary) 18%, var(--surface));
+  color: var(--primary);
+}
+
+.modText {
+  min-width: 0;
+}
+
+.modName {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: space(2);
+  margin: 0;
+  font-weight: 600;
+}
+
+.modVersion {
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: var(--fg-subtle);
+}
+
+.modDescription {
+  margin: space(1) 0 0;
+  font-size: 0.875rem;
+  color: var(--fg-muted);
+}
+
+.modContents {
+  display: flex;
+  flex-wrap: wrap;
+  gap: space(1.5);
+  margin: space(2) 0 0;
+  padding: 0;
+  list-style: none;
+
+  li {
+    display: inline-flex;
+    align-items: center;
+    gap: space(1);
+    padding: space(0.5) space(2);
+    border-radius: 999px;
+    background: var(--surface-2);
+    font-size: 0.75rem;
+    color: var(--fg-muted);
+  }
+
+  svg {
+    width: 0.875rem;
+    height: 0.875rem;
+  }
+}
+
+.dropzone {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: space(3);
+  padding: space(4);
+  margin-bottom: space(6);
+  border: 2px dashed var(--border-strong);
+  border-radius: var(--r);
+  background: var(--surface);
+}
+
+.dropzoneActive {
+  border-color: var(--primary);
+  background: color-mix(in oklab, var(--primary) 8%, var(--surface));
+}
+
+.note {
+  margin: 0;
+  font-size: 0.875rem;
+  color: var(--fg-muted);
+}
+
+.warning {
+  margin: 0 0 space(6);
+  padding: space(3) space(4);
+  border-left: 3px solid var(--warning);
+  border-radius: var(--r-sm);
+  background: color-mix(in oklab, var(--warning) 10%, var(--surface));
+  font-size: 0.875rem;
+}
+
+.docs {
+  margin-top: space(8);
+
+  h2 {
+    font-size: 1.125rem;
+  }
+
+  pre {
+    overflow-x: auto;
+    padding: space(3) space(4);
+    border-radius: var(--r-sm);
+    background: var(--surface-2);
+    font-family: var(--font-mono, monospace);
+    font-size: 0.8125rem;
+    line-height: 1.5;
+  }
+
+  code {
+    font-family: var(--font-mono, monospace);
+  }
+}

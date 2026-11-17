@@ -1,0 +1,131 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Trésor</title>
+  <!-- SDK de l'Almanach : dialogue avec l'application (la page tourne isolée, sans accès à la session) -->
+  <script src="/mod-files/almanach-sdk.js"></script>
+  <style>
+    /* Les variables du thème de l'univers (--bg, --fg, --primary…) sont posées par le SDK */
+    body { margin: 0; padding: 2rem; font-family: var(--font-ui, system-ui, sans-serif); background: transparent; color: var(--fg, #222); }
+    h1 { font-family: var(--font-title, serif); margin-top: 0; }
+    button { font: inherit; padding: .5rem 1rem; border: 0; border-radius: var(--r, 8px); background: var(--primary, #345); color: white; cursor: pointer; }
+    button:disabled { opacity: .5; cursor: default; }
+    .card { margin-top: 1.5rem; padding: 1rem 1.25rem; border: 1px solid var(--border, #ddd); border-radius: var(--r, 8px); background: var(--surface, #fff); }
+    a { color: var(--primary, #345); cursor: pointer; }
+    ul { padding-left: 1.25rem; }
+    .muted { color: var(--fg-muted, #666); }
+    .history-actions { display: flex; gap: .5rem; align-items: center; margin-bottom: .75rem; }
+    button.ghost { padding: .125rem .5rem; margin-left: .5rem; background: transparent; color: var(--danger, #c0392b); border: 1px solid currentColor; font-size: .8125rem; }
+  </style>
+</head>
+<body>
+  <h1>Trésor</h1>
+  <p class="muted">Tire un artefact de l’univers au hasard. Chaque tirage est enregistré.</p>
+  <button id="draw" disabled>Tirer un artefact</button>
+  <div id="result"></div>
+  <h2>Derniers tirages</h2>
+  <div class="history-actions"><button id="clear" class="ghost" hidden>Supprimer tous mes tirages</button></div>
+  <ul id="history"><li class="muted">Chargement…</li></ul>
+
+  <script>
+    const $ = (id) => document.getElementById(id);
+    let artefacts = [];
+    let me = null; // utilisateur connecté (contexte du SDK)
+
+    // Suppression : l'auteur du tirage ou un admin (le serveur vérifie aussi)
+    const canDelete = (r) => me && (me.isAdmin || r.createdBy === me.id);
+
+    const deleteButton = (r) => {
+      const button = document.createElement('button');
+      button.className = 'ghost';
+      button.textContent = 'Supprimer';
+      button.onclick = async () => {
+        button.disabled = true;
+        try {
+          await Almanach.records.remove(r.id);
+          await refreshHistory();
+        } catch (error) {
+          button.disabled = false;
+          Almanach.toast(error.message, 'error');
+        }
+      };
+      return button;
+    };
+
+    const link = (text, type, id) => {
+      const a = document.createElement('a');
+      a.textContent = text;
+      a.onclick = async () => Almanach.navigate(await Almanach.pathOf(type, id));
+      return a;
+    };
+
+    async function refreshHistory() {
+      const records = await Almanach.records.list('tirages');
+      const list = $('history');
+      list.replaceChildren();
+      if (!records.length) list.innerHTML = '<li class="muted">Aucun tirage.</li>';
+      for (const r of records.slice(0, 10)) {
+        const li = document.createElement('li');
+        const found = artefacts.find((a) => a.id === r.data.artefact.id);
+        li.append(found ? link(found.name, 'custom:artefact', found.id) : 'Artefact disparu');
+        li.append(` — ${r.author?.displayName || '?'}, ${new Date(r.createdAt).toLocaleString('fr')}`);
+        if (canDelete(r)) li.append(deleteButton(r));
+        list.append(li);
+      }
+      const mine = records.filter((r) => me && r.createdBy === me.id);
+      $('clear').hidden = !mine.length;
+      $('clear').onclick = async () => {
+        if (!confirm(`Supprimer vos ${mine.length} tirage(s) ?`)) return;
+        $('clear').disabled = true;
+        try {
+          for (const r of mine) await Almanach.records.remove(r.id);
+          Almanach.toast('Tirages supprimés.', 'success');
+        } catch (error) {
+          Almanach.toast(error.message, 'error');
+        }
+        $('clear').disabled = false;
+        await refreshHistory();
+      };
+    }
+
+    const fail = (message) => {
+      $('result').innerHTML = '';
+      const p = document.createElement('p');
+      p.style.color = 'var(--danger, #c0392b)';
+      p.textContent = message;
+      $('result').append(p);
+    };
+    if (!window.Almanach) fail('Le SDK de l’Almanach n’a pas pu être chargé (/mod-files/almanach-sdk.js).');
+    else Almanach.ready().then(async (ctx) => {
+      me = ctx.user;
+      artefacts = await Almanach.entities.list('custom:artefact');
+      $('draw').disabled = !artefacts.length || !ctx.user?.canCreate;
+      if (artefacts.length && !ctx.user?.canCreate) $('result').innerHTML = '<p class="muted">Les tirages sont réservés aux éditeurs.</p>';
+      if (!artefacts.length) $('result').innerHTML = '<p class="muted">Aucun artefact dans cet univers pour l’instant.</p>';
+      await refreshHistory();
+
+      $('draw').onclick = async () => {
+        const pick = artefacts[Math.floor(Math.random() * artefacts.length)];
+        const card = document.createElement('div');
+        card.className = 'card';
+        const title = document.createElement('strong');
+        title.append(link(pick.name, 'custom:artefact', pick.id));
+        card.append(title);
+        if (pick.image) {
+          const img = document.createElement('img');
+          img.src = Almanach.imageUrl(pick.image);
+          img.style.cssText = 'display:block;max-width:12rem;margin-top:.75rem;border-radius:var(--r,8px)';
+          card.append(img);
+        }
+        $('result').replaceChildren(card);
+        // Références { type, id } : conservées (et renumérotées) à l'export / la duplication de l'univers
+        await Almanach.records.create('tirages', { artefact: { type: 'custom', id: pick.id } });
+        Almanach.toast(`Vous avez tiré « ${pick.name} » !`, 'success');
+        await refreshHistory();
+      };
+    }).catch((error) => fail(`Erreur : ${error.message}`));
+  </script>
+</body>
+</html>

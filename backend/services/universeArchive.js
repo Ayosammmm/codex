@@ -189,4 +189,4 @@ const importFromStream = async (input, { name } = {}) => {
   }
 };
 
-module.exports = { createExportArchive, importFromStream };
+module.exports = { createExportArchive, importFromStream, saveStream, isZipFile, httpError };

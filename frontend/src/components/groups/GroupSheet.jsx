@@ -4,6 +4,7 @@ import { uploadUrl } from '@/api/client';
 import { usePhotos } from '@/api/queries';
 import { RichText } from '@/components/ui/RichText';
 import { PhotoGallery } from '@/components/entity/PhotoGallery';
+import { ModFieldsSheetSections } from '@/mods/ModFieldsSections';
 import { SheetSection } from '@/components/entity/SheetSection';
 import { plainText, plural, universePath } from '@/utils/universe';
 import { GroupLogo } from './GroupLogo';
@@ -85,6 +86,8 @@ export function GroupSheet({ universe, group: g, subgroups, actions, sound = nul
           {indirectPlaces.length > 0 && <p className={styles.note}>Les lieux en pointillés sont contrôlés à travers leur lieu parent.</p>}
         </SheetSection>
       )}
+
+      <ModFieldsSheetSections entityType="group" entityId={g.id} />
 
       {photos.length > 0 && (
         <SheetSection id="album" title="Album photo">
