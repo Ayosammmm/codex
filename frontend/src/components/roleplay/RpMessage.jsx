@@ -11,6 +11,9 @@ import { uploadUrl } from '@/api/client';
 import { SoundPlayer } from '@/components/sound/SoundPlayer';
 import { soundName } from '@/components/sound/soundFiles';
 import { ShoutBubble } from './ShoutBubble';
+import { RpRoll } from './RpRoll';
+import { RpEffect } from './RpEffect';
+import { RpTravels } from './RpTravels';
 import styles from './Roleplay.module.scss';
 
 /**
@@ -54,11 +57,14 @@ const shortTime = new Intl.DateTimeFormat('fr-FR', { hour: '2-digit', minute: '2
  * - sans personnage et entièrement HRP : hors roleplay, au nom du joueur.
  * `continued` : suite d'un message du même rédacteur, avec les mêmes personnages (ou narration) : l'en-tête n'est pas répété
  * (heure au survol, dans la colonne des avatars).
+ * Avant / après le message : arrivées et départs de ses personnages (`placesById` : noms des lieux ; sans lui, rien).
+ * Un jet de hasard (/d20…) ou une mise en scène (/fond, /ambiance…) s'affiche sous le texte, qui en est le commentaire ;
+ * l'image / le son d'une mise en scène ne sont pas affichés comme pièces jointes (ce sont le fond / l'ambiance).
  * - `canManage` : auteur ou admin (modifier / supprimer)
  * - `selectable` / `selected` / `onSelect(event)` : mode « scènes » (case à cocher ; un clic n'importe où sur
  *   le message la coche aussi, Maj+clic pour une plage)
  */
-export function RpMessage({ universe, message, charactersById, hideHrp, continued = false, canManage, onSave, onDelete, selectable, selected, onSelect, className }) {
+export function RpMessage({ universe, message, charactersById, placesById, hideHrp, continued = false, canManage, onSave, onDelete, selectable, selected, onSelect, className }) {
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState(message.content);
   const speakers = message.characterIds.map((id) => charactersById.get(id)).filter(Boolean);
@@ -72,7 +78,7 @@ export function RpMessage({ universe, message, charactersById, hideHrp, continue
   const save = async () => {
     const text = draft.trim();
     // Texte vide accepté si le message garde son image
-    if ((!text && !message.imagePath) || text === message.content) return setEditing(false);
+    if ((!text && !message.imagePath && !message.soundPath && !message.roll) || text === message.content) return setEditing(false);
     await onSave(text);
     setEditing(false);
   };
@@ -90,93 +96,101 @@ export function RpMessage({ universe, message, charactersById, hideHrp, continue
   );
   const label = narration ? `Narration de ${authorName}` : `Message de ${speakers.map(characterName).join(' & ') || authorName}`;
 
+  const travels = placesById && message.travels;
   return (
-    <article
-      className={cx(
-        styles.message,
-        compact && styles.compact,
-        message.isHrp && styles.messageHrp,
-        selectable && styles.selectable,
-        selected && styles.selected,
-        className,
-      )}
-      onClick={selectable ? (e) => !e.target.closest('a, input') && onSelect(e) : undefined}
-      aria-label={label}
-    >
-      {selectable && (
-        // onClick plutôt que onChange : l'événement porte la touche Maj
-        <input type="checkbox" className={styles.select} checked={selected} onChange={() => {}} onClick={onSelect} aria-label="Sélectionner ce message" />
-      )}
-      <div className={styles.avatars}>
-        {compact ? (
-          <time className={styles.sideTime} dateTime={message.createdAt} title={timeTitle}>
-            {shortTime.format(new Date(message.createdAt))}
-          </time>
-        ) : speakers.length ? (
-          speakers.slice(0, 3).map((c) => <CharacterAvatar key={c.id} character={c} round className={styles.avatar} />)
-        ) : narration ? (
-          <span className={styles.avatarSpacer} aria-hidden />
-        ) : (
-          <span className={cx(styles.avatar, styles.playerAvatar)} aria-hidden>{authorName.slice(0, 1).toUpperCase()}</span>
+    <>
+      {travels && <RpTravels universe={universe} kind="arrivals" items={travels.arrivals} charactersById={charactersById} placesById={placesById} />}
+      <article
+        id={`rp-msg-${message.id}`}
+        className={cx(
+          styles.message,
+          compact && styles.compact,
+          message.isHrp && styles.messageHrp,
+          selectable && styles.selectable,
+          selected && styles.selected,
+          className,
         )}
-      </div>
-      <div className={styles.body}>
-        {!compact && (
-          <header className={styles.header}>
-            {speakers.length ? (
-              <span className={styles.names}>
-                {speakers.map((c, i) => (
-                  <span key={c.id}>
-                    {i > 0 && <span className={styles.amp}> & </span>}
-                    <Link to={universePath(universe, `personnages/${c.id}`)} className={styles.name}>{characterName(c)}</Link>
-                  </span>
-                ))}
-                <span className={styles.by}>par {authorName}</span>
-              </span>
-            ) : narration ? (
-              <span className={styles.names}>
-                <span className={styles.narrationTitle}>Narration</span>
-                <span className={styles.by}>par {authorName}</span>
-              </span>
-            ) : (
-              <span className={styles.names}>
-                <span className={styles.name}>{authorName}</span>
-                <span className={styles.playerTag}>HRP</span>
-              </span>
-            )}
-            <time className={styles.time} dateTime={message.createdAt} title={edited ? `Modifié le ${formatRpDate(message.updatedAt)}` : undefined}>
-              {formatRpDate(message.createdAt)}
-              {edited && ' · modifié'}
+        onClick={selectable ? (e) => !e.target.closest('a, input') && onSelect(e) : undefined}
+        aria-label={label}
+      >
+        {selectable && (
+          // onClick plutôt que onChange : l'événement porte la touche Maj
+          <input type="checkbox" className={styles.select} checked={selected} onChange={() => {}} onClick={onSelect} aria-label="Sélectionner ce message" />
+        )}
+        <div className={styles.avatars}>
+          {compact ? (
+            <time className={styles.sideTime} dateTime={message.createdAt} title={timeTitle}>
+              {shortTime.format(new Date(message.createdAt))}
             </time>
-            {actions}
-          </header>
-        )}
-        {compact && actions}
-        {editing ? (
-          <div className={styles.editBox}>
-            <textarea
-              value={draft}
-              autoFocus
-              rows={Math.min(10, draft.split('\n').length + 1)}
-              onChange={(e) => setDraft(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter' && !e.shiftKey) {
-                  e.preventDefault();
-                  save();
-                } else if (e.key === 'Escape') setEditing(false);
-              }}
-              aria-label="Modifier le message"
-            />
-            <p className={styles.editHint}>Entrée pour enregistrer · Échap pour annuler</p>
-          </div>
-        ) : (
-          <>
-            {message.content && <RpContent content={message.content} hideHrp={hideHrp} plain={speakers.length ? 'dialogue' : 'narration'} />}
-            {message.imagePath && <RpImage path={message.imagePath} />}
-            {message.soundPath && <SoundPlayer src={uploadUrl(message.soundPath)} label={soundName(message.soundPath)} volume={0.5} className={styles.messageSound} />}
-          </>
-        )}
-      </div>
-    </article>
+          ) : speakers.length ? (
+            speakers.slice(0, 3).map((c) => <CharacterAvatar key={c.id} character={c} round className={styles.avatar} />)
+          ) : narration ? (
+            <span className={styles.avatarSpacer} aria-hidden />
+          ) : (
+            <span className={cx(styles.avatar, styles.playerAvatar)} aria-hidden>{authorName.slice(0, 1).toUpperCase()}</span>
+          )}
+        </div>
+        <div className={styles.body}>
+          {!compact && (
+            <header className={styles.header}>
+              {speakers.length ? (
+                <span className={styles.names}>
+                  {speakers.map((c, i) => (
+                    <span key={c.id}>
+                      {i > 0 && <span className={styles.amp}> & </span>}
+                      <Link to={universePath(universe, `personnages/${c.id}`)} className={styles.name}>{characterName(c)}</Link>
+                    </span>
+                  ))}
+                  <span className={styles.by}>par {authorName}</span>
+                </span>
+              ) : narration ? (
+                <span className={styles.names}>
+                  <span className={styles.narrationTitle}>Narration</span>
+                  <span className={styles.by}>par {authorName}</span>
+                </span>
+              ) : (
+                <span className={styles.names}>
+                  <span className={styles.name}>{authorName}</span>
+                  <span className={styles.playerTag}>HRP</span>
+                </span>
+              )}
+              <time className={styles.time} dateTime={message.createdAt} title={edited ? `Modifié le ${formatRpDate(message.updatedAt)}` : undefined}>
+                {formatRpDate(message.createdAt)}
+                {edited && ' · modifié'}
+              </time>
+              {actions}
+            </header>
+          )}
+          {compact && actions}
+          {editing ? (
+            <div className={styles.editBox}>
+              <textarea
+                value={draft}
+                autoFocus
+                rows={Math.min(10, draft.split('\n').length + 1)}
+                onChange={(e) => setDraft(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault();
+                    save();
+                  } else if (e.key === 'Escape') setEditing(false);
+                }}
+                aria-label="Modifier le message"
+              />
+              <p className={styles.editHint}>Entrée pour enregistrer · Échap pour annuler</p>
+            </div>
+          ) : (
+            <>
+              {message.content && <RpContent content={message.content} hideHrp={hideHrp} plain={speakers.length ? 'dialogue' : 'narration'} />}
+              {message.roll && <RpRoll roll={message.roll} />}
+              {message.effect && <RpEffect message={message} />}
+              {message.imagePath && !message.effect && <RpImage path={message.imagePath} />}
+              {message.soundPath && !message.effect && <SoundPlayer src={uploadUrl(message.soundPath)} label={soundName(message.soundPath)} volume={0.5} className={styles.messageSound} />}
+            </>
+          )}
+        </div>
+      </article>
+      {travels && <RpTravels universe={universe} kind="departures" items={travels.departures} charactersById={charactersById} placesById={placesById} />}
+    </>
   );
 }

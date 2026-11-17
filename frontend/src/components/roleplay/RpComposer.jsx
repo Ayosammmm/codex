@@ -8,6 +8,8 @@ import { normalizeText } from '@/components/entity/useListState';
 import { cx } from '@/components/ui/cx';
 import { RpContent } from './RpMessage';
 import { RP_MARKUP } from './rpMarkup';
+import { RP_COMMANDS, findCommand, looksLikeDice, matchCommands } from './rpCommands';
+import { CommandIcon } from './RpRoll';
 import styles from './Roleplay.module.scss';
 
 const MAX_IMAGE_SIZE = 5 * 1024 * 1024; // même limite que le serveur
@@ -30,7 +32,8 @@ const writeSpeakers = (key, ids) => {
 };
 
 let nextKey = 0;
-const segment = (characterIds = [], text = '') => ({ key: ++nextKey, characterIds, text });
+// `command` : commande de hasard de la ligne (« d20 », « pileface »…), tirée par le serveur à l'envoi
+const segment = (characterIds = [], text = '', command = null) => ({ key: ++nextKey, characterIds, text, command });
 
 /** « /ber » en cours de saisie juste avant le curseur : { start, query }, sinon null. */
 function mentionAt(text, caret) {
@@ -64,6 +67,10 @@ function matchCharacters(characters, query) {
  * - Entrée envoie toutes les lignes d'un coup, Maj+Entrée va à la ligne.
  * - Une image peut être jointe (bouton, collage, glisser-déposer ; 5 Mo max), au dernier message ;
  *   de même pour un son (20 Mo max) si le module « Son » est actif (`soundEnabled`).
+ * - « /d20 », « /2d6+1 », « /pileface » : jet de hasard (tiré par le serveur), au nom des personnages
+ *   de la ligne ; le texte de la ligne devient un commentaire facultatif.
+ * - « /fond » (avec l'image jointe), « /ambiance » (avec le son joint), « /fin-fond », « /fin-ambiance » : mise en scène,
+ *   le fond / l'ambiance du fil changent quand le lecteur arrive à ce message.
  * Le groupe de la dernière ligne est repris pour le message suivant (mémorisé par lieu : `storageKey`).
  * `characters` : personnages que l'utilisateur peut jouer ; `onSend({ parts, image, sound })` ; `onError(message)`.
  */
@@ -108,7 +115,12 @@ export function RpComposer({ characters, storageKey, onSend, onError, sending, s
     el.setSelectionRange(at, at);
   };
 
-  const suggestions = mention ? [...(matchesNarrator(mention.query) ? [NARRATOR] : []), ...matchCharacters(characters, mention.query)] : [];
+  const suggestions = (() => {
+    if (!mention) return [];
+    const commands = matchCommands(mention.query, { sound: soundEnabled });
+    const people = [...(matchesNarrator(mention.query) ? [NARRATOR] : []), ...matchCharacters(characters, mention.query)];
+    return looksLikeDice(mention.query) ? [...commands, ...people] : [...people, ...commands];
+  })();
 
   // Image, ou son si le module « Son » est actif
   const attach = (file) => {
@@ -142,6 +154,18 @@ export function RpComposer({ characters, storageKey, onSend, onError, sending, s
     const before = seg.text.slice(0, mention.start);
     const after = seg.text.slice(caret);
     setMention(null);
+
+    // Commande de hasard : en début de ligne, la ligne devient ce jet ; sinon une nouvelle ligne de jet commence,
+    // au nom des mêmes personnages
+    if (choice.command) {
+      if (!before.trim()) {
+        update(seg.key, { command: choice.command, text: after.replace(/^\s+/, '') });
+        return focus(seg.key, 0);
+      }
+      const next = segment(seg.characterIds, after.replace(/^\s+/, ''), choice.command);
+      setSegments((list) => [...list.slice(0, index), { ...seg, text: before.replace(/\s+$/, '') }, next, ...list.slice(index + 1)]);
+      return focus(next.key, 0);
+    }
 
     // Narrateur : la ligne devient de la narration (« / » en début de ligne), ou une ligne de narration commence
     if (choice.narrator) {
@@ -199,8 +223,11 @@ export function RpComposer({ characters, storageKey, onSend, onError, sending, s
       e.preventDefault();
       send();
     } else if (e.key === 'Backspace' && atStart) {
-      // Début de ligne : retire le dernier badge, puis fusionne avec la ligne précédente
-      if (seg.characterIds.length) {
+      // Début de ligne : retire le jet, puis le dernier badge, puis fusionne avec la ligne précédente
+      if (seg.command) {
+        e.preventDefault();
+        update(seg.key, { command: null });
+      } else if (seg.characterIds.length) {
         e.preventDefault();
         update(seg.key, { characterIds: seg.characterIds.slice(0, -1) });
       } else if (index > 0) {
@@ -219,8 +246,10 @@ export function RpComposer({ characters, storageKey, onSend, onError, sending, s
     }
   };
 
-  // Messages à envoyer : une ligne = un message (lignes vides ignorées ; image et son vont au dernier)
-  const parts = segments.map((s) => ({ content: s.text.trim(), characterIds: s.characterIds })).filter((p) => p.content);
+  // Messages à envoyer : une ligne = un message (lignes vides ignorées, sauf un jet ; image et son vont au dernier)
+  const parts = segments
+    .map((s) => ({ content: s.text.trim(), characterIds: s.characterIds, ...(s.command && { command: s.command }) }))
+    .filter((p) => p.content || p.command);
   if ((image || sound) && !parts.length) parts.push({ content: '', characterIds: segments[segments.length - 1].characterIds });
   const canSend = parts.length > 0 && !sending;
 
@@ -271,6 +300,28 @@ export function RpComposer({ characters, storageKey, onSend, onError, sending, s
             <span className={styles.helpLabel}>Narrateur</span>
             <span className={styles.helpText}>Nouvelle ligne de narration, sans personnage</span>
           </div>
+          <div className={styles.helpRow}>
+            <code>/d20 · /2d6+1</code>
+            <span className={styles.helpLabel}>Dés</span>
+            <span className={styles.helpText}>Jet tiré au hasard par le serveur ({RP_COMMANDS.filter((c) => c.kind === 'dice').map((c) => c.command).join(', ')}, ou n’importe quel « XdY+Z »)</span>
+          </div>
+          <div className={styles.helpRow}>
+            <code>/pileface</code>
+            <span className={styles.helpLabel}>Hasard</span>
+            <span className={styles.helpText}>Pile ou face · le texte de la ligne sert de commentaire</span>
+          </div>
+          <div className={styles.helpRow}>
+            <code>/fond · /fin-fond</code>
+            <span className={styles.helpLabel}>Fond</span>
+            <span className={styles.helpText}>Change le fond du fil avec l’image jointe (sans image : le retire) quand on arrive à ce message · /fin-fond : retour au fond du lieu</span>
+          </div>
+          {soundEnabled && (
+            <div className={styles.helpRow}>
+              <code>/ambiance · /fin-ambiance</code>
+              <span className={styles.helpLabel}>Ambiance</span>
+              <span className={styles.helpText}>Change l’ambiance avec le son joint (sans son : silence) · /fin-ambiance : retour à celle du lieu</span>
+            </div>
+          )}
           {RP_MARKUP.map((m) => (
             <div key={m.type} className={styles.helpRow}>
               <code>{m.hint}</code>
@@ -280,12 +331,13 @@ export function RpComposer({ characters, storageKey, onSend, onError, sending, s
           ))}
         </div>
       )}
-      {preview && parts.some((p) => p.content) && (
+      {preview && parts.some((p) => p.content || p.command) && (
         <div className={styles.preview} aria-label="Aperçu">
-          {parts.filter((p) => p.content).map((p, i) => (
+          {parts.filter((p) => p.content || p.command).map((p, i) => (
             <div key={i} className={styles.previewPart}>
               <p className={styles.previewSpeakers}>{p.characterIds.map((id) => characterName(byId.get(id))).join(' & ') || 'Narration'}</p>
-              <RpContent content={p.content} plain={p.characterIds.length ? 'dialogue' : 'narration'} />
+              {p.command && <p className={styles.previewCommand}>Commande : /{p.command}</p>}
+              {p.content && <RpContent content={p.content} plain={p.characterIds.length ? 'dialogue' : 'narration'} />}
             </div>
           ))}
         </div>
@@ -313,7 +365,7 @@ export function RpComposer({ characters, storageKey, onSend, onError, sending, s
       <div className={cx(styles.composerRow, styles.inputRow)}>
         {/* Hors de la zone des lignes (qui défile), pour ne pas être coupée */}
         {mention && suggestions.length > 0 && (
-          <ul className={styles.mentions} role="listbox" aria-label="Personnages">
+          <ul className={styles.mentions} role="listbox" aria-label="Personnages et commandes">
             {suggestions.map((c, i) => (
               <li
                 key={c.id}
@@ -327,7 +379,15 @@ export function RpComposer({ characters, storageKey, onSend, onError, sending, s
                 }}
                 onMouseEnter={() => setMention((m) => ({ ...m, active: i }))}
               >
-                {c.narrator ? (
+                {c.command ? (
+                  <>
+                    <span className={cx(styles.mentionAvatar, styles.narratorIcon)}>
+                      <CommandIcon kind={c.kind} />
+                    </span>
+                    <span className={styles.mentionName}>/{c.command}</span>
+                    <span className={styles.mentionTitle}>{c.label}</span>
+                  </>
+                ) : c.narrator ? (
                   <>
                     <span className={cx(styles.mentionAvatar, styles.narratorIcon)}>
                       <BookOpen aria-hidden />
@@ -349,7 +409,7 @@ export function RpComposer({ characters, storageKey, onSend, onError, sending, s
         <div className={styles.lines}>
           {segments.map((seg, index) => (
             <div key={seg.key} className={styles.line}>
-              {seg.characterIds.length > 0 && (
+              {(seg.characterIds.length > 0 || seg.command) && (
                 <span className={styles.badges}>
                   {seg.characterIds.map((id, i) => {
                     const c = byId.get(id);
@@ -366,6 +426,15 @@ export function RpComposer({ characters, storageKey, onSend, onError, sending, s
                       </Fragment>
                     );
                   })}
+                  {seg.command && (
+                    <span className={cx(styles.badge, styles.commandBadge)}>
+                      <CommandIcon kind={matchCommands(seg.command)[0]?.kind} className={styles.badgeIcon} />
+                      /{seg.command}
+                      <button type="button" onClick={() => { update(seg.key, { command: null }); focus(seg.key, 0); }} aria-label={`Retirer la commande /${seg.command}`}>
+                        <X aria-hidden />
+                      </button>
+                    </span>
+                  )}
                 </span>
               )}
               <textarea
@@ -374,13 +443,15 @@ export function RpComposer({ characters, storageKey, onSend, onError, sending, s
                 value={seg.text}
                 rows={Math.min(8, Math.max(1, seg.text.split('\n').length))}
                 placeholder={
-                  seg.characterIds.length
-                    ? 'Ce qu’il dit *ce qu’il fait* (ce qu’il pense) ~ce qu’il chuchote~…'
-                    : index === 0
-                      ? characters.length
-                        ? 'Narration… ou « / » pour faire parler un personnage'
-                        : 'Narration ou ((HRP))…'
-                      : 'Narration…'
+                  seg.command
+                    ? findCommand(seg.command)?.hint || 'Commentaire du jet (facultatif)…'
+                    : seg.characterIds.length
+                      ? 'Ce qu’il dit *ce qu’il fait* (ce qu’il pense) ~ce qu’il chuchote~…'
+                      : index === 0
+                        ? characters.length
+                          ? 'Narration… ou « / » pour un personnage ou un jet (/d20)'
+                          : 'Narration, ((HRP)) ou « /d20 »…'
+                        : 'Narration…'
                 }
                 onChange={(e) => onChange(seg, e)}
                 onKeyDown={(e) => onKeyDown(seg, index, e)}

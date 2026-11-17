@@ -1193,3 +1193,234 @@
   @include card;
   padding: space(3);
 }
+
+// =====================================================================
+// Commandes de hasard (/d20, /pileface)
+// =====================================================================
+
+// Badge « /d20 » d'une ligne de la saisie
+.commandBadge {
+  padding-left: space(1.5);
+  background: var(--secondary-soft);
+  color: var(--secondary-ink);
+}
+
+.badgeIcon {
+  width: 0.875rem;
+  height: 0.875rem;
+}
+
+.previewCommand {
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--fg-muted);
+}
+
+// Résultat d'un jet dans un message
+.roll {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: space(2);
+  margin-top: space(1);
+  padding: space(1.5) space(3);
+  border: var(--border-w) solid var(--border);
+  border-radius: var(--r);
+  background: var(--surface);
+  font-size: 0.875rem;
+}
+
+.rollIcon {
+  display: grid;
+  place-items: center;
+  color: var(--fg-muted);
+
+  svg {
+    width: 1.125rem;
+    height: 1.125rem;
+  }
+}
+
+.rollExpr {
+  font-weight: 600;
+  color: var(--fg-muted);
+}
+
+.rollDetail {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: space(1);
+  color: var(--fg-muted);
+}
+
+.rollDie {
+  min-width: 1.5rem;
+  padding: 0 space(1);
+  border-radius: var(--r-sm);
+  background: var(--surface-2);
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+}
+
+.rollMax {
+  color: var(--success);
+  font-weight: 700;
+}
+
+.rollMin {
+  color: var(--danger);
+  font-weight: 700;
+}
+
+.rollMod {
+  font-variant-numeric: tabular-nums;
+}
+
+.rollTotal {
+  font-family: var(--font-title);
+  font-size: 1.375rem;
+  font-weight: 700;
+  line-height: 1;
+  color: var(--fg);
+  font-variant-numeric: tabular-nums;
+}
+
+.rollCrit {
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.critSuccess {
+  border-color: color-mix(in oklab, var(--success) 60%, transparent);
+  background: color-mix(in oklab, var(--success) 10%, var(--surface));
+
+  .rollTotal,
+  .rollCrit {
+    color: var(--success);
+  }
+}
+
+.critFail {
+  border-color: color-mix(in oklab, var(--danger) 60%, transparent);
+  background: color-mix(in oklab, var(--danger) 10%, var(--surface));
+
+  .rollTotal,
+  .rollCrit {
+    color: var(--danger);
+  }
+}
+
+// =====================================================================
+// Déplacements des personnages (« est arrivé depuis… », « est parti vers… »)
+// =====================================================================
+
+.travel {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: space(1.5);
+  margin: space(2) 0;
+  font-size: 0.8125rem;
+  font-style: italic;
+  color: var(--fg-muted);
+  text-align: center;
+}
+
+.travelIcon {
+  flex-shrink: 0;
+  width: 0.875rem;
+  height: 0.875rem;
+}
+
+.travelIn .travelIcon {
+  color: var(--success);
+}
+
+.travelOut .travelIcon {
+  color: var(--secondary-ink);
+}
+
+.travelPlace {
+  font-style: normal;
+  font-weight: 600;
+  color: var(--primary-ink);
+
+  &:hover {
+    text-decoration: underline;
+  }
+}
+
+// Message ciblé par un lien (?message=…)
+.highlighted {
+  animation: rp-highlight 2.5s ease-out;
+}
+
+@keyframes rp-highlight {
+  0%,
+  40% {
+    background: var(--primary-soft);
+    box-shadow: inset 3px 0 0 var(--primary);
+  }
+
+  100% {
+    background: transparent;
+    box-shadow: inset 3px 0 0 transparent;
+  }
+}
+
+// =====================================================================
+// Mise en scène (/fond, /ambiance, /fin-fond, /fin-ambiance)
+// =====================================================================
+
+.effect {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: space(2);
+  margin-top: space(1);
+  padding: space(1.5) space(3);
+  border: var(--border-w) dashed var(--border);
+  border-radius: var(--r);
+  background: color-mix(in oklab, var(--surface) 85%, transparent);
+  font-size: 0.875rem;
+}
+
+.effectThumb {
+  width: 4rem;
+  height: 2.5rem;
+  border-radius: var(--r-sm);
+  object-fit: cover;
+}
+
+.effectLabel {
+  font-weight: 600;
+  font-style: italic;
+  color: var(--fg-muted);
+}
+
+// Fond du fil (celui du lieu, ou celui d'une commande /fond) : fondu enchaîné à chaque changement
+.rpBackdrop {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background:
+    linear-gradient(var(--scrim), var(--scrim)),
+    var(--zone-bg);
+}
+
+.rpBackdropIn {
+  animation: rp-backdrop-in 0.9s ease-out both;
+}
+
+@keyframes rp-backdrop-in {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}

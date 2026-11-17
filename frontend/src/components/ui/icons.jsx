@@ -32,10 +32,12 @@ import {
   Columns3 as LucideColumns3,
   Compass as LucideCompass,
   Construction as LucideConstruction,
+  Coins as LucideCoins,
   Copy as LucideCopy,
   CornerDownRight as LucideCornerDownRight,
   CornerLeftUp as LucideCornerLeftUp,
   Dna as LucideDna,
+  Dices as LucideDices,
   Download as LucideDownload,
   Ellipsis as LucideEllipsis,
   ExternalLink as LucideExternalLink,
@@ -269,10 +271,12 @@ export const Code = themed('Code', LucideCode);
 export const Columns3 = themed('Columns3', LucideColumns3);
 export const Compass = themed('Compass', LucideCompass);
 export const Construction = themed('Construction', LucideConstruction);
+export const Coins = themed('Coins', LucideCoins);
 export const Copy = themed('Copy', LucideCopy);
 export const CornerDownRight = themed('CornerDownRight', LucideCornerDownRight);
 export const CornerLeftUp = themed('CornerLeftUp', LucideCornerLeftUp);
 export const Dna = themed('Dna', LucideDna);
+export const Dices = themed('Dices', LucideDices);
 export const Download = themed('Download', LucideDownload);
 export const Ellipsis = themed('Ellipsis', LucideEllipsis);
 export const ExternalLink = themed('ExternalLink', LucideExternalLink);

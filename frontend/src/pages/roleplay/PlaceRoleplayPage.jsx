@@ -1,5 +1,5 @@
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
-import { Link, useOutletContext, useParams } from 'react-router';
+import { Link, useOutletContext, useParams, useSearchParams } from 'react-router';
 import { ArrowLeft, Clapperboard, EyeOff, X } from '@/components/ui/icons';
 import { useEntityList } from '@/api/queries';
 import { uploadUrl } from '@/api/client';
@@ -17,6 +17,8 @@ import { AmbientSound } from '@/components/sound/AmbientSound';
 import { getModulesState, isModuleEnabled } from '@/config/modules';
 import { RpMessage } from '@/components/roleplay/RpMessage';
 import { continuesMessage } from '@/components/roleplay/rpMarkup';
+import { activeEffects } from '@/components/roleplay/rpCommands';
+import { RpBackdrop } from '@/components/roleplay/RpBackdrop';
 import styles from '@/components/roleplay/Roleplay.module.scss';
 import { universePath } from '@/utils/universe';
 
@@ -34,6 +36,9 @@ const readHideHrp = () => {
 
 /**
  * Fil de roleplay d'un lieu (/roleplay/lieux/:placeId) : messages en direct, masquage du HRP, et mode « scènes » pour regrouper des messages. Fond et couleurs : ceux du lieu.
+ * `?message=<id>` (liens « est arrivé depuis… » / « est parti vers… ») : remonte le fil jusqu'à ce message et le met en évidence.
+ * Mise en scène : les commandes /fond, /ambiance, /fin-fond, /fin-ambiance changent le fond et l'ambiance quand le
+ * lecteur arrive à leur hauteur en défilant (ligne de lecture aux 70 % de la hauteur ; en bas du fil, tout s'applique).
  * Module « Son » : ambiance du lieu en boucle (sinon son thème), et sons des messages joués à leur arrivée.
  */
 export default function PlaceRoleplayPage() {
@@ -46,6 +51,7 @@ export default function PlaceRoleplayPage() {
   const { data: places = [], isPending: placesPending } = useEntityList('places', universe.id);
   const { data: characters = [] } = useEntityList('characters', universe.id);
   const place = places.find((p) => p.id === Number(placeId));
+  const placesById = useMemo(() => new Map(places.map((p) => [p.id, p])), [places]);
   const charactersById = useMemo(() => new Map(characters.map((c) => [c.id, c])), [characters]);
   const playable = useMemo(
     () => characters.filter((c) => canEdit('character', c.id)).sort((a, b) => characterName(a).localeCompare(characterName(b), 'fr')),
@@ -70,7 +76,8 @@ export default function PlaceRoleplayPage() {
       return;
     }
     for (const m of messages) {
-      if (m.id <= lastHeard.current || !m.soundPath || m.author?.id === user?.id) continue;
+      // Son d'une commande /ambiance : c'est l'ambiance qui change, il n'est pas joué en plus
+      if (m.id <= lastHeard.current || !m.soundPath || m.effect || m.author?.id === user?.id) continue;
       if (soundOn) {
         const sound = new Audio(uploadUrl(m.soundPath));
         sound.volume = ARRIVING_SOUND_VOLUME;
@@ -116,15 +123,62 @@ export default function PlaceRoleplayPage() {
     }
   }, [lastId, firstId, hideHrp]);
 
+  // --- Mise en scène : dernier message atteint par la lecture (Infinity : bas du fil, tout s'applique) ---
+  const [reachedId, setReachedId] = useState(Infinity);
+  const effectMessages = messages.filter((m) => m.effect);
+  const updateReached = (el) => {
+    if (el.scrollHeight - el.scrollTop - el.clientHeight < 40) return setReachedId(Infinity);
+    const line = el.getBoundingClientRect().top + el.clientHeight * 0.7;
+    let reached = 0;
+    for (const m of effectMessages) {
+      const node = document.getElementById(`rp-msg-${m.id}`);
+      if (node && node.getBoundingClientRect().top <= line) reached = m.id;
+    }
+    setReachedId(reached);
+  };
+  // Fond / ambiance en vigueur avant les messages chargés (commandes dans des pages plus anciennes), puis commandes atteintes
+  const effects = activeEffects(thread.data?.pages.at(-1)?.effectsBefore, effectMessages, reachedId);
+  const backgroundImage =
+    effects.background === 'place' ? uploadUrl(place?.background) : effects.background === 'none' ? null : uploadUrl(effects.background.imagePath);
+  const ambience = effects.ambience === 'place' ? ambientSrc : effects.ambience === 'none' || !soundOn ? null : uploadUrl(effects.ambience.soundPath);
+
   const onScroll = () => {
     const el = scrollerRef.current;
     nearBottom.current = el.scrollHeight - el.scrollTop - el.clientHeight < 160;
+    updateReached(el);
   };
 
   const loadOlder = () => {
     restoreFrom.current = scrollerRef.current.scrollHeight;
     thread.fetchNextPage();
   };
+
+  // --- Message ciblé par un lien (?message=…) : pages plus anciennes chargées jusqu'à lui, puis défilement ---
+  const [searchParams, setSearchParams] = useSearchParams();
+  const targetId = Number(searchParams.get('message')) || null;
+  const { isSuccess, isFetchingNextPage, hasNextPage, fetchNextPage } = thread;
+  useEffect(() => {
+    if (!targetId || !isSuccess || isFetchingNextPage) return;
+    nearBottom.current = false; // pas de retour automatique en bas pendant la recherche
+    const found = messages.some((m) => m.id === targetId);
+    if (!found && hasNextPage && messages[0]?.id > targetId) {
+      fetchNextPage();
+      return;
+    }
+    // Trouvé (ou introuvable : supprimé entre-temps) : le paramètre est retiré de l'adresse
+    setSearchParams((params) => {
+      params.delete('message');
+      return params;
+    }, { replace: true });
+    if (!found) return;
+    requestAnimationFrame(() => {
+      const el = document.getElementById(`rp-msg-${targetId}`);
+      if (!el) return;
+      el.scrollIntoView({ block: 'center' });
+      el.classList.add(styles.highlighted);
+      el.addEventListener('animationend', () => el.classList.remove(styles.highlighted), { once: true });
+    });
+  }, [targetId, isSuccess, isFetchingNextPage, hasNextPage, fetchNextPage, messages, setSearchParams]);
 
   // --- Mode « scènes » : sélection de messages ---
   const [sceneMode, setSceneModeState] = useState(false);
@@ -200,7 +254,8 @@ export default function PlaceRoleplayPage() {
   }
 
   return (
-    <EntityThemeZone universe={universe} colors={place.colors} background={uploadUrl(place.background)} backgroundColor={place.backgroundColor}>
+    <EntityThemeZone universe={universe} colors={place.colors}>
+      <RpBackdrop image={backgroundImage} color={effects.background === 'place' ? place.backgroundColor : null} />
       <main className={styles.thread}>
         <header className={styles.threadHeader}>
           <Button as={Link} to={universePath(universe, 'roleplay')} variant="ghost" size="sm" iconOnly icon={ArrowLeft} aria-label="Retour au roleplay" />
@@ -209,7 +264,7 @@ export default function PlaceRoleplayPage() {
             <Link to={universePath(universe, `lieux/${place.id}`)}>Fiche du lieu</Link>
           </div>
           <div className={styles.threadFilters}>
-            {soundOn && <AmbientSound src={ambientSrc} />}
+            {soundOn && <AmbientSound src={ambience} />}
             <Button size="sm" variant={hideHrp ? 'primary' : 'secondary'} icon={EyeOff} aria-pressed={hideHrp} onClick={toggleHrp}>
               {hideHrp ? 'HRP masqué' : 'Masquer le HRP'}
             </Button>
@@ -251,8 +306,10 @@ export default function PlaceRoleplayPage() {
                       universe={universe}
                       message={m}
                       charactersById={charactersById}
+                      placesById={placesById}
                       hideHrp={hideHrp}
-                      continued={continuesMessage(visible[i - 1], m)}
+                      // Une arrivée (notice au-dessus) ou un départ du message précédent coupe la suite
+                      continued={continuesMessage(visible[i - 1], m) && !m.travels?.arrivals.length && !visible[i - 1].travels?.departures.length}
                       className={scene ? styles.inScene : undefined}
                       canManage={isAdmin || m.author?.id === user?.id}
                       onSave={(content) => mutations.update.mutateAsync({ id: m.id, data: { content } }).catch((err) => toast.error(err.message))}

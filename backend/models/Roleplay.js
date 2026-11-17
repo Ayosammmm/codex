@@ -44,6 +44,22 @@ const RpMessage = sequelize.define('RpMessage', {
   imagePath: { type: DataTypes.STRING, allowNull: true },
   // Son joint (/uploads/roleplay/sounds/...), joué chez les autres à son arrivée
   soundPath: { type: DataTypes.STRING, allowNull: true },
+  // Résultat d'une commande de hasard (/d20, /pileface...) tiré par le serveur : voir services/rpCommands.js
+  roll: {
+    type: DataTypes.JSON,
+    allowNull: true,
+    get() {
+      const value = this.getDataValue('roll');
+      if (typeof value === 'string') {
+        try { return JSON.parse(value); } catch { return null; }
+      }
+      return value;
+    },
+  },
+  // Mise en scène (/fond, /ambiance...) : 'background', 'background:none', 'background:reset',
+  // 'ambience', 'ambience:none', 'ambience:reset' (voir services/rpCommands.js). L'image / le son du message
+  // sont alors le nouveau fond / la nouvelle ambiance.
+  effect: { type: DataTypes.STRING(32), allowNull: true },
   // Message entièrement hors roleplay (((…)) uniquement) : masqué par le filtre « HRP »
   isHrp: { type: DataTypes.BOOLEAN, allowNull: false, defaultValue: false },
   placeId: { type: DataTypes.INTEGER, allowNull: false },
@@ -65,6 +81,8 @@ const RpMessageCharacter = sequelize.define('RpMessageCharacter', {
   tableName: 'rp_message_characters',
   engine: 'InnoDB',
   timestamps: false,
+  // Messages d'un personnage dans l'ordre : déplacements d'un lieu à l'autre (arrivées / départs)
+  indexes: [{ fields: ['characterId', 'messageId'] }],
 });
 
 const RpSceneEpisode = sequelize.define('RpSceneEpisode', {

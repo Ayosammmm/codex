@@ -48,6 +48,7 @@ export default function RpScenePage() {
   const place = places.find((p) => p.id === scene.placeId);
   const visible = hideHrp ? scene.messages.filter((m) => !m.isHrp) : scene.messages;
   const charactersById = new Map(characters.map((c) => [c.id, c]));
+  const placesById = new Map(places.map((p) => [p.id, p]));
   const episodeLabel = (e) => [e.stories?.[0]?.name, e.title].filter(Boolean).join(' — ');
   const episodeOptions = episodes.map((e) => ({ value: e.id, label: episodeLabel(e) }));
   const canDelete = isAdmin || scene.createdBy === user?.id;
@@ -111,7 +112,7 @@ export default function RpScenePage() {
           <p className={styles.empty}>Cette scène ne contient plus aucun message.</p>
         ) : (
           visible.map((m, i) => (
-            <RpMessage key={m.id} universe={universe} message={m} charactersById={charactersById} hideHrp={hideHrp} continued={continuesMessage(visible[i - 1], m)} />
+            <RpMessage key={m.id} universe={universe} message={m} charactersById={charactersById} placesById={placesById} hideHrp={hideHrp} continued={continuesMessage(visible[i - 1], m) && !m.travels?.arrivals.length && !visible[i - 1].travels?.departures.length} />
           ))
         )}
       </div>

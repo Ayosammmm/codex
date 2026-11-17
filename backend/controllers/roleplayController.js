@@ -8,6 +8,7 @@ const { RpScene, RpMessage, RpMessageCharacter, RpSceneEpisode, RpRead, isHrpCon
 const { isAdmin, canEditEntity } = require('../services/auth');
 const { broadcast } = require('../services/realtime');
 const { deleteUpload } = require('../services/universeTransfer');
+const { runCommand } = require('../services/rpCommands');
 
 // Sous-dossier d'uploads des images envoyées dans les fils (voir routes/roleplayRoutes.js)
 const IMAGE_FOLDER = 'roleplay/images';
@@ -47,19 +48,53 @@ const handle = (label, fnc) => async (req, res) => {
 
 const authorAttributes = ['id', 'displayName'];
 
-/** Messages (instances avec `author`) → JSON, avec les ids des personnages dans l'ordre. */
+/**
+ * Personnages des messages, dans l'ordre, avec pour chacun son message précédent et suivant (tous lieux confondus) :
+ * [{ messageId, characterId, prevId, nextId }].
+ */
+async function speakerLinks(messageIds) {
+  const [rows] = await sequelize.query(
+    `SELECT mc.messageId, mc.characterId,
+       (SELECT p.messageId FROM rp_message_characters p
+         WHERE p.characterId = mc.characterId AND p.messageId < mc.messageId ORDER BY p.messageId DESC LIMIT 1) AS prevId,
+       (SELECT n.messageId FROM rp_message_characters n
+         WHERE n.characterId = mc.characterId AND n.messageId > mc.messageId ORDER BY n.messageId ASC LIMIT 1) AS nextId
+       FROM rp_message_characters mc WHERE mc.messageId IN (:messageIds) ORDER BY mc.position ASC`,
+    { replacements: { messageIds } },
+  );
+  return rows;
+}
+
+/**
+ * Déplacements des personnages d'un message, d'après leur message précédent et suivant :
+ * - arrivals : [{ characterId, fromPlaceId, fromMessageId }] (fromPlaceId null : toute première apparition) ;
+ * - departures : [{ characterId, toPlaceId, toMessageId }] (le personnage parle ensuite dans un autre lieu).
+ */
+function travelsOf(message, links, placeOf) {
+  const arrivals = [];
+  const departures = [];
+  for (const l of links) {
+    const fromPlaceId = l.prevId ? placeOf.get(l.prevId) : null;
+    if (!l.prevId) arrivals.push({ characterId: l.characterId, fromPlaceId: null, fromMessageId: null });
+    else if (fromPlaceId && fromPlaceId !== message.placeId) arrivals.push({ characterId: l.characterId, fromPlaceId, fromMessageId: l.prevId });
+    const toPlaceId = l.nextId ? placeOf.get(l.nextId) : null;
+    if (toPlaceId && toPlaceId !== message.placeId) departures.push({ characterId: l.characterId, toPlaceId, toMessageId: l.nextId });
+  }
+  return { arrivals, departures };
+}
+
+/** Messages (instances avec `author`) → JSON, avec les ids des personnages dans l'ordre et leurs déplacements. */
 async function serializeMessages(messages) {
   if (!messages.length) return [];
-  const links = await RpMessageCharacter.findAll({
-    where: { messageId: messages.map((m) => m.id) },
-    order: [['position', 'ASC']],
-    raw: true,
-  });
+  const links = await speakerLinks(messages.map((m) => m.id));
   const speakers = new Map();
   for (const l of links) {
     if (!speakers.has(l.messageId)) speakers.set(l.messageId, []);
-    speakers.get(l.messageId).push(l.characterId);
+    speakers.get(l.messageId).push(l);
   }
+  const neighbourIds = [...new Set(links.flatMap((l) => [l.prevId, l.nextId]).filter(Boolean))];
+  const neighbours = neighbourIds.length ? await RpMessage.findAll({ where: { id: neighbourIds }, attributes: ['id', 'placeId'], raw: true }) : [];
+  const placeOf = new Map(neighbours.map((n) => [n.id, n.placeId]));
   return messages.map((m) => ({
     id: m.id,
     placeId: m.placeId,
@@ -67,9 +102,12 @@ async function serializeMessages(messages) {
     content: m.content,
     imagePath: m.imagePath,
     soundPath: m.soundPath,
+    roll: m.roll || null,
+    effect: m.effect || null,
     isHrp: m.isHrp,
     author: m.author ? { id: m.author.id, displayName: m.author.displayName } : null,
-    characterIds: speakers.get(m.id) || [],
+    characterIds: (speakers.get(m.id) || []).map((l) => l.characterId),
+    travels: travelsOf(m, speakers.get(m.id) || [], placeOf),
     createdAt: m.createdAt,
     updatedAt: m.updatedAt,
   }));
@@ -138,6 +176,27 @@ const cleanContent = (content, { allowEmpty = false } = {}) => {
   return text;
 };
 
+/**
+ * Messages voisins (précédent et suivant de chaque personnage, tous lieux) d'un message créé, modifié ou supprimé :
+ * leurs arrivées / départs changent, ils sont renvoyés aux fils concernés. `skip` : messages déjà diffusés.
+ */
+async function refreshNeighbours(around, skip = []) {
+  const ids = new Set();
+  for (const { messageId, characterIds } of around) {
+    for (const characterId of characterIds) {
+      const [prev, next] = await Promise.all([
+        RpMessageCharacter.findOne({ where: { characterId, messageId: { [Op.lt]: messageId } }, order: [['messageId', 'DESC']], raw: true }),
+        RpMessageCharacter.findOne({ where: { characterId, messageId: { [Op.gt]: messageId } }, order: [['messageId', 'ASC']], raw: true }),
+      ]);
+      for (const link of [prev, next]) if (link && !skip.includes(link.messageId)) ids.add(link.messageId);
+    }
+  }
+  for (const id of ids) {
+    const message = await loadMessage(id);
+    if (message) broadcast(message.placeId, { type: 'message:updated', message });
+  }
+}
+
 const setSpeakers = (messageId, characterIds, transaction) =>
   RpMessageCharacter.destroy({ where: { messageId }, transaction }).then(() =>
     characterIds.length
@@ -148,6 +207,23 @@ const setSpeakers = (messageId, characterIds, transaction) =>
 // ---------------------------------------------------------------------------
 // Messages
 // ---------------------------------------------------------------------------
+
+/**
+ * Fond et ambiance en vigueur juste avant un message : dernières commandes /fond… et /ambiance… plus anciennes
+ * (point de départ du fil chargé, quand ces commandes sont dans des pages pas encore chargées).
+ */
+async function effectsBefore(placeId, messageId) {
+  if (!messageId) return { background: null, ambience: null };
+  const last = (prefix) =>
+    RpMessage.findOne({
+      where: { placeId, id: { [Op.lt]: messageId }, effect: { [Op.like]: `${prefix}%` } },
+      attributes: ['id', 'effect', 'imagePath', 'soundPath'],
+      order: [['id', 'DESC']],
+      raw: true,
+    });
+  const [background, ambience] = await Promise.all([last('background'), last('ambience')]);
+  return { background, ambience };
+}
 
 /** Fil d'un lieu, du plus ancien au plus récent : ?before=<id> pour remonter. */
 exports.listMessages = handle('listMessages', async (req, res) => {
@@ -163,14 +239,16 @@ exports.listMessages = handle('listMessages', async (req, res) => {
     limit: limit + 1,
   });
   const hasMore = rows.length > limit;
-  res.json({ messages: await serializeMessages(rows.slice(0, limit).reverse()), hasMore });
+  const page = rows.slice(0, limit).reverse();
+  res.json({ messages: await serializeMessages(page), hasMore, effectsBefore: await effectsBefore(place.id, page[0]?.id) });
 });
 
 const MAX_PARTS = 20;
 
 /**
  * Nouveaux messages, envoyés d'un coup dans l'ordre (saisie avec /personnage ; un seul message = une partie) :
- * { parts: [{ content, characterIds }] } en JSON, ou en multipart (`parts` en JSON, `image` jointe au dernier).
+ * { parts: [{ content, characterIds, command? }] } en JSON, ou en multipart (`parts` en JSON, `image` / `sound`).
+ * L'image va à la ligne « /fond » s'il y en a une, sinon au dernier message ; de même pour le son et « /ambiance ».
  * Tout ou rien : un message refusé annule les autres.
  */
 exports.createMessages = handle('createMessages', async (req, res) => {
@@ -192,23 +270,37 @@ exports.createMessages = handle('createMessages', async (req, res) => {
     if (!Array.isArray(parts) || !parts.length) throw httpError(400, 'Aucun message à envoyer.');
     if (parts.length > MAX_PARTS) throw httpError(400, `${MAX_PARTS} messages maximum à la fois.`);
 
+    // Commandes (/d20, /fond...) : tirées ou reconnues ici ; le texte devient facultatif (commentaire)
+    const commands = parts.map((part) => runCommand(part?.command));
+    const target = (effect) => {
+      const i = commands.findIndex((c) => c?.effect === effect);
+      return i === -1 ? parts.length - 1 : i;
+    };
+    const imageIndex = target('background');
+    const soundIndex = target('ambience');
+
     const cleaned = [];
     for (const [i, part] of parts.entries()) {
-      // Image et son vont au dernier message
-      const last = i === parts.length - 1;
       const characterIds = toIds(part?.characterIds);
       await checkSpeakers(req.user, place, characterIds);
-      const content = cleanContent(part?.content, { allowEmpty: last && Boolean(imagePath || soundPath) });
-      cleaned.push({ content, characterIds, imagePath: last ? imagePath : null, soundPath: last ? soundPath : null });
+      const image = i === imageIndex ? imagePath : null;
+      const sound = i === soundIndex ? soundPath : null;
+      const roll = commands[i]?.roll || null;
+      let effect = commands[i]?.effect || null;
+      // /fond sans image : fond retiré ; /ambiance sans son : silence
+      if (effect === 'background' && !image) effect = 'background:none';
+      if (effect === 'ambience' && !sound) effect = 'ambience:none';
+      const content = cleanContent(part?.content, { allowEmpty: Boolean(roll || effect || image || sound) });
+      cleaned.push({ content, characterIds, roll, effect, imagePath: image, soundPath: sound });
     }
 
     const ids = await sequelize.transaction(async (transaction) => {
       const created = [];
-      for (const { content, characterIds, imagePath: image, soundPath: sound } of cleaned) {
+      for (const { content, characterIds, roll, effect, imagePath: image, soundPath: sound } of cleaned) {
         const message = await RpMessage.create(
           {
-            placeId: place.id, universe_id: place.universe_id, userId: req.user.id, content,
-            imagePath: image, soundPath: sound, isHrp: !image && !sound && isHrpContent(content),
+            placeId: place.id, universe_id: place.universe_id, userId: req.user.id, content, roll, effect,
+            imagePath: image, soundPath: sound, isHrp: !image && !sound && !roll && !effect && isHrpContent(content),
           },
           { transaction },
         );
@@ -224,6 +316,9 @@ exports.createMessages = handle('createMessages', async (req, res) => {
       broadcast(place.id, { type: 'message:created', message });
     }
     res.status(201).json(messages);
+    // Message précédent de chaque personnage (souvent dans un autre lieu) : « est parti vers… »
+    refreshNeighbours(messages.map((m) => ({ messageId: m.id, characterIds: m.characterIds })), ids).catch((err) =>
+      console.error('Erreur roleplay refreshNeighbours:', err));
   } catch (error) {
     // Envoi refusé : les fichiers reçus ne servent à rien
     if (imagePath) deleteUpload(imagePath);
@@ -242,31 +337,42 @@ const findOwnMessage = async (req) => {
 exports.updateMessage = handle('updateMessage', async (req, res) => {
   const message = await findOwnMessage(req);
   const place = await findPlace(message.placeId);
-  const content = req.body?.content !== undefined ? cleanContent(req.body.content, { allowEmpty: Boolean(message.imagePath || message.soundPath) }) : message.content;
+  const content = req.body?.content !== undefined
+    ? cleanContent(req.body.content, { allowEmpty: Boolean(message.imagePath || message.soundPath || message.roll || message.effect) })
+    : message.content;
   const characterIds = req.body?.characterIds !== undefined ? toIds(req.body.characterIds) : null;
 
+  let current = [];
   if (characterIds) {
     // Personnages déjà présents : conservés même si l'auteur n'est plus lié à eux
-    const current = (await RpMessageCharacter.findAll({ where: { messageId: message.id }, raw: true })).map((l) => l.characterId);
+    current = (await RpMessageCharacter.findAll({ where: { messageId: message.id }, raw: true })).map((l) => l.characterId);
     await checkSpeakers(req.user, place, characterIds.filter((id) => !current.includes(id)));
   }
   await sequelize.transaction(async (transaction) => {
-    await message.update({ content, isHrp: !message.imagePath && !message.soundPath && isHrpContent(content) }, { transaction });
+    await message.update({ content, isHrp: !message.imagePath && !message.soundPath && !message.roll && !message.effect && isHrpContent(content) }, { transaction });
     if (characterIds) await setSpeakers(message.id, characterIds, transaction);
   });
   const updated = await loadMessage(message.id);
   broadcast(message.placeId, { type: 'message:updated', message: updated });
   res.json(updated);
+  // Personnages changés : les déplacements de leurs messages voisins aussi
+  const changed = characterIds ? [...characterIds.filter((id) => !current.includes(id)), ...current.filter((id) => !characterIds.includes(id))] : [];
+  if (changed.length) {
+    refreshNeighbours([{ messageId: message.id, characterIds: changed }], [message.id]).catch((err) => console.error('Erreur roleplay refreshNeighbours:', err));
+  }
 });
 
 exports.deleteMessage = handle('deleteMessage', async (req, res) => {
   const message = await findOwnMessage(req);
   const { id, placeId, sceneId, imagePath, soundPath } = message;
+  const characterIds = (await RpMessageCharacter.findAll({ where: { messageId: id }, raw: true })).map((l) => l.characterId);
   await message.destroy();
   if (imagePath) deleteUpload(imagePath);
   if (soundPath) deleteUpload(soundPath);
   broadcast(placeId, { type: 'message:deleted', messageId: id, sceneId });
   res.json({ id });
+  // Le personnage passe désormais directement du message précédent au suivant
+  refreshNeighbours([{ messageId: id, characterIds }]).catch((err) => console.error('Erreur roleplay refreshNeighbours:', err));
 });
 
 /** Marque le fil d'un lieu comme lu jusqu'à { messageId } (jamais en arrière). */
