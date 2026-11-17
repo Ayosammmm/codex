@@ -1,6 +1,6 @@
 import { useState } from 'react';
-import { Link, useNavigate, useOutletContext, useParams } from 'react-router';
-import { ArrowLeft, EyeOff, Pencil, Trash2 } from '@/components/ui/icons';
+import { Link, useNavigate, useOutletContext, useParams, useSearchParams } from 'react-router';
+import { ArrowLeft, EyeOff, Pencil, Play, Trash2 } from '@/components/ui/icons';
 import { useEntityList } from '@/api/queries';
 import { useScene, useSceneMutations } from '@/api/roleplay';
 import { useAuth, usePermissions } from '@/auth/auth';
@@ -12,12 +12,16 @@ import { EmptyState, Spinner } from '@/components/ui/Feedback';
 import { Field, Input } from '@/components/ui/Field';
 import { useToast } from '@/components/ui/Toast';
 import { RpMessage } from '@/components/roleplay/RpMessage';
+import { RpVisualNovel } from '@/components/roleplay/RpVisualNovel';
 import { continuesMessage, formatRpDate } from '@/components/roleplay/rpMarkup';
 import styles from '@/components/roleplay/Roleplay.module.scss';
 import { plural, universePath } from '@/utils/universe';
 import page from '../Page.module.scss';
 
-/** Lecture d'une scène (/roleplay/scenes/:sceneId), rattachement aux épisodes, modification. */
+/**
+ * Lecture d'une scène (/roleplay/scenes/:sceneId), rattachement aux épisodes, modification.
+ * `?vue=vn` : lecture en visual novel, en plein écran (voir RpVisualNovel).
+ */
 export default function RpScenePage() {
   const { universe } = useOutletContext();
   const { sceneId } = useParams();
@@ -26,6 +30,15 @@ export default function RpScenePage() {
   const { user } = useAuth();
   const { canCreate, isAdmin } = usePermissions();
   const storiesOn = isModuleEnabled(getModulesState(universe), 'stories');
+  const soundOn = isModuleEnabled(getModulesState(universe), 'sound');
+  const [searchParams, setSearchParams] = useSearchParams();
+  const visualNovel = searchParams.get('vue') === 'vn';
+  const setVisualNovel = (on) =>
+    setSearchParams((params) => {
+      if (on) params.set('vue', 'vn');
+      else params.delete('vue');
+      return params;
+    });
   const { data: scene, isPending, error } = useScene(sceneId);
   const { data: places = [] } = useEntityList('places', universe.id);
   const { data: characters = [] } = useEntityList('characters', universe.id);
@@ -88,6 +101,9 @@ export default function RpScenePage() {
         <Button size="sm" variant={hideHrp ? 'primary' : 'secondary'} icon={EyeOff} aria-pressed={hideHrp} onClick={() => setHideHrp((v) => !v)}>
           {hideHrp ? 'HRP masqué' : 'Masquer le HRP'}
         </Button>
+        <Button size="sm" variant="primary" icon={Play} disabled={!scene.messages.some((m) => !m.isHrp)} onClick={() => setVisualNovel(true)}>
+          Visual novel
+        </Button>
         {canCreate && <Button size="sm" icon={Pencil} onClick={() => setEditing(true)}>Modifier</Button>}
         {canDelete && <Button size="sm" variant="danger-ghost" icon={Trash2} onClick={remove}>Supprimer</Button>}
       </div>
@@ -116,6 +132,10 @@ export default function RpScenePage() {
           ))
         )}
       </div>
+
+      {visualNovel && scene.messages.some((m) => !m.isHrp) && (
+        <RpVisualNovel scene={scene} place={place} charactersById={charactersById} soundOn={soundOn} onClose={() => setVisualNovel(false)} />
+      )}
 
       {editing && (
         <EditSceneDialog

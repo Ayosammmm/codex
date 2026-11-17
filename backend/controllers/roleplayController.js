@@ -467,7 +467,7 @@ exports.setEpisodeScenes = handle('setEpisodeScenes', async (req, res) => {
 // Scènes
 // ---------------------------------------------------------------------------
 
-/** Une scène et tous ses messages (lecture). */
+/** Une scène et tous ses messages (lecture), avec le fond et l'ambiance en vigueur à son début. */
 exports.getScene = handle('getScene', async (req, res) => {
   const scene = await RpScene.findByPk(toId(req.params.id));
   if (!scene) throw httpError(404, 'Scène non trouvée');
@@ -477,7 +477,8 @@ exports.getScene = handle('getScene', async (req, res) => {
     order: [['id', 'ASC']],
   });
   const [serialized] = await serializeScenes([scene]);
-  res.json({ ...serialized, messages: await serializeMessages(messages) });
+  // Fond / ambiance en vigueur au début de la scène (vue « visual novel »)
+  res.json({ ...serialized, messages: await serializeMessages(messages), effectsBefore: await effectsBefore(scene.placeId, messages[0]?.id) });
 });
 
 /** Rattache des messages (du même lieu) à une scène. `silent` : ce n'est pas une modification du message. */

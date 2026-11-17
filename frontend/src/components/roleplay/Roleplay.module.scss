@@ -1424,3 +1424,329 @@
     opacity: 1;
   }
 }
+
+// Fond sans voile (visual novel : le décor est vu tel quel, la boîte de dialogue a son propre fond)
+.rpBackdropVivid {
+  background: var(--zone-bg);
+}
+
+// =====================================================================
+// Visual novel (lecture d'une scène en plein écran, voir RpVisualNovel.jsx)
+// =====================================================================
+
+.vn {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  isolation: isolate;
+  overflow: hidden;
+  background: var(--bg);
+  color: var(--fg);
+  cursor: pointer;
+  user-select: none;
+}
+
+.vnTop {
+  position: absolute;
+  top: 0;
+  right: 0;
+  left: 0;
+  z-index: 3;
+  display: flex;
+  align-items: center;
+  gap: space(3);
+  padding: space(2) space(4);
+  background: linear-gradient(color-mix(in oklab, var(--surface) 80%, transparent), transparent);
+  cursor: default;
+}
+
+.vnTitle {
+  @include truncate;
+  flex: 1;
+  font-family: var(--font-title);
+  font-weight: 600;
+}
+
+.vnProgress {
+  font-size: 0.8125rem;
+  color: var(--fg-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.vnIconButton {
+  display: grid;
+  place-items: center;
+  width: 2.25rem;
+  height: 2.25rem;
+  border-radius: 50%;
+  color: var(--fg-muted);
+  cursor: pointer;
+
+  &:hover:not(:disabled) {
+    background: var(--surface-2);
+    color: var(--fg);
+  }
+
+  &:disabled {
+    opacity: 0.35;
+    cursor: default;
+  }
+
+  svg {
+    width: 1.125rem;
+    height: 1.125rem;
+  }
+}
+
+// Personnages qui parlent : en grand, posés derrière la boîte de dialogue
+.vnSprites {
+  position: absolute;
+  right: 0;
+  bottom: 9rem;
+  left: 0;
+  z-index: 1;
+  display: flex;
+  justify-content: center;
+  gap: space(4);
+  pointer-events: none;
+}
+
+.vnSprite {
+  width: clamp(8rem, 22vw, 17rem);
+  height: auto;
+  aspect-ratio: 3 / 4;
+  border-radius: var(--r);
+  font-size: clamp(2rem, 5vw, 4rem);
+  box-shadow: var(--elev-lg);
+  animation: vn-rise 0.45s ease-out both;
+}
+
+// Image envoyée avec le message, le temps de sa lecture
+.vnImage {
+  position: absolute;
+  top: 4rem;
+  left: 50%;
+  z-index: 2;
+  max-width: min(92vw, 52rem);
+  transform: translateX(-50%);
+  animation: vn-fade 0.4s ease-out both;
+
+  img {
+    display: block;
+    max-width: 100%;
+    max-height: 48vh;
+    border: var(--border-w) solid var(--border);
+    border-radius: var(--r);
+    box-shadow: var(--elev-lg);
+    object-fit: contain;
+  }
+}
+
+// Boîte de dialogue
+.vnBox {
+  position: absolute;
+  right: 0;
+  bottom: 2.75rem; // place pour le bouton du son, en bas à gauche
+  left: 0;
+  z-index: 2;
+  width: min(100% - 2rem, 56rem);
+  min-height: 8.5rem;
+  margin-inline: auto;
+  padding: space(5) space(5) space(10);
+  border: var(--border-w) solid var(--border);
+  border-top: 3px solid var(--vn-tint, var(--primary));
+  border-radius: var(--r);
+  background: color-mix(in oklab, var(--surface) 90%, transparent);
+  box-shadow: var(--elev-lg);
+  backdrop-filter: blur(6px);
+  font-size: 1.0625rem;
+  animation: vn-fade 0.3s ease-out both;
+
+  @include up(lg) {
+    font-size: 1.125rem;
+  }
+}
+
+.vnName {
+  position: absolute;
+  top: 0;
+  left: space(4);
+  padding: space(1) space(3);
+  border-radius: var(--r-sm);
+  background: var(--vn-tint, var(--primary));
+  color: var(--primary-fg);
+  font-family: var(--font-title);
+  font-size: 0.9375rem;
+  font-weight: 700;
+  transform: translateY(-60%);
+}
+
+.vnNarration {
+  font-style: italic;
+  text-align: center;
+}
+
+.vnNav {
+  position: absolute;
+  right: space(2);
+  bottom: space(2);
+  display: flex;
+  gap: space(1);
+  cursor: default;
+}
+
+.vnEnd {
+  display: grid;
+  justify-items: center;
+  gap: space(3);
+  padding-bottom: space(5);
+  text-align: center;
+  cursor: default;
+
+  .vnName {
+    position: static;
+    transform: none;
+  }
+}
+
+.vnEndActions {
+  display: flex;
+  gap: space(2);
+}
+
+.vnTextButton {
+  display: inline-flex;
+  align-items: center;
+  gap: space(1.5);
+  padding: space(1.5) space(3);
+  border: var(--border-w) solid var(--border);
+  border-radius: var(--r);
+  cursor: pointer;
+
+  &:hover {
+    background: var(--surface-2);
+  }
+
+  svg {
+    width: 1rem;
+    height: 1rem;
+  }
+}
+
+// Son du message : petit bouton discret, en bas à gauche
+.vnSfx {
+  place-items: center;
+  width: 1.75rem;
+  height: 1.75rem;
+  border-radius: 50%;
+  background: color-mix(in oklab, var(--surface) 70%, transparent);
+  color: var(--fg-muted);
+  opacity: 0.55;
+  cursor: pointer;
+  transition: opacity 150ms;
+
+  &:hover,
+  &:focus-visible {
+    opacity: 1;
+  }
+
+  svg {
+    width: 0.875rem;
+    height: 0.875rem;
+  }
+}
+
+.vnSfxName{
+  font-size: small;
+  opacity: 0.6;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  svg{
+    width: 20px;
+    height: 20px;
+  }
+}
+
+@keyframes vn-fade {
+  from {
+    opacity: 0;
+    transform: translateY(0.5rem);
+  }
+}
+
+@keyframes vn-rise {
+  from {
+    opacity: 0;
+    transform: translateY(1.5rem);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .vnSprite,
+  .vnImage,
+  .vnBox {
+    animation: none;
+  }
+}
+
+// Passage lu dans la boîte du visual novel : texte simple, sans bulle, style selon son type
+.vnLine {
+  margin: 0;
+  line-height: 1.55;
+  white-space: pre-line;
+  animation: vn-fade 0.25s ease-out both;
+}
+
+.vnNarrationLine {
+  font-style: italic;
+}
+
+.vnDialogue {
+  color: var(--fg);
+}
+
+.vnAction {
+  font-style: italic;
+  color: var(--fg-muted);
+}
+
+.vnThought {
+  font-style: italic;
+  color: color-mix(in oklab, var(--fg-muted) 80%, var(--secondary-ink));
+}
+
+.vnWhisper {
+  font-size: 0.9em;
+  font-style: italic;
+  letter-spacing: 0.02em;
+  color: var(--fg-subtle);
+}
+
+.vnSound {
+  font-family: var(--font-title);
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.vnShout1 {
+  font-weight: 600;
+}
+
+.vnShout2 {
+  font-size: 1.15em;
+  font-weight: 700;
+}
+
+.vnShout3 {
+  font-size: 1.35em;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .vnLine {
+    animation: none;
+  }
+}
