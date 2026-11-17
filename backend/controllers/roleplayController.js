@@ -3,6 +3,7 @@ const sequelize = require('../config/database');
 const Place = require('../models/Place');
 const Character = require('../models/Character');
 const Episode = require('../models/Episode');
+const Story = require('../models/Story');
 const User = require('../models/User');
 const { RpScene, RpMessage, RpMessageCharacter, RpSceneEpisode, RpRead, isHrpContent } = require('../models/Roleplay');
 const { isAdmin, canEditEntity } = require('../services/auth');
@@ -479,6 +480,74 @@ exports.getScene = handle('getScene', async (req, res) => {
   const [serialized] = await serializeScenes([scene]);
   // Fond / ambiance en vigueur au début de la scène (vue « visual novel »)
   res.json({ ...serialized, messages: await serializeMessages(messages), effectsBefore: await effectsBefore(scene.placeId, messages[0]?.id) });
+});
+
+/** Comparateur de scènes (ids) dans l'ordre chronologique : premier message, puis id (scènes vides à la fin). */
+async function chronological(sceneIds) {
+  const rows = sceneIds.length
+    ? await RpMessage.findAll({ attributes: ['sceneId', [fn('MIN', col('id')), 'first']], where: { sceneId: sceneIds }, group: ['sceneId'], raw: true })
+    : [];
+  const first = new Map(rows.map((r) => [r.sceneId, Number(r.first)]));
+  return (a, b) => (first.get(a) ?? Infinity) - (first.get(b) ?? Infinity) || a - b;
+}
+
+/** Scènes d'une histoire dans l'ordre de lecture : [{ sceneId, episode: { id, title } }] (une scène n'y est qu'une fois). */
+async function storyReadingOrder(story) {
+  const episodes = [...story.episodes].sort((a, b) => (a.order ?? 1e9) - (b.order ?? 1e9) || a.id - b.id);
+  const links = episodes.length ? await RpSceneEpisode.findAll({ where: { episodeId: episodes.map((e) => e.id) }, raw: true }) : [];
+  const compare = await chronological([...new Set(links.map((l) => l.sceneId))]);
+  const seen = new Set();
+  const list = [];
+  for (const episode of episodes) {
+    const ids = links.filter((l) => l.episodeId === episode.id).map((l) => l.sceneId).sort(compare);
+    for (const sceneId of ids) {
+      if (seen.has(sceneId)) continue;
+      seen.add(sceneId);
+      list.push({ sceneId, episode: { id: episode.id, title: episode.title } });
+    }
+  }
+  return list;
+}
+
+/**
+ * Scènes précédente et suivante (?story=<id> : dans l'ordre de cette histoire, si la scène en fait partie ;
+ * sinon dans l'ordre chronologique des scènes de l'univers) :
+ * { story: { id, name } | null, position, total, previous, next } (previous / next : { id, title, placeId, episode? } ou null).
+ */
+exports.sceneNeighbours = handle('sceneNeighbours', async (req, res) => {
+  const scene = await RpScene.findByPk(toId(req.params.id), { attributes: ['id', 'universe_id'] });
+  if (!scene) throw httpError(404, 'Scène non trouvée');
+
+  let list = null;
+  let story = null;
+  const storyId = toId(req.query.story);
+  if (storyId) {
+    const found = await Story.findByPk(storyId, {
+      attributes: ['id', 'name', 'universe_id'],
+      include: [{ model: Episode, as: 'episodes', attributes: ['id', 'title', 'order'], through: { attributes: [] } }],
+    });
+    if (found && found.universe_id === scene.universe_id) {
+      const order = await storyReadingOrder(found);
+      if (order.some((s) => s.sceneId === scene.id)) {
+        list = order;
+        story = { id: found.id, name: found.name };
+      }
+    }
+  }
+  if (!list) {
+    const ids = (await RpScene.findAll({ where: { universe_id: scene.universe_id }, attributes: ['id'], raw: true })).map((s) => s.id);
+    const compare = await chronological(ids);
+    list = ids.sort(compare).map((sceneId) => ({ sceneId }));
+  }
+
+  const i = list.findIndex((s) => s.sceneId === scene.id);
+  const around = [list[i - 1], list[i + 1]];
+  const rows = await RpScene.findAll({ where: { id: around.filter(Boolean).map((s) => s.sceneId) }, attributes: ['id', 'title', 'placeId'], raw: true });
+  const describe = (entry) => {
+    const row = entry && rows.find((r) => r.id === entry.sceneId);
+    return row ? { ...row, episode: entry.episode || null } : null;
+  };
+  res.json({ story, position: i + 1, total: list.length, previous: describe(around[0]), next: describe(around[1]) });
 });
 
 /** Rattache des messages (du même lieu) à une scène. `silent` : ce n'est pas une modification du message. */

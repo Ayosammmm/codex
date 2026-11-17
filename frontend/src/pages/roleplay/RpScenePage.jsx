@@ -1,8 +1,8 @@
 import { useState } from 'react';
 import { Link, useNavigate, useOutletContext, useParams, useSearchParams } from 'react-router';
-import { ArrowLeft, EyeOff, Pencil, Play, Trash2 } from '@/components/ui/icons';
+import { ArrowLeft, ChevronLeft, ChevronRight, EyeOff, Pencil, Play, Trash2 } from '@/components/ui/icons';
 import { useEntityList } from '@/api/queries';
-import { useScene, useSceneMutations } from '@/api/roleplay';
+import { useScene, useSceneMutations, useSceneNeighbours } from '@/api/roleplay';
 import { useAuth, usePermissions } from '@/auth/auth';
 import { getModulesState, isModuleEnabled } from '@/config/modules';
 import { Button } from '@/components/ui/Button';
@@ -21,6 +21,8 @@ import page from '../Page.module.scss';
 /**
  * Lecture d'une scène (/roleplay/scenes/:sceneId), rattachement aux épisodes, modification.
  * `?vue=vn` : lecture en visual novel, en plein écran (voir RpVisualNovel).
+ * `?histoire=<id>` : scène lue depuis une histoire ; les scènes précédente / suivante sont alors celles de l'histoire
+ * (ordre des épisodes), sinon celles de l'univers dans l'ordre chronologique.
  */
 export default function RpScenePage() {
   const { universe } = useOutletContext();
@@ -33,6 +35,16 @@ export default function RpScenePage() {
   const soundOn = isModuleEnabled(getModulesState(universe), 'sound');
   const [searchParams, setSearchParams] = useSearchParams();
   const visualNovel = searchParams.get('vue') === 'vn';
+  const storyId = Number(searchParams.get('histoire')) || null;
+  const { data: neighbours } = useSceneNeighbours(sceneId, storyId);
+  // Lien vers une autre scène : même contexte (histoire), même vue (visual novel ou non)
+  const sceneHref = (id, { vn = visualNovel } = {}) => {
+    const params = new URLSearchParams();
+    if (neighbours?.story) params.set('histoire', neighbours.story.id);
+    if (vn) params.set('vue', 'vn');
+    const query = params.toString();
+    return `${universePath(universe, `roleplay/scenes/${id}`)}${query ? `?${query}` : ''}`;
+  };
   const setVisualNovel = (on) =>
     setSearchParams((params) => {
       if (on) params.set('vue', 'vn');
@@ -133,8 +145,20 @@ export default function RpScenePage() {
         )}
       </div>
 
+      <SceneNav universe={universe} neighbours={neighbours} sceneHref={sceneHref} />
+
       {visualNovel && scene.messages.some((m) => !m.isHrp) && (
-        <RpVisualNovel scene={scene} place={place} charactersById={charactersById} soundOn={soundOn} onClose={() => setVisualNovel(false)} />
+        <RpVisualNovel
+          key={scene.id}
+          scene={scene}
+          place={place}
+          charactersById={charactersById}
+          soundOn={soundOn}
+          previous={neighbours?.previous}
+          next={neighbours?.next}
+          sceneHref={(id) => sceneHref(id, { vn: true })}
+          onClose={() => setVisualNovel(false)}
+        />
       )}
 
       {editing && (
@@ -147,6 +171,51 @@ export default function RpScenePage() {
         />
       )}
     </main>
+  );
+}
+
+/** Scènes précédente et suivante (de l'histoire lue, ou de l'univers), sous la scène. */
+function SceneNav({ universe, neighbours, sceneHref }) {
+  if (!neighbours || (!neighbours.previous && !neighbours.next)) return null;
+  const { story, previous, next, position, total } = neighbours;
+  const detail = (s) => s.episode?.title;
+  return (
+    <nav className={styles.sceneNav} aria-label="Scènes précédente et suivante">
+      <p className={styles.sceneNavContext}>
+        {story ? (
+          <>
+            Histoire <Link to={universePath(universe, `histoires/${story.id}`)}>{story.name}</Link>
+          </>
+        ) : (
+          'Scènes de l’univers'
+        )}
+        {` · scène ${position} / ${total}`}
+      </p>
+      <div className={styles.sceneNavLinks}>
+        {previous ? (
+          <Link to={sceneHref(previous.id)} className={styles.sceneNavLink}>
+            <ChevronLeft aria-hidden />
+            <span>
+              <span className={styles.sceneNavLabel}>Scène précédente</span>
+              <span className={styles.sceneNavTitle}>{previous.title}</span>
+              {detail(previous) && <span className={styles.sceneNavDetail}>{detail(previous)}</span>}
+            </span>
+          </Link>
+        ) : (
+          <span />
+        )}
+        {next && (
+          <Link to={sceneHref(next.id)} className={`${styles.sceneNavLink} ${styles.sceneNavNext}`}>
+            <span>
+              <span className={styles.sceneNavLabel}>Scène suivante</span>
+              <span className={styles.sceneNavTitle}>{next.title}</span>
+              {detail(next) && <span className={styles.sceneNavDetail}>{detail(next)}</span>}
+            </span>
+            <ChevronRight aria-hidden />
+          </Link>
+        )}
+      </div>
+    </nav>
   );
 }
 

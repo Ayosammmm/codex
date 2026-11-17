@@ -24,6 +24,8 @@ import {
   ChevronDown as LucideChevronDown,
   ChevronLeft as LucideChevronLeft,
   ChevronRight as LucideChevronRight,
+  ChevronsLeft as LucideChevronsLeft,
+  ChevronsRight as LucideChevronsRight,
   CircleAlert as LucideCircleAlert,
   CircleCheck as LucideCircleCheck,
   CircleHelp as LucideCircleHelp,
@@ -263,6 +265,8 @@ export const Check = themed('Check', LucideCheck);
 export const ChevronDown = themed('ChevronDown', LucideChevronDown);
 export const ChevronLeft = themed('ChevronLeft', LucideChevronLeft);
 export const ChevronRight = themed('ChevronRight', LucideChevronRight);
+export const ChevronsLeft = themed('ChevronsLeft', LucideChevronsLeft);
+export const ChevronsRight = themed('ChevronsRight', LucideChevronsRight);
 export const CircleAlert = themed('CircleAlert', LucideCircleAlert);
 export const CircleCheck = themed('CircleCheck', LucideCircleCheck);
 export const CircleHelp = themed('CircleHelp', LucideCircleHelp);

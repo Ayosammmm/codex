@@ -23,6 +23,8 @@ export const roleplayApi = {
   episodeScenes: (episodeId) => request(`/roleplay/episodes/${episodeId}/scenes`),
   setEpisodeScenes: (episodeId, sceneIds) => request(`/roleplay/episodes/${episodeId}/scenes`, { method: 'PUT', body: { sceneIds } }),
   scene: (id) => request(`/roleplay/scenes/${id}`),
+  /** Scènes précédente et suivante (dans l'ordre de l'histoire `storyId` si la scène en fait partie, sinon chronologique). */
+  sceneNeighbours: (id, storyId) => request(`/roleplay/scenes/${id}/neighbours${storyId ? `?story=${storyId}` : ''}`),
   createScene: (data) => request('/roleplay/scenes', { method: 'POST', body: data }),
   updateScene: (id, data) => request(`/roleplay/scenes/${id}`, { method: 'PUT', body: data }),
   deleteScene: (id) => request(`/roleplay/scenes/${id}`, { method: 'DELETE' }),
@@ -58,6 +60,13 @@ export const useSetEpisodeScenes = () => {
     },
   });
 };
+
+export const useSceneNeighbours = (id, storyId) =>
+  useQuery({
+    queryKey: [...roleplayKeys.scene(id), 'neighbours', Number(storyId) || 0],
+    queryFn: () => roleplayApi.sceneNeighbours(id, storyId),
+    enabled: Number(id) > 0,
+  });
 
 export const useScene = (id) =>
   useQuery({ queryKey: roleplayKeys.scene(id), queryFn: () => roleplayApi.scene(id), enabled: Number(id) > 0, retry: (n, e) => e.status !== 404 && n < 2 });

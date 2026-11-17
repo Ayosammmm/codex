@@ -1750,3 +1750,105 @@
     animation: none;
   }
 }
+
+// =====================================================================
+// Scènes précédente / suivante (page d'une scène, fin du visual novel)
+// =====================================================================
+
+.sceneNav {
+  display: grid;
+  gap: space(2);
+  margin-top: space(5);
+}
+
+.sceneNavContext {
+  font-size: 0.8125rem;
+  color: var(--fg-muted);
+
+  a {
+    font-weight: 600;
+    color: var(--primary-ink);
+
+    &:hover {
+      text-decoration: underline;
+    }
+  }
+}
+
+.sceneNavLinks {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: space(3);
+
+  @media (max-width: 40rem) {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+.sceneNavLink {
+  @include card;
+  display: flex;
+  align-items: center;
+  gap: space(3);
+  padding: space(3) space(4);
+  transition: border-color 150ms, background-color 150ms;
+
+  &:hover {
+    border-color: var(--primary);
+  }
+
+  > svg {
+    flex-shrink: 0;
+    width: 1.25rem;
+    height: 1.25rem;
+    color: var(--fg-muted);
+  }
+
+  > span {
+    display: grid;
+    min-width: 0;
+  }
+}
+
+.sceneNavNext {
+  grid-column: 2;
+  justify-content: flex-end;
+  text-align: right;
+
+  @media (max-width: 40rem) {
+    grid-column: auto;
+  }
+}
+
+.sceneNavLabel {
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--fg-subtle);
+}
+
+.sceneNavTitle {
+  @include truncate;
+  font-family: var(--font-title);
+  font-weight: 600;
+}
+
+.sceneNavDetail {
+  @include truncate;
+  font-size: 0.8125rem;
+  color: var(--fg-muted);
+}
+
+// Fin du visual novel : la scène suivante mise en avant
+.vnNextScene {
+  justify-content: space-between;
+  width: min(100%, 22rem);
+  border-color: var(--primary);
+  text-align: left;
+
+  > span {
+    display: grid;
+    min-width: 0;
+  }
+}

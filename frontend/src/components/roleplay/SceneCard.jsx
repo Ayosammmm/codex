@@ -4,11 +4,14 @@ import { plural, universePath } from '@/utils/universe';
 import { formatRpDate } from './rpMarkup';
 import styles from './Roleplay.module.scss';
 
-/** Carte d'une scène de roleplay : titre, lieu, personnages, nombre de messages et dates. */
-export function SceneCard({ universe, scene, place, charactersById }) {
+/**
+ * Carte d'une scène de roleplay : titre, lieu, personnages, nombre de messages et dates.
+ * `storyId` : scène lue dans une histoire (la page propose alors la scène suivante de cette histoire).
+ */
+export function SceneCard({ universe, scene, place, charactersById, storyId }) {
   const characters = scene.characterIds.map((id) => charactersById.get(id)).filter(Boolean);
   return (
-    <Link to={universePath(universe, `roleplay/scenes/${scene.id}`)} className={styles.sceneCard}>
+    <Link to={`${universePath(universe, `roleplay/scenes/${scene.id}`)}${storyId ? `?histoire=${storyId}` : ''}`} className={styles.sceneCard}>
       <span className={styles.sceneTitle}>{scene.title}</span>
       <span className={styles.sceneMeta}>
         {[place?.name, plural(scene.messageCount, 'message'), scene.firstAt && `du ${formatRpDate(scene.firstAt)} au ${formatRpDate(scene.lastAt)}`, scene.episodeIds.length > 0 && plural(scene.episodeIds.length, 'épisode')]

@@ -100,7 +100,7 @@ export function EpisodeSheet({ universe, story, episode: ep, episodes, modules, 
         </SheetSection>
       )}
 
-      {modules.roleplay && <EpisodeScenesSection universe={universe} episode={ep} />}
+      {modules.roleplay && <EpisodeScenesSection universe={universe} episode={ep} story={story} />}
 
       {(prev || next) && (
         <nav aria-label="Épisodes voisins" className={styles.pager}>

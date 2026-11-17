@@ -1,5 +1,6 @@
 import { Fragment, useEffect, useRef, useState } from 'react';
-import { ChevronLeft, ChevronRight, Pause, Play, RotateCcw, X } from '@/components/ui/icons';
+import { Link } from 'react-router';
+import { ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, Pause, Play, RotateCcw, X } from '@/components/ui/icons';
 import { uploadUrl } from '@/api/client';
 import { CharacterAvatar } from '@/components/characters/CharacterAvatar';
 import { characterName } from '@/config/characters';
@@ -41,9 +42,10 @@ const LINE_STYLES = { narration: 'vnNarrationLine', dialogue: 'vnDialogue', acti
  * - Fond et ambiance : ceux du lieu, changés par les commandes /fond, /ambiance… au fil de la lecture
  *   (`scene.effectsBefore` : ceux en vigueur avant le début de la scène).
  * - Image d'un message : affichée pendant la lecture de ses passages ; jet de dés : avec son dernier passage.
+ * - `previous` / `next` ({ id, title } ou null) : scènes voisines, ouvertes en visual novel via `sceneHref(id)`.
  * - Son d'un message (module « Son ») : lancé à son premier passage, par-dessus l'ambiance ; petit bouton pause en bas à gauche.
  */
-export function RpVisualNovel({ scene, place, charactersById, soundOn, onClose }) {
+export function RpVisualNovel({ scene, place, charactersById, soundOn, previous, next, sceneHref, onClose }) {
   const steps = readingSteps(scene.messages);
   const messageCount = steps.length ? steps[steps.length - 1].number + 1 : 0;
   const [index, setIndex] = useState(0);
@@ -166,6 +168,16 @@ export function RpVisualNovel({ scene, place, charactersById, soundOn, onClose }
         </button>
         </>
       )}
+        {previous && (
+          <Link to={sceneHref(previous.id)} className={styles.vnIconButton} aria-label={`Scène précédente : ${previous.title}`} title={`Scène précédente : ${previous.title}`}>
+            <ChevronsLeft aria-hidden />
+          </Link>
+        )}
+        {next && (
+          <Link to={sceneHref(next.id)} className={styles.vnIconButton} aria-label={`Scène suivante : ${next.title}`} title={`Scène suivante : ${next.title}`}>
+            <ChevronsRight aria-hidden />
+          </Link>
+        )}
         <button type="button" className={styles.vnIconButton} onClick={onClose} aria-label="Fermer le visual novel (Échap)" title="Fermer (Échap)">
           <X aria-hidden />
         </button>
@@ -223,7 +235,21 @@ export function RpVisualNovel({ scene, place, charactersById, soundOn, onClose }
         <section className={cx(styles.vnBox, styles.vnEnd)} onClick={stop}>
           <p className={styles.vnName}>Fin de la scène</p>
           <p>{scene.title}</p>
+          {next && (
+            <Link to={sceneHref(next.id)} className={cx(styles.vnTextButton, styles.vnNextScene)}>
+              <span>
+                <span className={styles.sceneNavLabel}>Scène suivante</span>
+                <span className={styles.sceneNavTitle}>{next.title}</span>
+              </span>
+              <ChevronRight aria-hidden />
+            </Link>
+          )}
           <div className={styles.vnEndActions}>
+            {previous && (
+              <Link to={sceneHref(previous.id)} className={styles.vnTextButton} title={previous.title}>
+                <ChevronLeft aria-hidden /> Scène précédente
+              </Link>
+            )}
             <button type="button" className={styles.vnTextButton} onClick={() => go(0)}>
               <RotateCcw aria-hidden /> Revoir
             </button>
