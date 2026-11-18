@@ -9,7 +9,7 @@ export const IMPORTANCE = [
   { value: 'Capitale', label: 'Capitale', color: '#dc2626' },
 ];
 export const importanceColor = (v) => IMPORTANCE.find((i) => i.value === v)?.color;
-export const eventImage = (e) => uploadUrl(e?.image);
+export const eventImage = (e, size) => uploadUrl(e?.image, size);
 
 /** Histoires où apparaît un événement (via ses épisodes), sans doublon. */
 export function eventStories(event) {

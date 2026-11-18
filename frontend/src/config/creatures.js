@@ -21,7 +21,7 @@ export const INTELLIGENCE_MAX = 10;
 
 export const temperamentColor = (t) => TEMPERAMENTS.find((o) => o.value === t)?.color;
 export const flightLabel = (f) => FLIGHT_BEHAVIORS.find((o) => o.value === f)?.label || f;
-export const creatureImage = (c) => uploadUrl(c?.image);
+export const creatureImage = (c, size) => uploadUrl(c?.image, size);
 export const formatSize = (c) => (c?.averageSize ? `${c.averageSize} ${c.sizeUnit || 'cm'}` : null);
 export const formatWeight = (c) => (c?.averageWeight != null ? `${String(c.averageWeight).replace('.', ',')} kg` : null);
 export const formatLife = (c) => (c?.lifeExpectancy != null ? `${c.lifeExpectancy} an${c.lifeExpectancy > 1 ? 's' : ''}` : null);

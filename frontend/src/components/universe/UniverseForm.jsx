@@ -1,5 +1,5 @@
 import { Check, Lock } from '@/components/ui/icons';
-import { uploadUrl } from '@/api/client';
+import { IMG, uploadUrl } from '@/api/client';
 import { MODULE_TREE } from '@/config/modules';
 import { COLOR_ROLES, THEMES, getTheme } from '@/theme/themes';
 import { Field, Input } from '@/components/ui/Field';
@@ -116,7 +116,7 @@ const BACKGROUND_MODES = [
 ];
 
 function ImagesSection({ universe, form, update, images, setImage, onError }) {
-  const current = (field) => uploadUrl(universe?.[field]);
+  const current = (field) => uploadUrl(universe?.[field], IMG.card);
   return (
     <FormSection id="images" title="Images" description="Logo, bannière et fond d’ambiance de l’univers. 5 Mo maximum par image.">
       <div className={styles.imagesGrid}>

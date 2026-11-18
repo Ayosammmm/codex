@@ -1,3 +1,4 @@
+import { IMG } from '@/api/client';
 /* eslint-disable react-refresh/only-export-components -- composants de champs et fonctions associées */
 import { Fragment, useMemo } from 'react';
 import { Link, useOutletContext } from 'react-router';
@@ -201,7 +202,7 @@ function RefInput({ field, modId, value, onChange, ...props }) {
   const options = useMemo(
     () =>
       candidates
-        .map((e) => ({ value: e.id, label: entityLabel(target.entityType, e), image: entityThumb(e) || undefined }))
+        .map((e) => ({ value: e.id, label: entityLabel(target.entityType, e), image: entityThumb(e, IMG.thumb) || undefined }))
         .sort((a, b) => a.label.localeCompare(b.label, 'fr')),
     [candidates, target.entityType],
   );

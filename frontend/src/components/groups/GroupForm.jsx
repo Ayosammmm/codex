@@ -1,7 +1,7 @@
 import { useMemo } from 'react';
 import { Link } from 'react-router';
 import { Users } from '@/components/ui/icons';
-import { uploadUrl } from '@/api/client';
+import { IMG, uploadUrl } from '@/api/client';
 import { Combobox } from '@/components/ui/Combobox';
 import { Field, Input } from '@/components/ui/Field';
 import { ImagePicker } from '@/components/ui/ImagePicker';
@@ -92,8 +92,8 @@ export function GroupForm({ universe, group, state, refs, errors, sound, modFiel
 
         <FormSection id="images" title="Logo et bannière" description="5 Mo maximum par image.">
           <div className={styles.imagesGrid}>
-            <ImagePicker label="Logo" hint="Carré" aspect="1" currentUrl={uploadUrl(group?.image)} value={images.image} onChange={(v) => setImage('image', v)} onError={toast.error} />
-            <ImagePicker label="Bannière" hint="Format large, ex. 1600 × 400" aspect="4 / 1" dropClassName={styles.bannerDrop} currentUrl={uploadUrl(group?.banner)} value={images.banner} onChange={(v) => setImage('banner', v)} onError={toast.error} />
+            <ImagePicker label="Logo" hint="Carré" aspect="1" currentUrl={uploadUrl(group?.image, IMG.card)} value={images.image} onChange={(v) => setImage('image', v)} onError={toast.error} />
+            <ImagePicker label="Bannière" hint="Format large, ex. 1600 × 400" aspect="4 / 1" dropClassName={styles.bannerDrop} currentUrl={uploadUrl(group?.banner, IMG.card)} value={images.banner} onChange={(v) => setImage('banner', v)} onError={toast.error} />
           </div>
         </FormSection>
 

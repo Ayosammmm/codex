@@ -1,3 +1,4 @@
+import { IMG } from '@/api/client';
 import { Fragment } from 'react';
 import { Link } from 'react-router';
 import { ChevronRight } from '@/components/ui/icons';
@@ -52,7 +53,7 @@ export function CustomEntitySheet({ universe, type, entity: e, ancestors, childr
           {actions && <div className={styles.actions}>{actions}</div>}
         </header>
         <div className={styles.infobox}>
-          <EntityBanner src={customImage(e)} className={styles.portrait} />
+          <EntityBanner src={customImage(e, IMG.large)} className={styles.portrait} />
           <dl className={styles.facts}>
             <div className={styles.fact}>
               <dt>Type</dt>
@@ -91,7 +92,7 @@ export function CustomEntitySheet({ universe, type, entity: e, ancestors, childr
               {children.map((child) => (
                 <li key={child.id}>
                   <Link to={linkTo(child)} className={styles.sub} style={entityColorVars(child.colors)}>
-                    <EntityBanner src={customImage(child)} className={styles.subThumb} />
+                    <EntityBanner src={customImage(child, IMG.avatar)} className={styles.subThumb} />
                     <span className={styles.subText}>
                       <span className={styles.subName}>{child.name}</span>
                       {childSummary(type, child) && <span className={styles.subMeta}>{childSummary(type, child)}</span>}

@@ -10,7 +10,7 @@ export const nativeCount = (p) => p.characters?.length || 0;
 export const childCount = (p) => p.children?.length || 0;
 
 /** Image d'un lieu : sa bannière, sinon son image de fond. */
-export const placeImage = (p) => uploadUrl(p?.banner) || uploadUrl(p?.background);
+export const placeImage = (p, size) => uploadUrl(p?.banner, size) || uploadUrl(p?.background, size);
 
 export const SORTS = [
   { key: 'name', label: 'Nom', compare: byText((p) => p.name) },

@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
 import { useEntityList } from '@/api/queries';
-import { uploadUrl } from '@/api/client';
+import { IMG, uploadUrl } from '@/api/client';
 import { CRITERIA, characterName } from '@/config/characters';
 import { getModulesState, isModuleEnabled } from '@/config/modules';
 import { groupRoles } from '@/config/groups';
@@ -47,7 +47,7 @@ export function useCharacterReferences(universe) {
       species: toOptions(data.species),
       places: toOptions(data.places),
       characters: (characters.data || [])
-        .map((c) => ({ value: c.id, label: characterName(c), description: c.title || undefined, image: uploadUrl(c.avatar) }))
+        .map((c) => ({ value: c.id, label: characterName(c), description: c.title || undefined, image: uploadUrl(c.avatar, IMG.thumb) }))
         .sort((a, b) => a.label.localeCompare(b.label, 'fr')),
     }),
     // eslint-disable-next-line react-hooks/exhaustive-deps

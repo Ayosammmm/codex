@@ -1,3 +1,4 @@
+import { IMG } from '@/api/client';
 import { Link } from 'react-router';
 import { CornerDownRight, MapPin, Users } from '@/components/ui/icons';
 import { characterName } from '@/config/characters';
@@ -39,7 +40,7 @@ export function PlaceGallery({ places, linkTo }) {
           <li key={p.id}>
             <Link to={linkTo(p)} className={styles.card} style={entityColorVars(p.colors)}>
               <span className={styles.visual}>
-                <EntityBanner src={placeImage(p)} className={styles.image} />
+                <EntityBanner src={placeImage(p, IMG.card)} className={styles.image} />
                 <span className={styles.shade} aria-hidden />
                 {p.type && <span className={styles.type}>{p.type.name}</span>}
                 <span className={styles.titleBlock}>
@@ -82,7 +83,7 @@ export const placeColumns = ({ linkTo, showGroups }) =>
   [
     {
       key: 'name', label: 'Lieu', sortKey: 'name', required: true,
-      render: (p) => <NameCell to={linkTo(p)} visual={<EntityBanner src={placeImage(p)} className={styles.rowThumb} />}>{p.name}</NameCell>,
+      render: (p) => <NameCell to={linkTo(p)} visual={<EntityBanner src={placeImage(p, IMG.thumb)} className={styles.rowThumb} />}>{p.name}</NameCell>,
     },
     { key: 'type', label: 'Type', sortKey: 'type', render: (p) => p.type?.name || dash, edit: { field: 'placeTypeId', type: 'ref', criterion: 'type' } },
     { key: 'parent', label: 'Lieu parent', sortKey: 'parent', render: (p) => p.parent?.name || dash, edit: { field: 'parentId', type: 'ref', criterion: 'parent' } },

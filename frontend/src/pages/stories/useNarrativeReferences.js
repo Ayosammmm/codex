@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import { uploadUrl } from '@/api/client';
+import { IMG, uploadUrl } from '@/api/client';
 import { useEntityList } from '@/api/queries';
 import { characterName } from '@/config/characters';
 import { getModulesState, isModuleEnabled } from '@/config/modules';
@@ -25,10 +25,10 @@ export function useNarrativeReferences(universe) {
   const options = useMemo(
     () => ({
       characters: (characters.data || [])
-        .map((c) => ({ value: c.id, label: characterName(c), description: c.title || undefined, image: uploadUrl(c.avatar) }))
+        .map((c) => ({ value: c.id, label: characterName(c), description: c.title || undefined, image: uploadUrl(c.avatar, IMG.thumb) }))
         .sort(byLabel),
       places: (places.data || []).map((p) => ({ value: p.id, label: p.name, description: p.parent?.name })).sort(byLabel),
-      groups: (groups.data || []).map((g) => ({ value: g.id, label: g.name, image: uploadUrl(g.image) })).sort(byLabel),
+      groups: (groups.data || []).map((g) => ({ value: g.id, label: g.name, image: uploadUrl(g.image, IMG.thumb) })).sort(byLabel),
       stories: (stories.data || []).map((s) => ({ value: s.id, label: s.name })).sort(byLabel),
       // Épisodes : « Titre », avec leur histoire en précision
       episodes: (episodes.data || [])

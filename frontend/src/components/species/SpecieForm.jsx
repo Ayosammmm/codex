@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
 import { CornerDownRight, Users } from '@/components/ui/icons';
-import { uploadUrl } from '@/api/client';
+import { IMG, uploadUrl } from '@/api/client';
 import { Combobox } from '@/components/ui/Combobox';
 import { Field, Input } from '@/components/ui/Field';
 import { ImagePicker } from '@/components/ui/ImagePicker';
@@ -56,7 +56,7 @@ export function SpecieForm({ specie, state, refs, errors, modFields, collections
             <ImagePicker
               label="Illustration"
               aspect="4 / 5"
-              currentUrl={uploadUrl(specie?.image)}
+              currentUrl={uploadUrl(specie?.image, IMG.card)}
               value={images.image}
               onChange={(v) => setImage('image', v)}
               onError={toast.error}

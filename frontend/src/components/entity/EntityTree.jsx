@@ -1,3 +1,4 @@
+import { IMG } from '@/api/client';
 import { useState } from 'react';
 import { Link } from 'react-router';
 import { ChevronRight } from '@/components/ui/icons';
@@ -52,7 +53,7 @@ export function EntityTree({ items, linkTo, image, subtitle, childNoun, members,
               ) : (
                 <span className={styles.toggleSpacer} />
               )}
-              <EntityBanner src={image(item)} className={styles.nodeThumb} />
+              <EntityBanner src={image(item, IMG.thumb)} className={styles.nodeThumb} />
               <Link to={linkTo(item)} className={styles.nodeName}>
                 {item.name}
               </Link>

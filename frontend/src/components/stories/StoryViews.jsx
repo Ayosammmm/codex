@@ -1,3 +1,4 @@
+import { IMG } from '@/api/client';
 import { Link } from 'react-router';
 import { CalendarRange, Clapperboard, Users } from '@/components/ui/icons';
 import { episodeCount, storyCharacters, storyImage, storyPeriod } from '@/config/stories';
@@ -16,7 +17,7 @@ export function StoryGallery({ stories, linkTo }) {
         return (
           <li key={s.id}>
             <Link to={linkTo(s)} className={styles.card} style={entityColorVars(s.colors)}>
-              <EntityBanner src={storyImage(s)} className={styles.cover} />
+              <EntityBanner src={storyImage(s, IMG.card)} className={styles.cover} />
               <span className={styles.body}>
                 <span className={styles.name}>{s.name}</span>
                 {storyPeriod(s) && (
@@ -50,7 +51,7 @@ export function StoryGallery({ stories, linkTo }) {
 export const storyColumns = ({ linkTo }) => [
   {
     key: 'name', label: 'Histoire', sortKey: 'name', required: true,
-    render: (s) => <NameCell to={linkTo(s)} visual={<EntityBanner src={storyImage(s)} className={styles.rowThumb} />}>{s.name}</NameCell>,
+    render: (s) => <NameCell to={linkTo(s)} visual={<EntityBanner src={storyImage(s, IMG.thumb)} className={styles.rowThumb} />}>{s.name}</NameCell>,
   },
   { key: 'period', label: 'Période', render: (s) => storyPeriod(s) || dash },
   { key: 'start', label: 'Début', defaultHidden: true, render: (s) => s.startDate || dash, edit: { field: 'startDate', type: 'text' } },

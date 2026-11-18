@@ -48,6 +48,7 @@ const customEntitiesRoutes = require("./routes/customEntitiesRoutes");
 const entityMetadataRoutes = require("./routes/entityMetadataRoutes");
 const modRecordsRoutes = require("./routes/modRecordsRoutes");
 const { serveModFiles } = require("./services/modFiles");
+const { serveThumbnail, pruneThumbnails } = require("./services/thumbnails");
 
 const app = express();
 app.use(cors());
@@ -92,7 +93,8 @@ app.use("/api/stories", storiesRoutes);
 app.use("/api/entity-photos", entityPhotosRoutes);
 app.use("/api/image-proxy", imageProxyRoutes);
 
-app.use("/uploads", express.static("uploads"));
+// Vignettes redimensionnées à la demande (/uploads/...?w=128), sinon le fichier d'origine
+app.use("/uploads", serveThumbnail, express.static("uploads"));
 // Fichiers des mods installés (pages en iframe isolée, sans accès à la session : voir services/modFiles.js)
 app.use("/mod-files", serveModFiles);
 
@@ -111,5 +113,6 @@ sequelize.sync({ alter: true }) // crée/maj la table automatiquement
 
 const PORT = Number(process.env.PORT) || 5000;
 const server = app.listen(PORT, () => console.log(`Server running on http://localhost:${PORT}`));
+pruneThumbnails().catch((err) => console.error("Nettoyage des vignettes:", err.message));
 // Temps réel du roleplay (WebSocket sur /api/ws)
 setupRealtime(server);

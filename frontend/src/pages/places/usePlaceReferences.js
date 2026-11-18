@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import { uploadUrl } from '@/api/client';
+import { IMG, uploadUrl } from '@/api/client';
 import { useEntityList } from '@/api/queries';
 import { characterName } from '@/config/characters';
 import { getModulesState, isModuleEnabled } from '@/config/modules';
@@ -23,9 +23,9 @@ export function usePlaceReferences(universe) {
     () => ({
       placeTypes: toOptions(placeTypes.data),
       places: toOptions(places.data, (p) => ({ description: p.parent?.name })),
-      groups: toOptions(groups.data, (g) => ({ image: uploadUrl(g.image) })),
+      groups: toOptions(groups.data, (g) => ({ image: uploadUrl(g.image, IMG.thumb) })),
       characters: (characters.data || [])
-        .map((c) => ({ value: c.id, label: characterName(c), description: c.title || undefined, image: uploadUrl(c.avatar) }))
+        .map((c) => ({ value: c.id, label: characterName(c), description: c.title || undefined, image: uploadUrl(c.avatar, IMG.thumb) }))
         .sort(byLabel),
     }),
     [places.data, placeTypes.data, groups.data, characters.data],

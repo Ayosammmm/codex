@@ -1,3 +1,4 @@
+import { IMG } from '@/api/client';
 import { Link } from 'react-router';
 import { CornerDownRight, Dna, Users } from '@/components/ui/icons';
 import { childCount, memberCount, specieImage, specieMembers } from '@/config/species';
@@ -18,7 +19,7 @@ export function SpeciesGallery({ species, linkTo }) {
         return (
           <li key={s.id}>
             <Link to={linkTo(s)} className={styles.card} style={entityColorVars(s.colors)}>
-              <EntityBanner src={specieImage(s)} className={styles.image} />
+              <EntityBanner src={specieImage(s, IMG.card)} className={styles.image} />
               <span className={styles.body}>
                 <span className={styles.name}>{s.name}</span>
                 {s.parent && (
@@ -54,7 +55,7 @@ export function SpeciesGallery({ species, linkTo }) {
 export const specieColumns = ({ linkTo }) => [
   {
     key: 'name', label: 'Espèce', sortKey: 'name', required: true,
-    render: (s) => <NameCell to={linkTo(s)} visual={<EntityBanner src={specieImage(s)} className={styles.rowThumb} />}>{s.name}</NameCell>,
+    render: (s) => <NameCell to={linkTo(s)} visual={<EntityBanner src={specieImage(s, IMG.thumb)} className={styles.rowThumb} />}>{s.name}</NameCell>,
   },
   { key: 'parent', label: 'Espèce parente', sortKey: 'parent', render: (s) => s.parent?.name || dash, edit: { field: 'parentId', type: 'ref', criterion: 'parent' } },
   {

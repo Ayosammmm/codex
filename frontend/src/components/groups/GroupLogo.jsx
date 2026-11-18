@@ -1,4 +1,3 @@
-import { uploadUrl } from '@/api/client';
 import { CharacterAvatar } from '@/components/characters/CharacterAvatar';
 
 /**
@@ -9,8 +8,9 @@ export function GroupLogo({ group, src, round, className }) {
   const [first = '', second = ''] = (group?.name || '').trim().split(/\s+/);
   return (
     <CharacterAvatar
-      character={{ firstname: first, name: second, colors: group?.colors }}
-      src={src !== undefined ? src : uploadUrl(group?.image) || null}
+      // Chemin brut : l'avatar choisit lui-même la taille de la vignette
+      character={{ firstname: first, name: second, colors: group?.colors, avatar: group?.image }}
+      src={src}
       round={round}
       className={className}
     />

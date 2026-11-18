@@ -1,3 +1,4 @@
+import { IMG } from '@/api/client';
 import { Fragment } from 'react';
 import { Link } from 'react-router';
 import { usePhotos } from '@/api/queries';
@@ -75,7 +76,7 @@ export function CreatureSheet({ universe, creature: c, modules = {}, actions }) 
           {actions && <div className={layout.actions}>{actions}</div>}
         </header>
         <div className={layout.infobox}>
-          <EntityBanner src={creatureImage(c)} className={layout.portrait} />
+          <EntityBanner src={creatureImage(c, IMG.large)} className={layout.portrait} />
           {facts.length > 0 && (
             <dl className={layout.facts}>
               {facts.map((f) => (

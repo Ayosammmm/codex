@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
 import { Link } from 'react-router';
-import { uploadUrl } from '@/api/client';
+import { IMG, uploadUrl } from '@/api/client';
 import { characterName } from '@/config/characters';
 import { Badge } from '@/components/ui/Badge';
 import { ColorInput } from '@/components/ui/ColorInput';
@@ -90,7 +90,7 @@ export function CharacterForm({ universe, character, state, refs, modules, error
             <ImagePicker
               label="Avatar"
               aspect="4 / 5"
-              currentUrl={uploadUrl(character?.avatar)}
+              currentUrl={uploadUrl(character?.avatar, IMG.card)}
               value={images.avatar}
               onChange={(v) => setImages((imgs) => ({ ...imgs, avatar: v }))}
               onError={toast.error}
@@ -206,7 +206,7 @@ export function CharacterForm({ universe, character, state, refs, modules, error
             label="Image de fond"
             aspect="16 / 9"
             className={styles.background}
-            currentUrl={uploadUrl(character?.background)}
+            currentUrl={uploadUrl(character?.background, IMG.card)}
             value={images.background}
             onChange={(v) => setImages((imgs) => ({ ...imgs, background: v }))}
             onError={toast.error}

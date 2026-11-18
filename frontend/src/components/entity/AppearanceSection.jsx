@@ -1,4 +1,4 @@
-import { uploadUrl } from '@/api/client';
+import { IMG, uploadUrl } from '@/api/client';
 import { COLOR_ROLES } from '@/theme/themes';
 import { ColorInput } from '@/components/ui/ColorInput';
 import { Field } from '@/components/ui/Field';
@@ -63,7 +63,7 @@ export function AppearanceSection({ state, savedBackground, subject, showColors 
             label="Image de fond"
             aspect="16 / 9"
             className={form.background}
-            currentUrl={uploadUrl(savedBackground)}
+            currentUrl={uploadUrl(savedBackground, IMG.card)}
             value={images.background}
             onChange={(v) => setImage('background', v)}
             onError={toast.error}

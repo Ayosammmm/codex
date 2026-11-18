@@ -1,7 +1,7 @@
 import { useMemo } from 'react';
 import { Link } from 'react-router';
 import { MapPin, Users } from '@/components/ui/icons';
-import { uploadUrl } from '@/api/client';
+import { IMG, uploadUrl } from '@/api/client';
 import { Combobox } from '@/components/ui/Combobox';
 import { Field, Input } from '@/components/ui/Field';
 import { ImagePicker } from '@/components/ui/ImagePicker';
@@ -94,7 +94,7 @@ export function PlaceForm({ universe, place, state, refs, modules, errors, sound
             label="Bannière"
             hint="Format large, ex. 1800 × 600"
             aspect="3 / 1"
-            currentUrl={uploadUrl(place?.banner)}
+            currentUrl={uploadUrl(place?.banner, IMG.card)}
             value={images.banner}
             onChange={(v) => setImage('banner', v)}
             onError={toast.error}

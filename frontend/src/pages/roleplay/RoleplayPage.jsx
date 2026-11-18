@@ -1,3 +1,4 @@
+import { IMG } from '@/api/client';
 import { Link, useOutletContext, useSearchParams } from 'react-router';
 import { CornerDownRight, MessagesSquare, Search } from '@/components/ui/icons';
 import { useEntityList } from '@/api/queries';
@@ -108,7 +109,7 @@ export default function RoleplayPage() {
                         <li key={t.place.id}>
                           <Link to={universePath(universe, `roleplay/lieux/${t.place.id}`)} className={cards.card} style={entityColorVars(t.place.colors)}>
                             <span className={cards.visual}>
-                              <EntityBanner src={placeImage(t.place)} className={cards.image} />
+                              <EntityBanner src={placeImage(t.place, IMG.card)} className={cards.image} />
                               <span className={cards.shade} aria-hidden />
                               <span className={cards.titleBlock}>
                                 <span className={cards.name}>{t.place.name}</span>

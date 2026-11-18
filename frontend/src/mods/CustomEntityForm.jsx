@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
 import { CornerDownRight } from '@/components/ui/icons';
-import { uploadUrl } from '@/api/client';
+import { IMG, uploadUrl } from '@/api/client';
 import { Field, Input } from '@/components/ui/Field';
 import { ImagePicker } from '@/components/ui/ImagePicker';
 import { RichTextEditor } from '@/components/ui/RichText';
@@ -58,7 +58,7 @@ export function CustomEntityForm({ type, entity, state, siblings, errors, collec
             <ImagePicker
               label="Illustration"
               aspect="4 / 5"
-              currentUrl={uploadUrl(entity?.image)}
+              currentUrl={uploadUrl(entity?.image, IMG.card)}
               value={images.image}
               onChange={(v) => setImage('image', v)}
               onError={toast.error}

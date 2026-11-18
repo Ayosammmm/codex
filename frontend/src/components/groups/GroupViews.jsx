@@ -1,6 +1,6 @@
 import { Link } from 'react-router';
 import { CornerDownRight, Network, Users } from '@/components/ui/icons';
-import { uploadUrl } from '@/api/client';
+import { IMG, uploadUrl } from '@/api/client';
 import { characterName } from '@/config/characters';
 import { groupRoles, memberCount, memberRole, roleRanker } from '@/config/groups';
 import { AvatarStack, EntityBanner } from '@/components/entity/EntityBanner';
@@ -34,7 +34,7 @@ export function GroupGallery({ groups, linkTo }) {
         return (
           <li key={g.id}>
             <Link to={linkTo(g)} className={styles.card} style={entityColorVars(g.colors)}>
-              <EntityBanner src={uploadUrl(g.banner)} className={styles.cardBanner} />
+              <EntityBanner src={uploadUrl(g.banner, IMG.card)} className={styles.cardBanner} />
               <span className={styles.cardHead}>
                 <GroupLogo group={g} className={styles.cardLogo} />
                 {g.type && <span className={styles.cardType}>{g.type.name}</span>}

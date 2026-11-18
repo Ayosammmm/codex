@@ -1,3 +1,4 @@
+import { IMG } from '@/api/client';
 import { Link } from 'react-router';
 import { MapPin, Ruler } from '@/components/ui/icons';
 import { ACTIVITY_CYCLES, DIETS, INTELLIGENCE_MAX, TEMPERAMENTS, creatureImage, formatSize, temperamentColor } from '@/config/creatures';
@@ -15,7 +16,7 @@ export function CreatureGallery({ creatures, linkTo, showRanks }) {
         <li key={c.id}>
           <Link to={linkTo(c)} className={styles.card} style={entityColorVars(c.colors)}>
             <span className={styles.visual}>
-              <EntityBanner src={creatureImage(c)} className={styles.image} />
+              <EntityBanner src={creatureImage(c, IMG.card)} className={styles.image} />
               {showRanks && c.powerRank && (
                 <span className={styles.rank}>
                   <Badge color={c.powerRank.color}>{c.powerRank.name}</Badge>
@@ -55,7 +56,7 @@ export const creatureColumns = ({ linkTo, showRanks }) =>
   [
     {
       key: 'name', label: 'Créature', sortKey: 'name', required: true,
-      render: (c) => <NameCell to={linkTo(c)} visual={<EntityBanner src={creatureImage(c)} className={styles.rowThumb} />}>{c.name}</NameCell>,
+      render: (c) => <NameCell to={linkTo(c)} visual={<EntityBanner src={creatureImage(c, IMG.thumb)} className={styles.rowThumb} />}>{c.name}</NameCell>,
     },
     showRanks && {
       key: 'rank', label: 'Rang', sortKey: 'rank',

@@ -1,5 +1,5 @@
 import { CalendarRange, Clapperboard } from '@/components/ui/icons';
-import { uploadUrl } from '@/api/client';
+import { IMG, uploadUrl } from '@/api/client';
 import { Field, Input } from '@/components/ui/Field';
 import { ImagePicker } from '@/components/ui/ImagePicker';
 import { RichTextEditor } from '@/components/ui/RichText';
@@ -53,7 +53,7 @@ export function StoryForm({ universe, story, state, errors, modFields, collectio
             label="Image"
             hint="Format large, ex. 1800 × 600"
             aspect="3 / 1"
-            currentUrl={uploadUrl(story?.image)}
+            currentUrl={uploadUrl(story?.image, IMG.card)}
             value={images.image}
             onChange={(v) => setImage('image', v)}
             onError={toast.error}

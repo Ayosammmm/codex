@@ -1,4 +1,4 @@
-import { uploadUrl } from '@/api/client';
+import { IMG, uploadUrl } from '@/api/client';
 import { characterName } from '@/config/characters';
 
 /**
@@ -26,7 +26,7 @@ export const entityLabel = (entityType, entity) => {
 };
 
 /** Vignette d'une entité, quel que soit son type. */
-export const entityThumb = (entity) => uploadUrl(entity?.avatar || entity?.image || entity?.banner) || null;
+export const entityThumb = (entity, size = IMG.avatar) => uploadUrl(entity?.avatar || entity?.image || entity?.banner, size) || null;
 
 /**
  * Chemin (relatif à l'univers) de la fiche d'une entité.

@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { ChevronLeft, ChevronRight, X } from '@/components/ui/icons';
-import { uploadUrl } from '@/api/client';
+import { IMG, uploadUrl } from '@/api/client';
 import styles from './PhotoGallery.module.scss';
 
 // Distance minimale (px) d'un glissé horizontal pour changer de photo
@@ -69,7 +69,7 @@ export function PhotoGallery({ photos, name }) {
           <li key={p.id}>
             <figure className={styles.figure}>
               <button type="button" className={styles.photo} onClick={() => open(i)} aria-label={p.caption ? `Agrandir : ${p.caption}` : `Agrandir la photo ${i + 1}`}>
-                <img src={uploadUrl(p.imagePath)} alt={p.caption || ''} loading="lazy" decoding="async" />
+                <img src={uploadUrl(p.imagePath, IMG.card)} alt={p.caption || ''} loading="lazy" decoding="async" />
               </button>
               {p.caption && <figcaption className={styles.caption}>{p.caption}</figcaption>}
             </figure>

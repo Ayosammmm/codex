@@ -1,5 +1,5 @@
 import { CalendarClock } from '@/components/ui/icons';
-import { uploadUrl } from '@/api/client';
+import { IMG, uploadUrl } from '@/api/client';
 import { IMPORTANCE, importanceColor } from '@/config/events';
 import { Badge } from '@/components/ui/Badge';
 import { Combobox } from '@/components/ui/Combobox';
@@ -55,7 +55,7 @@ export function EventForm({ event, state, refs, modules, errors, modFields, coll
         </FormSection>
 
         <FormSection id="image" title="Illustration" description="5 Mo maximum.">
-          <ImagePicker label="Image" aspect="16 / 9" className={form.background} currentUrl={uploadUrl(event?.image)} value={images.image} onChange={(v) => setImage('image', v)} onError={toast.error} />
+          <ImagePicker label="Image" aspect="16 / 9" className={form.background} currentUrl={uploadUrl(event?.image, IMG.card)} value={images.image} onChange={(v) => setImage('image', v)} onError={toast.error} />
         </FormSection>
 
         <FormSection id="description" title="Description" description="Ce qui s’est passé, ses causes, ses conséquences…">

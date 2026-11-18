@@ -1,3 +1,4 @@
+import { IMG } from '@/api/client';
 import { Fragment } from 'react';
 import { Link } from 'react-router';
 import { ChevronRight } from '@/components/ui/icons';
@@ -54,7 +55,7 @@ export function SpecieSheet({ universe, specie: s, ancestors, subspecies, action
           {actions && <div className={styles.actions}>{actions}</div>}
         </header>
         <div className={styles.infobox}>
-          <EntityBanner src={specieImage(s)} className={styles.portrait} />
+          <EntityBanner src={specieImage(s, IMG.large)} className={styles.portrait} />
           <dl className={styles.facts}>
             {facts.map((f) => (
               <div key={f.label} className={styles.fact}>
@@ -81,7 +82,7 @@ export function SpecieSheet({ universe, specie: s, ancestors, subspecies, action
               {subspecies.map((sub) => (
                 <li key={sub.id}>
                   <Link to={universePath(universe, `especes/${sub.id}`)} className={styles.sub} style={entityColorVars(sub.colors)}>
-                    <EntityBanner src={specieImage(sub)} className={styles.subThumb} />
+                    <EntityBanner src={specieImage(sub, IMG.avatar)} className={styles.subThumb} />
                     <span className={styles.subText}>
                       <span className={styles.subName}>{sub.name}</span>
                       <span className={styles.subMeta}>

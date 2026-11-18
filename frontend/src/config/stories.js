@@ -11,7 +11,7 @@ export const DEFAULT_EPISODE_ROLE = 'secondaire';
 export const episodeRole = (c) => c?.EpisodeCharacter?.role || DEFAULT_EPISODE_ROLE;
 const roleRank = (role) => EPISODE_ROLES.findIndex((r) => r.value === role);
 
-export const storyImage = (s) => uploadUrl(s?.image);
+export const storyImage = (s, size) => uploadUrl(s?.image, size);
 
 /** Fond d'un épisode : le sien (image ou couleur), sinon celui de son histoire. */
 export const episodeBackdrop = (episode, story) =>

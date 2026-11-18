@@ -1,7 +1,7 @@
 import { Fragment } from 'react';
 import { Link, useNavigate } from 'react-router';
 import { ChevronRight, MapPin } from '@/components/ui/icons';
-import { uploadUrl } from '@/api/client';
+import { IMG, uploadUrl } from '@/api/client';
 import { usePhotos } from '@/api/queries';
 import { characterName } from '@/config/characters';
 import { childCount, mapPins, placeImage, placeMap } from '@/config/places';
@@ -28,7 +28,7 @@ const byName = (a, b) => a.name.localeCompare(b.name, 'fr');
  */
 export function PlaceSheet({ universe, place: p, ancestors, subplaces, fauna = [], modules, actions, sound = null }) {
   const { data: photos = [] } = usePhotos('place', p.id);
-  const image = placeImage(p);
+  const image = placeImage(p, IMG.large);
   const navigate = useNavigate();
   const natives = [...(p.characters || [])].sort((a, b) => characterName(a).localeCompare(characterName(b), 'fr'));
   const directGroups = [...(p.controllingGroups || [])].sort(byName);
@@ -94,7 +94,7 @@ export function PlaceSheet({ universe, place: p, ancestors, subplaces, fauna = [
             {subplaces.map((c) => (
               <li key={c.id}>
                 <Link to={universePath(universe, `lieux/${c.id}`)} className={styles.child} style={entityColorVars(c.colors)}>
-                  <EntityBanner src={placeImage(c)} className={styles.childThumb} />
+                  <EntityBanner src={placeImage(c, IMG.avatar)} className={styles.childThumb} />
                   <span className={styles.childText}>
                     <span className={styles.childName}>{c.name}</span>
                     <span className={styles.childMeta}>
@@ -144,7 +144,7 @@ export function PlaceSheet({ universe, place: p, ancestors, subplaces, fauna = [
             {fauna.map((c) => (
               <li key={c.id}>
                 <Link to={universePath(universe, `bestiaire/${c.id}`)} className={styles.child} style={entityColorVars(c.colors)}>
-                  <EntityBanner src={uploadUrl(c.image)} className={styles.childThumb} />
+                  <EntityBanner src={uploadUrl(c.image, IMG.avatar)} className={styles.childThumb} />
                   <span className={styles.childText}>
                     <span className={styles.childName}>{c.name}</span>
                     <span className={styles.childMeta}>{[modules.ranks && c.powerRank?.name && `Rang ${c.powerRank.name}`, c.temperament].filter(Boolean).join(' · ') || 'Créature'}</span>

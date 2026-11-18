@@ -8,7 +8,7 @@ const byNumberDesc = (get) => (a, b) => get(b) - get(a);
 
 export const memberCount = (s) => s.characters?.length || 0;
 export const childCount = (s) => s.children?.length || 0;
-export const specieImage = (s) => uploadUrl(s?.image);
+export const specieImage = (s, size) => uploadUrl(s?.image, size);
 
 /** Personnages d'une espèce, par nom (les `max` premiers). */
 export const specieMembers = (s, max) =>

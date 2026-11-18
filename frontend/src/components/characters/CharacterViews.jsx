@@ -1,3 +1,4 @@
+import { IMG, uploadUrl } from '@/api/client';
 import { Link } from 'react-router';
 import { characterName } from '@/config/characters';
 import { Badge } from '@/components/ui/Badge';
@@ -31,7 +32,8 @@ export function CharacterGallery({ characters, linkTo }) {
       {characters.map((c) => (
         <li key={c.id}>
           <Link to={linkTo(c)} className={styles.tcg} style={entityColorVars(c.colors)}>
-            <CharacterAvatar character={c} className={styles.tcgAvatar} />
+            {/* Carte en hauteur, image en cover : vignette de 360 px de haut */}
+            <CharacterAvatar character={c} src={c.avatar?.startsWith('/uploads/') ? `${uploadUrl(c.avatar)}?w=288&h=360` : undefined} className={styles.tcgAvatar} />
             <span className={styles.tcgName}>{characterName(c)}</span>
             {c.title && <span className={styles.tcgTitle}>{c.title}</span>}
             <span className={styles.tcgShine} aria-hidden />

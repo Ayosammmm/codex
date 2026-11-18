@@ -1,6 +1,6 @@
 import { useRef, useState } from 'react';
 import { ImagePlus, LoaderCircle, Trash2 } from '@/components/ui/icons';
-import { uploadUrl } from '@/api/client';
+import { IMG, uploadUrl } from '@/api/client';
 import { usePhotoMutations, usePhotos } from '@/api/queries';
 import { Spinner } from '@/components/ui/Feedback';
 import { useToast } from '@/components/ui/Toast';
@@ -61,7 +61,7 @@ export function PhotoAlbum({ entityType, entityId }) {
         <li key={photo.id} className={styles.item}>
           <div className={styles.photo}>
             <a href={uploadUrl(photo.imagePath)} target="_blank" rel="noreferrer" className={styles.photoLink} title="Ouvrir la photo">
-              <img src={uploadUrl(photo.imagePath)} alt={photo.caption || ''} loading="lazy" />
+              <img src={uploadUrl(photo.imagePath, IMG.card)} alt={photo.caption || ''} loading="lazy" />
             </a>
             <button type="button" className={styles.photoDelete} aria-label="Supprimer la photo" onClick={() => onDelete(photo)}>
               <Trash2 aria-hidden />

@@ -79,8 +79,24 @@ export async function download(path, fallbackName) {
   setTimeout(() => URL.revokeObjectURL(url), 1000);
 }
 
-/** URL affichable d'un fichier envoyé (/uploads/...) ou d'une URL externe. */
-export const uploadUrl = (path) => {
+/** Largeurs d'affichage courantes (px CSS) à passer à `uploadUrl` quand la taille n'est pas mesurée. */
+export const IMG = { thumb: 64, avatar: 128, card: 480, large: 960 };
+
+const pixelRatio = () => Math.min(Math.max(window.devicePixelRatio || 1, 1), 3);
+
+const RESIZABLE = /\.(jpe?g|png|webp|gif|avif|tiff?)$/i;
+
+/**
+ * URL affichable d'un fichier envoyé (/uploads/...) ou d'une URL externe.
+ * `width` (px CSS, optionnel) : demande une vignette redimensionnée par le serveur (WebP, animée pour les GIF),
+ * à la densité de l'écran (×2 sur un écran Retina). Sans `width` : le fichier d'origine.
+ * `height` (px CSS, optionnel) : l'image couvrira aussi cette hauteur (cadres en `object-fit: cover`).
+ */
+export const uploadUrl = (path, width, height) => {
   if (!path) return null;
-  return /^https?:\/\//.test(path) ? path : `${UPLOADS_BASE}${path}`;
+  if (/^https?:\/\//.test(path)) return path;
+  const url = `${UPLOADS_BASE}${path}`;
+  if (!width || !RESIZABLE.test(path)) return url;
+  const px = (size) => Math.ceil(size * pixelRatio());
+  return height ? `${url}?w=${px(width)}&h=${px(height)}` : `${url}?w=${px(width)}`;
 };

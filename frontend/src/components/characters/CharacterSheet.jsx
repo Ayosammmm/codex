@@ -1,3 +1,4 @@
+import { IMG } from '@/api/client';
 import { Fragment, useMemo } from 'react';
 import { Link } from 'react-router';
 import { TrendingUp } from '@/components/ui/icons';

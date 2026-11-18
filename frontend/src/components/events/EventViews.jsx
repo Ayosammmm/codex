@@ -1,3 +1,4 @@
+import { IMG } from '@/api/client';
 import { Link } from 'react-router';
 import { ArrowDown, ArrowUp, BookOpen, MapPin } from '@/components/ui/icons';
 import { characterName } from '@/config/characters';
@@ -51,7 +52,7 @@ export function EventTimeline({ events, linkTo, onMove, moving }) {
           <div className={styles.when}>{e.date || <span className={styles.noDate}>Date inconnue</span>}</div>
           <div className={styles.entry}>
             <Link to={linkTo(e)} className={styles.entryCard}>
-              {eventImage(e) && <EntityBanner src={eventImage(e)} className={styles.entryImage} />}
+              {eventImage(e) && <EntityBanner src={eventImage(e, IMG.card)} className={styles.entryImage} />}
               <span className={styles.entryBody}>
                 <span className={styles.entryHead}>
                   <span className={styles.entryName}>{e.name}</span>
@@ -89,7 +90,7 @@ export function EventGallery({ events, linkTo }) {
       {events.map((e) => (
         <li key={e.id}>
           <Link to={linkTo(e)} className={styles.card} style={{ ...entityColorVars(e.colors), '--tone': importanceColor(e.importance) || 'var(--border)' }}>
-            <EntityBanner src={eventImage(e)} className={styles.cardImage} />
+            <EntityBanner src={eventImage(e, IMG.card)} className={styles.cardImage} />
             <span className={styles.cardBody}>
               <span className={styles.cardDate}>{e.date || 'Date inconnue'}</span>
               <span className={styles.entryName}>{e.name}</span>

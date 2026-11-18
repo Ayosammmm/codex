@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import { uploadUrl } from '@/api/client';
+import { IMG, uploadUrl } from '@/api/client';
 import { useEntityList } from '@/api/queries';
 import { characterName } from '@/config/characters';
 import { CRITERIA } from '@/config/species';
@@ -13,9 +13,9 @@ export function useSpeciesReferences(universe) {
 
   const options = useMemo(
     () => ({
-      species: (species.data || []).map((s) => ({ value: s.id, label: s.name, description: s.parent?.name, image: uploadUrl(s.image) })).sort(byLabel),
+      species: (species.data || []).map((s) => ({ value: s.id, label: s.name, description: s.parent?.name, image: uploadUrl(s.image, IMG.thumb) })).sort(byLabel),
       characters: (characters.data || [])
-        .map((c) => ({ value: c.id, label: characterName(c), description: c.title || undefined, image: uploadUrl(c.avatar) }))
+        .map((c) => ({ value: c.id, label: characterName(c), description: c.title || undefined, image: uploadUrl(c.avatar, IMG.thumb) }))
         .sort(byLabel),
     }),
     [species.data, characters.data],

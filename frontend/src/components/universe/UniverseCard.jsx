@@ -1,6 +1,6 @@
 import { Link } from 'react-router';
 import { Copy, Download, Ellipsis, Settings, Trash2 } from '@/components/ui/icons';
-import { uploadUrl } from '@/api/client';
+import { IMG, uploadUrl } from '@/api/client';
 import { universeThemeProps } from '@/theme/universeTheme';
 import { universePath } from '@/utils/universe';
 import { Menu } from '@/components/ui/Menu';
@@ -9,8 +9,8 @@ import { UniverseAvatar } from './UniverseAvatar';
 import styles from './UniverseCard.module.scss';
 
 /** Bannière : image de l'univers, sinon un dégradé de ses couleurs. La hauteur est donnée par `className`. */
-export function UniverseBanner({ universe, src, className }) {
-  const image = src !== undefined ? src : uploadUrl(universe?.banner);
+export function UniverseBanner({ universe, src, size = IMG.large, className }) {
+  const image = src !== undefined ? src : uploadUrl(universe?.banner, size);
   return (
     <div className={cx(styles.banner, className)}>
       {image ? (
@@ -25,7 +25,7 @@ export function UniverseBanner({ universe, src, className }) {
 export function UniverseCard({ universe, actions }) {
   return (
     <article {...universeThemeProps(universe)} className={styles.card}>
-      <UniverseBanner universe={universe} className={styles.cardBanner} />
+      <UniverseBanner universe={universe} size={IMG.card} className={styles.cardBanner} />
 
       <div className={styles.menuSlot}>
         <Menu

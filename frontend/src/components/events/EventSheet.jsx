@@ -1,3 +1,4 @@
+import { IMG } from '@/api/client';
 import { Link } from 'react-router';
 import { ArrowLeft, ArrowRight, BookOpen, CalendarClock, MapPin } from '@/components/ui/icons';
 import { characterName } from '@/config/characters';
@@ -33,7 +34,7 @@ function episodesByStory(event) {
  * - `prev` / `next` : événements voisins ; `modules` : { groups }
  */
 export function EventSheet({ universe, event: e, prev, next, modules, actions }) {
-  const image = eventImage(e);
+  const image = eventImage(e, IMG.large);
   const characters = [...(e.characters || [])].sort((a, b) => characterName(a).localeCompare(characterName(b), 'fr'));
   const stories = episodesByStory(e);
   const path = (ev) => universePath(universe, `evenements/${ev.id}`);

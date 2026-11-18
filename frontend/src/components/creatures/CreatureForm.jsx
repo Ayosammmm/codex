@@ -1,6 +1,6 @@
 import { Link } from 'react-router';
 import { MapPin, Ruler } from '@/components/ui/icons';
-import { uploadUrl } from '@/api/client';
+import { IMG, uploadUrl } from '@/api/client';
 import {
   ACTIVITY_CYCLES,
   DIETS,
@@ -70,7 +70,7 @@ export function CreatureForm({ universe, creature, state, refs, modules, errors,
             <ImagePicker
               label="Illustration"
               aspect="4 / 5"
-              currentUrl={uploadUrl(creature?.image)}
+              currentUrl={uploadUrl(creature?.image, IMG.card)}
               value={images.image}
               onChange={(v) => setImage('image', v)}
               onError={toast.error}

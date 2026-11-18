@@ -1,3 +1,4 @@
+import { IMG } from '@/api/client';
 import { Link } from 'react-router';
 import { CalendarRange, MapPin, Plus } from '@/components/ui/icons';
 import { importanceColor } from '@/config/events';
@@ -25,7 +26,7 @@ const excerpt = (html, max = 220) => {
  */
 export function StorySheet({ universe, story: s, modules, actions }) {
   const { canEdit } = usePermissions();
-  const image = storyImage(s);
+  const image = storyImage(s, IMG.large);
   const episodes = sortedEpisodes(s);
   const cast = storyCharacters(s);
   const places = storyLinked(s, 'places').sort((a, b) => a.name.localeCompare(b.name, 'fr'));

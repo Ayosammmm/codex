@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import { uploadUrl } from '@/api/client';
+import { IMG, uploadUrl } from '@/api/client';
 import { useEntityList } from '@/api/queries';
 import { characterName } from '@/config/characters';
 import { CRITERIA } from '@/config/groups';
@@ -18,10 +18,10 @@ export function useGroupReferences(universe) {
   const options = useMemo(
     () => ({
       groupTypes: toOptions(groupTypes.data),
-      groups: toOptions([...(groups.data || [])].sort((a, b) => a.name.localeCompare(b.name, 'fr')), (g) => ({ image: uploadUrl(g.image) })),
+      groups: toOptions([...(groups.data || [])].sort((a, b) => a.name.localeCompare(b.name, 'fr')), (g) => ({ image: uploadUrl(g.image, IMG.thumb) })),
       places: toOptions(places.data),
       characters: (characters.data || [])
-        .map((c) => ({ value: c.id, label: characterName(c), description: c.title || undefined, image: uploadUrl(c.avatar) }))
+        .map((c) => ({ value: c.id, label: characterName(c), description: c.title || undefined, image: uploadUrl(c.avatar, IMG.thumb) }))
         .sort((a, b) => a.label.localeCompare(b.label, 'fr')),
     }),
     [groups.data, groupTypes.data, places.data, characters.data],

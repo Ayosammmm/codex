@@ -1,7 +1,7 @@
 /* eslint-disable react-refresh/only-export-components -- vues et colonnes d'une même famille */
 import { Link } from 'react-router';
 import { CornerDownRight } from '@/components/ui/icons';
-import { uploadUrl } from '@/api/client';
+import { IMG, uploadUrl } from '@/api/client';
 import { EntityBanner } from '@/components/entity/EntityBanner';
 import { EntityTree } from '@/components/entity/EntityTree';
 import { NameCell, dash } from '@/components/entity/EntityTable';
@@ -11,7 +11,7 @@ import { FieldValue, fieldColumns, hasValue } from './modFields';
 import gallery from '@/components/species/SpeciesViews.module.scss';
 import styles from './Mods.module.scss';
 
-export const customImage = (e) => uploadUrl(e?.image);
+export const customImage = (e, size) => uploadUrl(e?.image, size);
 export const childCount = (e) => e.children?.length || 0;
 const valuesOf = (e) => e.data;
 
@@ -25,7 +25,7 @@ export function CustomGallery({ type, items, linkTo }) {
         return (
           <li key={e.id}>
             <Link to={linkTo(e)} className={gallery.card} style={entityColorVars(e.colors)}>
-              <EntityBanner src={customImage(e)} className={gallery.image} />
+              <EntityBanner src={customImage(e, IMG.card)} className={gallery.image} />
               <span className={gallery.body}>
                 <span className={gallery.name}>{e.name}</span>
                 {e.parent && (
@@ -56,7 +56,7 @@ export function CustomGallery({ type, items, linkTo }) {
 export const customColumns = ({ type, linkTo }) => [
   {
     key: 'name', label: type.label, sortKey: 'name', required: true,
-    render: (e) => <NameCell to={linkTo(e)} visual={<EntityBanner src={customImage(e)} className={gallery.rowThumb} />}>{e.name}</NameCell>,
+    render: (e) => <NameCell to={linkTo(e)} visual={<EntityBanner src={customImage(e, IMG.thumb)} className={gallery.rowThumb} />}>{e.name}</NameCell>,
   },
   type.hierarchy && {
     key: 'parent', label: `${type.label} parent${type.feminine ? 'e' : ''}`, sortKey: 'parent',

@@ -1,6 +1,6 @@
 import { Link } from 'react-router';
 import { CornerLeftUp, MapPin } from '@/components/ui/icons';
-import { uploadUrl } from '@/api/client';
+import { IMG, uploadUrl } from '@/api/client';
 import { usePhotos } from '@/api/queries';
 import { RichText } from '@/components/ui/RichText';
 import { PhotoGallery } from '@/components/entity/PhotoGallery';
@@ -34,7 +34,7 @@ export function GroupSheet({ universe, group: g, subgroups, actions, sound = nul
   return (
     <article className={styles.sheet}>
       <header className={styles.hero}>
-        <EntityBanner src={uploadUrl(g.banner)} className={styles.banner} />
+        <EntityBanner src={uploadUrl(g.banner, IMG.large)} className={styles.banner} />
         <div className={styles.identity}>
           <GroupLogo group={g} className={styles.logo} />
           <div className={styles.heading}>

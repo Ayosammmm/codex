@@ -1,4 +1,4 @@
-import { uploadUrl } from '@/api/client';
+import { IMG, uploadUrl } from '@/api/client';
 import { soundName } from '@/components/sound/soundFiles';
 import { CommandIcon } from './RpRoll';
 import styles from './Roleplay.module.scss';
@@ -23,7 +23,7 @@ export function RpEffect({ message }) {
   return (
     <div className={styles.effect}>
       {effect === 'background' && message.imagePath ? (
-        <img src={uploadUrl(message.imagePath)} alt="" loading="lazy" decoding="async" className={styles.effectThumb} />
+        <img src={uploadUrl(message.imagePath, IMG.thumb)} alt="" loading="lazy" decoding="async" className={styles.effectThumb} />
       ) : (
         <span className={styles.rollIcon}>
           <CommandIcon kind={kind} />
