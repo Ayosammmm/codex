@@ -46,9 +46,9 @@ export default function ModsAdminPage() {
   const [removing, setRemoving] = useState(null);
 
   useEffect(() => {
-    document.title = 'Mods · Almanach';
+    document.title = 'Mods · Codex';
     return () => {
-      document.title = 'Almanach';
+      document.title = 'Codex';
     };
   }, []);
 
@@ -165,8 +165,8 @@ export default function ModsAdminPage() {
           <h2 id="mods-format">Format d’un mod</h2>
           <p className={styles.note}>
             Une archive .zip avec un <code>manifest.json</code> à la racine (ou dans un unique dossier). Les types de fiches et les champs
-            sont affichés par l’Almanach lui-même ; les pages (<code>entry</code>, fichier .html du mod) s’ouvrent dans une zone isolée et
-            utilisent le SDK <code>/mod-files/almanach-sdk.js</code>. Types de champs : text, richtext, number, boolean, date, select,
+            sont affichés par Codex lui-même ; les pages (<code>entry</code>, fichier .html du mod) s’ouvrent dans une zone isolée et
+            utilisent le SDK <code>/mod-files/codex-sdk.js</code>. Types de champs : text, richtext, number, boolean, date, select,
             multiselect, color, url, ref. Documentation complète : note Obsidian « Modding ».
           </p>
           <pre>{MANIFEST_EXAMPLE}</pre>

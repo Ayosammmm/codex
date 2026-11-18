@@ -57,7 +57,7 @@ const Univers = sequelize.define('Univers', {
   theme: {
     type: DataTypes.STRING(32),
     allowNull: false,
-    defaultValue: 'almanach',
+    defaultValue: 'codex',
   },
   // Couleurs personnalisées : { primary, secondary, tertiary } (hex). Clé absente = couleur du thème
   colors: {

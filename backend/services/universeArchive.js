@@ -2,7 +2,7 @@
  * Export / import d'un univers sous forme d'archive ZIP.
  *
  * Contenu de l'archive :
- *   universe.json              données (format 'almanach-universe', version 2, sans le champ `files`)
+ *   universe.json              données (format 'codex-universe', version 2, sans le champ `files`)
  *   uploads/<sous-dossier>/... images, aux mêmes chemins que dans le dossier uploads du serveur
  *
  * L'import accepte aussi les anciens exports JSON (version 1, images embarquées en base64).
@@ -157,7 +157,7 @@ const parseJson = async (file) => {
  * ou ancien export JSON. Le fichier transite par un dossier temporaire supprimé ensuite.
  */
 const importFromStream = async (input, { name } = {}) => {
-  const tmpDir = await fsp.mkdtemp(path.join(os.tmpdir(), 'almanach-import-'));
+  const tmpDir = await fsp.mkdtemp(path.join(os.tmpdir(), 'codex-import-'));
   try {
     const uploaded = path.join(tmpDir, 'upload');
     const size = await saveStream(input, uploaded, MAX_UPLOAD_BYTES);

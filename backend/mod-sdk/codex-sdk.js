@@ -1,11 +1,11 @@
 /**
- * SDK des pages de mods de l'Almanach (servi sur /mod-files/almanach-sdk.js).
+ * SDK des pages de mods de Codex (servi sur /mod-files/codex-sdk.js).
  *
- *   <script src="/mod-files/almanach-sdk.js"></script>
+ *   <script src="/mod-files/codex-sdk.js"></script>
  *   <script>
- *     Almanach.ready().then(async (ctx) => {
- *       const characters = await Almanach.entities.list('characters');
- *       await Almanach.records.create('parties', { score: 12 });
+ *     Codex.ready().then(async (ctx) => {
+ *       const characters = await Codex.entities.list('characters');
+ *       await Codex.records.create('parties', { score: 12 });
  *     });
  *   </script>
  *
@@ -15,7 +15,7 @@
  */
 (function () {
   'use strict';
-  if (window.Almanach) return;
+  if (window.Codex) return;
 
   let nextId = 1;
   const pending = new Map();
@@ -26,7 +26,7 @@
     resolveReady = resolve;
   });
 
-  const post = (message) => window.parent.postMessage({ source: 'almanach-mod', ...message }, '*');
+  const post = (message) => window.parent.postMessage({ source: 'codex-mod', ...message }, '*');
 
   const call = (method, params) =>
     new Promise((resolve, reject) => {
@@ -48,14 +48,14 @@
     const root = document.documentElement;
     for (const [name, value] of Object.entries(theme.vars || {})) root.style.setProperty(name, value);
     root.dataset.mode = theme.mode || 'light';
-    root.dataset.theme = theme.key || 'almanach';
+    root.dataset.theme = theme.key || 'codex';
     root.style.colorScheme = theme.mode === 'dark' ? 'dark' : 'light';
   };
 
   window.addEventListener('message', (event) => {
     if (event.source !== window.parent) return;
     const message = event.data;
-    if (!message || message.source !== 'almanach-host') return;
+    if (!message || message.source !== 'codex-host') return;
     if (message.type === 'init') {
       context = message.context;
       applyTheme(context.theme);
@@ -81,7 +81,7 @@
     else observe();
   }
 
-  window.Almanach = {
+  window.Codex = {
     /** Contexte : { mod, page, universe, user: { id, displayName, role, canCreate, isAdmin }, theme }. */
     ready: () => readyPromise,
     get context() {
@@ -109,7 +109,7 @@
       remove: (id) => call('records.remove', { id }),
     },
 
-    /** Ouvre une page de l'univers, ex. Almanach.navigate(Almanach.pathOf('characters', 12)). */
+    /** Ouvre une page de l'univers, ex. Codex.navigate(Codex.pathOf('characters', 12)). */
     navigate: (path) => call('navigate', { path }),
     /** Chemin (relatif à l'univers) de la fiche d'une entité. */
     pathOf: (type, id) => call('pathOf', { type, id }),

@@ -210,7 +210,7 @@ exports.export = async (req, res) => {
     const { archive, name } = result;
     const slug = name.normalize('NFD').replace(/[^\w-]+/g, '-').replace(/^-+|-+$/g, '').toLowerCase() || 'univers';
     res.setHeader('Content-Type', 'application/zip');
-    res.setHeader('Content-Disposition', `attachment; filename="${slug}.almanach.zip"`);
+    res.setHeader('Content-Disposition', `attachment; filename="${slug}.codex.zip"`);
     archive.on('warning', (err) => console.warn('Export univers :', err.message));
     archive.on('error', (err) => {
       console.error('Erreur export:', err);

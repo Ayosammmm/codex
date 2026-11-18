@@ -17,7 +17,7 @@ import page from './Page.module.scss';
 import styles from './UniverseLayout.module.scss';
 
 // Sidebar réduite (grand écran) : préférence mémorisée dans le navigateur
-const SIDEBAR_KEY = 'almanach.sidebarCollapsed';
+const SIDEBAR_KEY = 'codex.sidebarCollapsed';
 const readSidebarCollapsed = () => {
   try {
     return localStorage.getItem(SIDEBAR_KEY) === '1';
@@ -51,7 +51,7 @@ export default function UniverseLayout() {
       return !value;
     });
   };
-  // Les univers ont leur propre préférence clair / sombre, distincte de celle de l'Almanach
+  // Les univers ont leur propre préférence clair / sombre, distincte de celle de Codex
   useColorModeScope('universe');
 
   // URL canonique : /univers/<id>-<nom actuel>
@@ -64,9 +64,9 @@ export default function UniverseLayout() {
   }, [universe, ref, navigate, location.pathname, location.search]);
 
   useEffect(() => {
-    document.title = universe ? `${universe.name} · Almanach` : 'Almanach';
+    document.title = universe ? `${universe.name} · Codex` : 'Codex';
     return () => {
-      document.title = 'Almanach';
+      document.title = 'Codex';
     };
   }, [universe]);
 

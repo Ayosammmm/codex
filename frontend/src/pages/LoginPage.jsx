@@ -23,9 +23,9 @@ export default function LoginPage() {
   const target = retour?.startsWith('/') && !retour.startsWith('//') ? retour : '/';
 
   useEffect(() => {
-    document.title = 'Connexion · Almanach';
+    document.title = 'Connexion · Codex';
     return () => {
-      document.title = 'Almanach';
+      document.title = 'Codex';
     };
   }, []);
 
@@ -53,7 +53,7 @@ export default function LoginPage() {
       <main className={styles.card}>
         <div className={styles.brand}>
           <BrandMark className={styles.mark} />
-          <h1 className={styles.title}>Almanach</h1>
+          <h1 className={styles.title}>Codex</h1>
           <p className={styles.subtitle}>Connectez-vous pour accéder aux univers.</p>
         </div>
         <form onSubmit={submit} className={styles.form} noValidate>

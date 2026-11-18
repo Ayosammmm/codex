@@ -1,5 +1,5 @@
 /**
- * Interface du simulateur Hunger Games (mod de l'Almanach).
+ * Interface du simulateur Hunger Games (mod de Codex).
  * Écrans : parties enregistrées → choix des tributs → déroulé phase par phase → podium et statistiques.
  * Les parties sont enregistrées dans les données du mod (collection « simulations »).
  */
@@ -52,8 +52,8 @@
   const render = (...nodes) => {
     app.replaceChildren(...nodes.flat(Infinity).filter((n) => n != null && n !== false));
   };
-  const top = () => Almanach.scrollToTop().catch(() => {});
-  const fail = (error) => Almanach.toast(error.message || String(error), 'error');
+  const top = () => Codex.scrollToTop().catch(() => {});
+  const fail = (error) => Codex.toast(error.message || String(error), 'error');
 
   const characterName = (c) => [c.firstname, c.name].filter(Boolean).join(' ').trim() || 'Sans nom';
   const guessGender = (c) => {
@@ -80,7 +80,7 @@
     const style = { '--district': districtColor(t.district) };
     const cls = ['avatar', size, dead && 'dead'].filter(Boolean).join(' ');
     return t.avatar
-      ? h('img', { class: cls, style, src: Almanach.imageUrl(t.avatar), alt: '', loading: 'lazy' })
+      ? h('img', { class: cls, style, src: Codex.imageUrl(t.avatar), alt: '', loading: 'lazy' })
       : h('span', { class: cls, style, 'aria-hidden': 'true' }, initials(t.name));
   }
 
@@ -89,7 +89,7 @@
     if (link && t.ref?.id) {
       el.style.cursor = 'pointer';
       el.title = 'Ouvrir la fiche';
-      el.addEventListener('click', async () => Almanach.navigate(await Almanach.pathOf('characters', t.ref.id)).catch(fail));
+      el.addEventListener('click', async () => Codex.navigate(await Codex.pathOf('characters', t.ref.id)).catch(fail));
     }
     return el;
   }
@@ -115,11 +115,11 @@
   // ---------------------------------------------------------------------------
 
   async function loadRecords() {
-    S.records = await Almanach.records.list(COLLECTION);
+    S.records = await Codex.records.list(COLLECTION);
   }
 
   function renderHome() {
-    Almanach.setQuery({ simulation: null }).catch(() => {});
+    Codex.setQuery({ simulation: null }).catch(() => {});
     const enough = S.characters.length >= 2;
     render(
       h('h1', {}, 'Hunger Games'),
@@ -153,9 +153,9 @@
   async function deleteRecord(record) {
     if (!confirm(`Supprimer « ${record.data?.title || 'cette partie'} » ?`)) return;
     try {
-      await Almanach.records.remove(record.id);
+      await Codex.records.remove(record.id);
       await loadRecords();
-      Almanach.toast('Partie supprimée.', 'success');
+      Codex.toast('Partie supprimée.', 'success');
       if (S.sim?.record?.id === record.id) S.sim = null;
       renderHome();
     } catch (error) {
@@ -169,7 +169,7 @@
     const byId = new Map(S.characters.map((c) => [c.id, c]));
     const fresh = tributes.map((t) => ({ ...t, avatar: byId.get(t.ref?.id)?.avatar ?? t.avatar }));
     S.sim = { tributes: fresh, game, stats: H.computeStats(game, fresh.length), record, settings: record.data.settings };
-    Almanach.setQuery({ simulation: record.id }).catch(() => {});
+    Codex.setQuery({ simulation: record.id }).catch(() => {});
     renderResults();
     top();
   }
@@ -325,7 +325,7 @@
       });
     });
     if (tributes.length < 2) {
-      Almanach.toast('Il faut au moins deux tributs.', 'error');
+      Codex.toast('Il faut au moins deux tributs.', 'error');
       return;
     }
     startGame(tributes, { lethality: S.setup.lethality });
@@ -335,7 +335,7 @@
     const game = H.simulate(tributes, { lethality: settings.lethality }, E);
     S.sim = { tributes, game, stats: H.computeStats(game, tributes.length), settings };
     S.phase = 0;
-    Almanach.setQuery({ simulation: null }).catch(() => {});
+    Codex.setQuery({ simulation: null }).catch(() => {});
     renderPhase();
     top();
   }
@@ -509,7 +509,7 @@
     try {
       const { tributes, game, settings } = S.sim;
       // Les tributs gardent une référence { type, id } vers leur fiche (conservée à l'export de l'univers)
-      const record = await Almanach.records.create(COLLECTION, {
+      const record = await Codex.records.create(COLLECTION, {
         version: 1,
         title: title.trim().slice(0, 120) || 'Hunger Games',
         settings: settings || {},
@@ -518,8 +518,8 @@
       });
       S.sim.record = record;
       await loadRecords();
-      Almanach.toast('Partie enregistrée.', 'success');
-      Almanach.setQuery({ simulation: record.id }).catch(() => {});
+      Codex.toast('Partie enregistrée.', 'success');
+      Codex.setQuery({ simulation: record.id }).catch(() => {});
       renderResults();
     } catch (error) {
       button.disabled = false;
@@ -531,14 +531,14 @@
   // Démarrage
   // ---------------------------------------------------------------------------
 
-  if (!window.Almanach) {
-    render(h('p', { class: 'error' }, 'Le SDK de l’Almanach n’a pas pu être chargé (/mod-files/almanach-sdk.js).'));
+  if (!window.Codex) {
+    render(h('p', { class: 'error' }, 'Le SDK de Codex n’a pas pu être chargé (/mod-files/codex-sdk.js).'));
     return;
   }
-  Almanach.ready()
+  Codex.ready()
     .then(async (ctx) => {
       S.ctx = ctx;
-      const [characters] = await Promise.all([Almanach.entities.list('characters'), loadRecords()]);
+      const [characters] = await Promise.all([Codex.entities.list('characters'), loadRecords()]);
       S.characters = characters;
       const wanted = Number(ctx.query?.simulation);
       const record = wanted && S.records.find((r) => r.id === wanted);

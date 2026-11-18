@@ -15,7 +15,7 @@ import styles from './Mods.module.scss';
 /**
  * Page de code d'un mod, affichée dans une iframe isolée (sandbox sans allow-same-origin : origine opaque).
  * Le mod n'a accès ni à la session ni au DOM de l'application : il appelle l'API par postMessage
- * (SDK : /mod-files/almanach-sdk.js), et chaque appel est exécuté ici avec les droits de l'utilisateur,
+ * (SDK : /mod-files/codex-sdk.js), et chaque appel est exécuté ici avec les droits de l'utilisateur,
  * limité à l'univers courant et aux données de ce mod.
  */
 
@@ -58,7 +58,7 @@ export function ModPageHost({ universe, modPage }) {
 
   useEffect(() => {
     const frame = iframeRef.current;
-    const post = (message) => frame?.contentWindow?.postMessage({ source: 'almanach-host', ...message }, '*');
+    const post = (message) => frame?.contentWindow?.postMessage({ source: 'codex-host', ...message }, '*');
 
     const readTheme = () => {
       const style = getComputedStyle(wrapRef.current || document.documentElement);
@@ -173,7 +173,7 @@ export function ModPageHost({ universe, modPage }) {
     const onMessage = async (event) => {
       if (!frame || event.source !== frame.contentWindow) return;
       const message = event.data;
-      if (!message || message.source !== 'almanach-mod') return;
+      if (!message || message.source !== 'codex-mod') return;
       if (message.type === 'hello') return post({ type: 'init', context: context() });
       if (message.type === 'resize') {
         const h = Number(message.height);

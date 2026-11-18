@@ -75,7 +75,7 @@ export default function HomePage() {
               action={isAdmin && <Button as={Link} to="/nouvel-univers" variant="primary" icon={Plus}>Créer un univers</Button>}
             >
               {isAdmin
-                ? 'Un univers rassemble personnages, lieux, groupes et histoires, reliés entre eux. Vous pouvez aussi importer un univers exporté depuis Almanach.'
+                ? 'Un univers rassemble personnages, lieux, groupes et histoires, reliés entre eux. Vous pouvez aussi importer un univers exporté depuis Codex.'
                 : 'Un administrateur n’a pas encore créé d’univers.'}
             </EmptyState>
           ) : filtered.length === 0 ? (

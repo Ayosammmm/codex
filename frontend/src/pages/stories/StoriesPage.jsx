@@ -31,7 +31,7 @@ export default function StoriesPage() {
     () => CRITERIA.map((c) => ({ ...c, options: options[c.resource] || [] })).filter((c) => c.options.length > 0),
     [options],
   );
-  const list = useListState(stories.data || [], { sorts: SORTS, criteria, searchText, views: VIEWS, storageKey: 'almanach:stories-view', entityType: 'story' });
+  const list = useListState(stories.data || [], { sorts: SORTS, criteria, searchText, views: VIEWS, storageKey: 'codex:stories-view', entityType: 'story' });
   const { state, actions, results } = list;
 
   const linkTo = (s) => universePath(universe, `histoires/${s.id}`);
@@ -39,7 +39,7 @@ export default function StoriesPage() {
   const collectionsColumn = useCollectionsColumn('story');
   const modColumns = useModFieldColumns('story');
   const columns = [...storyColumns({ linkTo }), ...modColumns, collectionsColumn, editorsColumn].filter(Boolean);
-  const table = useTableState({ storageKey: 'almanach:stories-columns', columns, items: results, entityType: 'story' });
+  const table = useTableState({ storageKey: 'codex:stories-columns', columns, items: results, entityType: 'story' });
   const groupCriterion = criteria.find((c) => c.key === state.groupBy);
   // Tableau seul : la page tient dans l'écran et seul le tableau défile
   const fitScreen = state.view === 'table' && !groupCriterion && results.length > 0;

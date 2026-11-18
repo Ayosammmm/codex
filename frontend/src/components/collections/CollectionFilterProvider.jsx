@@ -5,7 +5,7 @@ import { getModulesState, isModuleEnabled } from '@/config/modules';
 import { CollectionFilterContext } from './collectionFilter';
 
 // Filtre mémorisé par univers sur l'appareil
-const storageKey = (universeId) => `almanach.collectionFilter.${universeId}`;
+const storageKey = (universeId) => `codex.collectionFilter.${universeId}`;
 const readStored = (universeId) => {
   try {
     return localStorage.getItem(storageKey(universeId)) || '';

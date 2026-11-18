@@ -26,7 +26,7 @@ export default function SpeciesPage() {
   const { canCreate } = usePermissions();
   const { universe } = useOutletContext();
   const { species, criteria } = useSpeciesReferences(universe);
-  const list = useListState(species.data || [], { sorts: SORTS, criteria, searchText, views: VIEWS, storageKey: 'almanach:species-view', entityType: 'specie' });
+  const list = useListState(species.data || [], { sorts: SORTS, criteria, searchText, views: VIEWS, storageKey: 'codex:species-view', entityType: 'specie' });
   const { state, actions, results } = list;
 
   const linkTo = (s) => universePath(universe, `especes/${s.id}`);
@@ -34,7 +34,7 @@ export default function SpeciesPage() {
   const collectionsColumn = useCollectionsColumn('specie');
   const modColumns = useModFieldColumns('specie');
   const columns = [...specieColumns({ linkTo }), ...modColumns, collectionsColumn, editorsColumn].filter(Boolean);
-  const table = useTableState({ storageKey: 'almanach:species-columns', columns, items: results, entityType: 'specie' });
+  const table = useTableState({ storageKey: 'codex:species-columns', columns, items: results, entityType: 'specie' });
   const groupCriterion = criteria.find((c) => c.key === state.groupBy);
   // Tableau seul : la page tient dans l'écran et seul le tableau défile
   const fitScreen = state.view === 'table' && !groupCriterion && results.length > 0;

@@ -2,7 +2,7 @@
   "id": "hunger-games",
   "name": "Hunger Games",
   "version": "1.0.0",
-  "author": "Almanach",
+  "author": "Codex",
   "description": "Simulateur : les tributs des districts (personnages choisis ou tirés au sort) s’affrontent dans l’arène jusqu’à ce qu’un seul survive. Bain de sang, jours, nuits, festin et événements de l’arène ; podium, statistiques et parties enregistrées.",
   "icon": "Swords",
   "pages": [

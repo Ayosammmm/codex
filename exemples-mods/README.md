@@ -1,7 +1,7 @@
 # Mods d'exemple
 
 Chaque dossier est un mod. Pour l'installer : compresser le dossier en .zip, puis
-Almanach → menu du compte → « Mods » (super admins) → « Installer un mod ».
+Codex → menu du compte → « Mods » (super admins) → « Installer un mod ».
 Activer ensuite le mod dans les paramètres de l'univers.
 
 ```

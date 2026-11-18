@@ -1,5 +1,5 @@
 // ============================================================================
-//  Système de thèmes Almanach
+//  Système de thèmes Codex
 // ============================================================================
 //
 //  3 couches de variables CSS, de la plus générale à la plus spécifique :
@@ -7,7 +7,7 @@
 //  1. MODE (clair / sombre)       → html[data-mode="light|dark"]
 //     Neutres par défaut : fonds, surfaces, bordures, textes.
 //
-//  2. THÈME (style visuel)        → [data-theme="almanach|sketch|terminal|medieval"]
+//  2. THÈME (style visuel)        → [data-theme="codex|sketch|terminal|medieval"]
 //     Polices, style des titres, arrondis, épaisseur des bordures, ombres, texture
 //     de fond, et ses propres neutres (avec une variante sombre si besoin).
 //
@@ -71,11 +71,11 @@
   --ink-amount: 35%;
 }
 
-// --- 2. Thème « Almanach » (thème de base) ------------------------------------
+// --- 2. Thème « Codex » (thème de base) ------------------------------------
 // Sobre et lisible : papier chaud, encre bleue, accents terre de Sienne et or.
 // Définit aussi la valeur par défaut de tous les tokens de style.
 :root,
-[data-theme='almanach'] {
+[data-theme='codex'] {
   --font-ui: 'Inter Variable', ui-sans-serif, system-ui, sans-serif;
   --font-title: 'Fraunces Variable', ui-serif, Georgia, serif;
   --font-mono: ui-monospace, 'SFMono-Regular', Menlo, monospace;

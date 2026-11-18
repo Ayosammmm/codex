@@ -3,7 +3,7 @@ const express = require("express");
 const { MODS_ROOT } = require("./modStore");
 
 /**
- * Service des fichiers de mods : /mod-files/<id>/<fichier> et le SDK /mod-files/almanach-sdk.js.
+ * Service des fichiers de mods : /mod-files/<id>/<fichier> et le SDK /mod-files/codex-sdk.js.
  *
  * Sécurité : le code d'un mod est envoyé par un utilisateur. Chaque réponse porte un en-tête CSP
  * « sandbox » : même ouverte directement dans un onglet, la page a une origine opaque (pas d'accès
@@ -31,9 +31,9 @@ const setHeaders = (res) => {
 
 const router = express.Router();
 
-router.get("/almanach-sdk.js", (req, res) => {
+router.get("/codex-sdk.js", (req, res) => {
   setHeaders(res);
-  res.sendFile(path.join(__dirname, "..", "mod-sdk", "almanach-sdk.js"));
+  res.sendFile(path.join(__dirname, "..", "mod-sdk", "codex-sdk.js"));
 });
 
 router.use(express.static(MODS_ROOT, { setHeaders, dotfiles: "deny", index: false, fallthrough: false }));

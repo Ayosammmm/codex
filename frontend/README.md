@@ -1,4 +1,4 @@
-# Almanach — Frontend v3
+# Codex — Frontend v3
 
 Vite + React 19, SCSS (CSS Modules), React Router, TanStack Query, TipTap.
 
@@ -14,7 +14,7 @@ Vite relaie `/api` et `/uploads` vers le backend (`VITE_BACKEND_URL` pour change
 Tout passe par des variables CSS, voir `src/styles/_tokens.scss` :
 
 1. **Mode** clair / sombre (`html[data-mode]`) : fonds, surfaces, textes.
-2. **Thème** (`[data-theme="almanach"]`) : polices, arrondis, ombres, couleurs par défaut.
+2. **Thème** (`[data-theme="codex"]`) : polices, arrondis, ombres, couleurs par défaut.
    Catalogue dans `src/theme/themes.js`.
 3. **Couleurs de l'univers** (`--primary`, `--secondary`, `--tertiary`) posées en inline par
    `universeThemeProps()` (`src/theme/universeTheme.js`) ; les variantes (`-soft`, `-ink`, `-hover`)

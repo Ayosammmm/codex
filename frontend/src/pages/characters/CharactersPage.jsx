@@ -33,7 +33,7 @@ export default function CharactersPage() {
   const collectionsColumn = useCollectionsColumn('character');
   const modColumns = useModFieldColumns('character');
   const columns = [...characterColumns({ linkTo, show }), ...modColumns, collectionsColumn, editorsColumn].filter(Boolean);
-  const table = useTableState({ storageKey: 'almanach:characters-columns', columns, items: results, entityType: 'character' });
+  const table = useTableState({ storageKey: 'codex:characters-columns', columns, items: results, entityType: 'character' });
   const newButton = canCreate && (
     <Button as={Link} to={universePath(universe, 'personnages/nouveau')} variant="primary" icon={UserPlus}>
       Nouveau personnage

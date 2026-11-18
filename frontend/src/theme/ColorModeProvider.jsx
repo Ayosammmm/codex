@@ -2,14 +2,14 @@ import { createContext, useCallback, useContext, useEffect, useLayoutEffect, use
 
 /**
  * Deux préférences indépendantes :
- *   - `app`      : l'Almanach (accueil, connexion, utilisateurs, création d'univers) ;
+ *   - `app`      : Codex (accueil, connexion, utilisateurs, création d'univers) ;
  *   - `universe` : les pages d'un univers (commune à tous les univers).
  * La portée active est choisie par la page affichée (voir useColorModeScope).
  * Les clés sont aussi lues par le script anti-flash de index.html.
  */
 const STORAGE_KEYS = {
-  app: 'almanach:color-mode',
-  universe: 'almanach:color-mode:universe',
+  app: 'codex:color-mode',
+  universe: 'codex:color-mode:universe',
 };
 const VALUES = ['light', 'dark', 'system'];
 const ColorModeContext = createContext(null);
@@ -25,7 +25,7 @@ const read = (key) => {
 
 const readStored = () => {
   const app = read(STORAGE_KEYS.app) ?? 'system';
-  // Sans réglage propre, les univers reprennent celui de l'Almanach
+  // Sans réglage propre, les univers reprennent celui de Codex
   return { app, universe: read(STORAGE_KEYS.universe) ?? app };
 };
 

@@ -25,7 +25,7 @@ import { universePath } from '@/utils/universe';
 // Volume des sons joués à l'arrivée d'un message (chaque lecteur se règle ensuite à part)
 const ARRIVING_SOUND_VOLUME = 0.5;
 
-const HRP_KEY = 'almanach.rpHideHrp';
+const HRP_KEY = 'codex.rpHideHrp';
 const readHideHrp = () => {
   try {
     return localStorage.getItem(HRP_KEY) === '1';
@@ -359,7 +359,7 @@ export default function PlaceRoleplayPage() {
           <RpComposer
             key={place.id}
             characters={playable}
-            storageKey={`almanach.rpSpeakers.${place.id}`}
+            storageKey={`codex.rpSpeakers.${place.id}`}
             onSend={send}
             onError={toast.error}
             sending={mutations.createMany.isPending}

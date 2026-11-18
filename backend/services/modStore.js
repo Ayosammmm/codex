@@ -132,7 +132,7 @@ const walk = async (dir, prefix = '') => {
  * Renvoie la ligne Mod enregistrée. Un mod du même id est remplacé (ses données dans les univers sont conservées).
  */
 const installFromStream = async (input, { userId } = {}) => {
-  const tmpDir = await fsp.mkdtemp(path.join(os.tmpdir(), 'almanach-mod-'));
+  const tmpDir = await fsp.mkdtemp(path.join(os.tmpdir(), 'codex-mod-'));
   try {
     const uploaded = path.join(tmpDir, 'upload.zip');
     const size = await saveStream(input, uploaded, MAX_UPLOAD_BYTES);

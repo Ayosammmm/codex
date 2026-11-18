@@ -4,8 +4,8 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Trésor</title>
-  <!-- SDK de l'Almanach : dialogue avec l'application (la page tourne isolée, sans accès à la session) -->
-  <script src="/mod-files/almanach-sdk.js"></script>
+  <!-- SDK de Codex : dialogue avec l'application (la page tourne isolée, sans accès à la session) -->
+  <script src="/mod-files/codex-sdk.js"></script>
   <style>
     /* Les variables du thème de l'univers (--bg, --fg, --primary…) sont posées par le SDK */
     body { margin: 0; padding: 2rem; font-family: var(--font-ui, system-ui, sans-serif); background: transparent; color: var(--fg, #222); }
@@ -44,11 +44,11 @@
       button.onclick = async () => {
         button.disabled = true;
         try {
-          await Almanach.records.remove(r.id);
+          await Codex.records.remove(r.id);
           await refreshHistory();
         } catch (error) {
           button.disabled = false;
-          Almanach.toast(error.message, 'error');
+          Codex.toast(error.message, 'error');
         }
       };
       return button;
@@ -57,12 +57,12 @@
     const link = (text, type, id) => {
       const a = document.createElement('a');
       a.textContent = text;
-      a.onclick = async () => Almanach.navigate(await Almanach.pathOf(type, id));
+      a.onclick = async () => Codex.navigate(await Codex.pathOf(type, id));
       return a;
     };
 
     async function refreshHistory() {
-      const records = await Almanach.records.list('tirages');
+      const records = await Codex.records.list('tirages');
       const list = $('history');
       list.replaceChildren();
       if (!records.length) list.innerHTML = '<li class="muted">Aucun tirage.</li>';
@@ -80,10 +80,10 @@
         if (!confirm(`Supprimer vos ${mine.length} tirage(s) ?`)) return;
         $('clear').disabled = true;
         try {
-          for (const r of mine) await Almanach.records.remove(r.id);
-          Almanach.toast('Tirages supprimés.', 'success');
+          for (const r of mine) await Codex.records.remove(r.id);
+          Codex.toast('Tirages supprimés.', 'success');
         } catch (error) {
-          Almanach.toast(error.message, 'error');
+          Codex.toast(error.message, 'error');
         }
         $('clear').disabled = false;
         await refreshHistory();
@@ -97,10 +97,10 @@
       p.textContent = message;
       $('result').append(p);
     };
-    if (!window.Almanach) fail('Le SDK de l’Almanach n’a pas pu être chargé (/mod-files/almanach-sdk.js).');
-    else Almanach.ready().then(async (ctx) => {
+    if (!window.Codex) fail('Le SDK de Codex n’a pas pu être chargé (/mod-files/codex-sdk.js).');
+    else Codex.ready().then(async (ctx) => {
       me = ctx.user;
-      artefacts = await Almanach.entities.list('custom:artefact');
+      artefacts = await Codex.entities.list('custom:artefact');
       $('draw').disabled = !artefacts.length || !ctx.user?.canCreate;
       if (artefacts.length && !ctx.user?.canCreate) $('result').innerHTML = '<p class="muted">Les tirages sont réservés aux éditeurs.</p>';
       if (!artefacts.length) $('result').innerHTML = '<p class="muted">Aucun artefact dans cet univers pour l’instant.</p>';
@@ -115,14 +115,14 @@
         card.append(title);
         if (pick.image) {
           const img = document.createElement('img');
-          img.src = Almanach.imageUrl(pick.image);
+          img.src = Codex.imageUrl(pick.image);
           img.style.cssText = 'display:block;max-width:12rem;margin-top:.75rem;border-radius:var(--r,8px)';
           card.append(img);
         }
         $('result').replaceChildren(card);
         // Références { type, id } : conservées (et renumérotées) à l'export / la duplication de l'univers
-        await Almanach.records.create('tirages', { artefact: { type: 'custom', id: pick.id } });
-        Almanach.toast(`Vous avez tiré « ${pick.name} » !`, 'success');
+        await Codex.records.create('tirages', { artefact: { type: 'custom', id: pick.id } });
+        Codex.toast(`Vous avez tiré « ${pick.name} » !`, 'success');
         await refreshHistory();
       };
     }).catch((error) => fail(`Erreur : ${error.message}`));

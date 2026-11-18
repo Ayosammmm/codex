@@ -107,13 +107,13 @@ function CustomEntitiesList({ universe, type }) {
   const searchText = (e) => [e.name, e.parent?.name, plainText(e.description), ...type.fields.map((f) => valueText(f, e.data?.[f.key]))].join(' ');
   const views = type.hierarchy ? ['gallery', 'tree', 'table'] : ['gallery', 'table'];
 
-  const list = useListState(items, { sorts, criteria, searchText, views, storageKey: `almanach:custom-view:${type.id}`, entityType: 'custom' });
+  const list = useListState(items, { sorts, criteria, searchText, views, storageKey: `codex:custom-view:${type.id}`, entityType: 'custom' });
   const { state, actions, results } = list;
   const linkTo = (e) => universePath(universe, `${type.basePath}/${e.id}`);
   const editorsColumn = useEditorsColumn('custom');
   const collectionsColumn = useCollectionsColumn('custom');
   const columns = [...customColumns({ type, linkTo }), collectionsColumn, editorsColumn].filter(Boolean);
-  const table = useTableState({ storageKey: `almanach:custom-columns:${type.id}`, columns, items: results, entityType: 'custom' });
+  const table = useTableState({ storageKey: `codex:custom-columns:${type.id}`, columns, items: results, entityType: 'custom' });
   const groupCriterion = criteria.find((c) => c.key === state.groupBy);
   const fitScreen = state.view === 'table' && !groupCriterion && results.length > 0;
 

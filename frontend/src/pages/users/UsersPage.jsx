@@ -26,9 +26,9 @@ export default function UsersPage() {
   const [deleting, setDeleting] = useState(null);
 
   useEffect(() => {
-    document.title = 'Comptes · Almanach';
+    document.title = 'Comptes · Codex';
     return () => {
-      document.title = 'Almanach';
+      document.title = 'Codex';
     };
   }, []);
 

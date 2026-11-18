@@ -2,7 +2,7 @@
   "id": "artefacts",
   "name": "Artefacts",
   "version": "1.0.0",
-  "author": "Almanach",
+  "author": "Codex",
   "description": "Exemple de mod : un type de fiche « Artefact », un champ « Mana » sur les personnages et une page « Trésor » qui tire un artefact au sort.",
   "icon": "Gem",
   "entityTypes": [

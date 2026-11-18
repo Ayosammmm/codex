@@ -22,5 +22,5 @@ export const universesApi = {
     request('/universes/import', { method: 'POST', body: file, headers: { 'Content-Type': 'application/octet-stream' } }),
 
   /** URL de téléchargement (le serveur renvoie un en-tête Content-Disposition). */
-  exportFile: (id) => download(`/universes/${id}/export`, `univers-${id}.almanach.zip`),
+  exportFile: (id) => download(`/universes/${id}/export`, `univers-${id}.codex.zip`),
 };

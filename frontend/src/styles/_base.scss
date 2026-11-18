@@ -137,7 +137,7 @@ dialog::backdrop {
 // --- Icônes selon le thème (les icônes dessinées sont dans components/ui/icons.jsx) ---
 // Crayonné : tracé tremblé, comme à main levée
 [data-theme='sketch'] svg.lucide {
-  filter: url(#almanach-sketch);
+  filter: url(#codex-sketch);
 }
 
 // Terminal : traits droits et angles vifs

@@ -36,7 +36,7 @@ export default function EventsPage() {
         .filter((c) => c.options.length > 0),
     [options, modules],
   );
-  const list = useListState(events.data || [], { sorts: SORTS, criteria, searchText, views: VIEWS, storageKey: 'almanach:events-view', entityType: 'event' });
+  const list = useListState(events.data || [], { sorts: SORTS, criteria, searchText, views: VIEWS, storageKey: 'codex:events-view', entityType: 'event' });
   const { state, actions, results } = list;
   const reorder = useReorderEntity('events', universe.id);
   const toast = useToast();
@@ -46,7 +46,7 @@ export default function EventsPage() {
   const collectionsColumn = useCollectionsColumn('event');
   const modColumns = useModFieldColumns('event');
   const columns = [...eventColumns({ linkTo, showGroups: modules.groups }), ...modColumns, collectionsColumn, editorsColumn].filter(Boolean);
-  const table = useTableState({ storageKey: 'almanach:events-columns', columns, items: results, entityType: 'event' });
+  const table = useTableState({ storageKey: 'codex:events-columns', columns, items: results, entityType: 'event' });
   const groupCriterion = criteria.find((c) => c.key === state.groupBy);
   const fitScreen = state.view === 'table' && !groupCriterion && results.length > 0;
   // L'ordre se règle sur la frise complète, dans l'ordre chronologique, sans recherche ni filtre

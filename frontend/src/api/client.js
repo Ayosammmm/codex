@@ -13,7 +13,7 @@ export class ApiError extends Error {
 }
 
 // --- Session : jeton de connexion (voir AuthProvider) ---
-const TOKEN_KEY = 'almanach.token';
+const TOKEN_KEY = 'codex.token';
 let token = null;
 try {
   token = localStorage.getItem(TOKEN_KEY);

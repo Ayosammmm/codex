@@ -28,7 +28,7 @@ export default function PlacesPage() {
   const { places, criteria, modules } = usePlaceReferences(universe);
   // Vue « Carte » avec le module Carte
   const VIEWS = modules.map ? ['gallery', 'tree', 'map', 'table'] : ['gallery', 'tree', 'table'];
-  const list = useListState(places.data || [], { sorts: SORTS, criteria, searchText, views: VIEWS, storageKey: 'almanach:places-view', entityType: 'place' });
+  const list = useListState(places.data || [], { sorts: SORTS, criteria, searchText, views: VIEWS, storageKey: 'codex:places-view', entityType: 'place' });
   const { state, actions, results } = list;
 
   const linkTo = (p) => universePath(universe, `lieux/${p.id}`);
@@ -36,7 +36,7 @@ export default function PlacesPage() {
   const collectionsColumn = useCollectionsColumn('place');
   const modColumns = useModFieldColumns('place');
   const columns = [...placeColumns({ linkTo, showGroups: modules.groups }), ...modColumns, collectionsColumn, editorsColumn].filter(Boolean);
-  const table = useTableState({ storageKey: 'almanach:places-columns', columns, items: results, entityType: 'place' });
+  const table = useTableState({ storageKey: 'codex:places-columns', columns, items: results, entityType: 'place' });
   const groupCriterion = criteria.find((c) => c.key === state.groupBy);
   // Tableau seul : la page tient dans l'écran et seul le tableau défile
   const fitScreen = state.view === 'table' && !groupCriterion && results.length > 0;

@@ -26,7 +26,7 @@ export default function GroupsPage() {
   const { canCreate } = usePermissions();
   const { universe } = useOutletContext();
   const { groups, criteria } = useGroupReferences(universe);
-  const list = useListState(groups.data || [], { sorts: SORTS, criteria, searchText, views: VIEWS, storageKey: 'almanach:groups-view', entityType: 'group' });
+  const list = useListState(groups.data || [], { sorts: SORTS, criteria, searchText, views: VIEWS, storageKey: 'codex:groups-view', entityType: 'group' });
   const { state, actions, results } = list;
 
   const linkTo = (g) => universePath(universe, `groupes/${g.id}`);
@@ -34,7 +34,7 @@ export default function GroupsPage() {
   const collectionsColumn = useCollectionsColumn('group');
   const modColumns = useModFieldColumns('group');
   const columns = [...groupColumns({ linkTo }), ...modColumns, collectionsColumn, editorsColumn].filter(Boolean);
-  const table = useTableState({ storageKey: 'almanach:groups-columns', columns, items: results, entityType: 'group' });
+  const table = useTableState({ storageKey: 'codex:groups-columns', columns, items: results, entityType: 'group' });
   const groupCriterion = criteria.find((c) => c.key === state.groupBy);
   // Tableau seul : la page tient dans l'écran et seul le tableau défile
   const fitScreen = state.view === 'table' && !groupCriterion && results.length > 0;

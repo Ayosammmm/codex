@@ -27,7 +27,7 @@ export default function CreaturesPage() {
   const { universe } = useOutletContext();
   const { creatures, criteria, modules } = useCreatureReferences(universe);
   const sorts = creatureSorts(modules.ranks);
-  const list = useListState(creatures.data || [], { sorts, criteria, searchText, views: VIEWS, storageKey: 'almanach:creatures-view', entityType: 'creature' });
+  const list = useListState(creatures.data || [], { sorts, criteria, searchText, views: VIEWS, storageKey: 'codex:creatures-view', entityType: 'creature' });
   const { state, actions, results } = list;
 
   const linkTo = (c) => universePath(universe, `bestiaire/${c.id}`);
@@ -35,7 +35,7 @@ export default function CreaturesPage() {
   const collectionsColumn = useCollectionsColumn('creature');
   const modColumns = useModFieldColumns('creature');
   const columns = [...creatureColumns({ linkTo, showRanks: modules.ranks }), ...modColumns, collectionsColumn, editorsColumn].filter(Boolean);
-  const table = useTableState({ storageKey: 'almanach:creatures-columns', columns, items: results, entityType: 'creature' });
+  const table = useTableState({ storageKey: 'codex:creatures-columns', columns, items: results, entityType: 'creature' });
   const groupCriterion = criteria.find((c) => c.key === state.groupBy);
   // Tableau seul : la page tient dans l'écran et seul le tableau défile
   const fitScreen = state.view === 'table' && !groupCriterion && results.length > 0;

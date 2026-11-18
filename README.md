@@ -1,6 +1,6 @@
-# Almanach
+# Codex
 
-Almanach est une app blabla
+Codex est une app blabla
 
 ## Installation
 - Dans "backend", créez un fichier .env avec les champs du .env.example, puis complétez les à votre convenance. Le but est de connecter l'application à une base de données, et de créer un premier compte super admin.

@@ -5,12 +5,12 @@
  * `colors` : couleurs par défaut, remplacées par celles de l'univers si elles sont personnalisées.
  * `alwaysDark` : le thème ignore le mode clair (affiché dans les paramètres).
  */
-export const DEFAULT_THEME = 'almanach';
+export const DEFAULT_THEME = 'codex';
 
 export const THEMES = [
   {
-    key: 'almanach',
-    label: 'Almanach',
+    key: 'codex',
+    label: 'Codex',
     description: 'Sobre et lisible : papier chaud, encre bleue, titres à empattements.',
     available: true,
     colors: { primary: '#3d5a98', secondary: '#b4532a', tertiary: '#c9a227' },

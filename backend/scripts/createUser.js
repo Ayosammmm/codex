@@ -1,7 +1,7 @@
 /**
  * Création d'un compte en ligne de commande (pour le tout premier super admin, notamment) :
  *   node scripts/createUser.js <identifiant> "<Nom affiché>" [rôle]
- * Le mot de passe est demandé au clavier (ou lu dans la variable ALMANACH_PASSWORD).
+ * Le mot de passe est demandé au clavier (ou lu dans la variable CODEX_PASSWORD).
  * Rôles : superadmin (par défaut), admin, editor, reader.
  */
 const readline = require("readline");
@@ -25,7 +25,7 @@ const ask = (question) =>
     console.error('Usage : node scripts/createUser.js <identifiant> "<Nom affiché>" [superadmin|admin|editor|reader]');
     process.exit(1);
   }
-  const password = process.env.ALMANACH_PASSWORD || (await ask("Mot de passe (8 caractères minimum) : "));
+  const password = process.env.CODEX_PASSWORD || (await ask("Mot de passe (8 caractères minimum) : "));
   const problem = passwordProblem(password);
   if (problem) {
     console.error(problem);

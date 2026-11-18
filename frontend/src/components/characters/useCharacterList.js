@@ -4,7 +4,7 @@ import { groupItems, useListState } from '@/components/entity/useListState';
 const OPTIONS = {
   sorts: SORTS,
   views: ['gallery', 'cards', 'table'],
-  storageKey: 'almanach:characters-view',
+  storageKey: 'codex:characters-view',
   entityType: 'character',
   searchText: (c) => [characterName(c), c.title, ...(c.groups || []).map((g) => g.name), ...(c.species || []).map((s) => s.name)].join(' '),
 };

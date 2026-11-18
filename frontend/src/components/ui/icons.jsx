@@ -394,7 +394,7 @@ export const X = themed('X', LucideX);
 export function SketchFilter() {
   return (
     <svg width="0" height="0" style={{ position: 'absolute' }} aria-hidden focusable="false">
-      <filter id="almanach-sketch" x="-10%" y="-10%" width="120%" height="120%">
+      <filter id="codex-sketch" x="-10%" y="-10%" width="120%" height="120%">
         <feTurbulence type="fractalNoise" baseFrequency="0.06" numOctaves="2" seed="7" result="noise" />
         <feDisplacementMap in="SourceGraphic" in2="noise" scale="1.6" xChannelSelector="R" yChannelSelector="G" />
       </filter>

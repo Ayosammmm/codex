@@ -21,7 +21,7 @@ export function AppHeader({ children }) {
       <div className={styles.headerInner}>
         <Link to="/" className={styles.brand}>
           <BrandMark />
-          <span className={styles.brandName}>Almanach</span>
+          <span className={styles.brandName}>Codex</span>
         </Link>
         <div className={styles.headerSlot}>{children}</div>
         <ColorModeToggle />

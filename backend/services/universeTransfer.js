@@ -9,7 +9,7 @@
  *
  * Format des données exportées (voir aussi services/universeArchive.js pour l'archive ZIP) :
  * {
- *   format: 'almanach-universe', version, exportedAt,
+ *   format: 'codex-universe', version, exportedAt,
  *   universe: { name, description, theme, colors, ... },
  *   entities: { characters: [...], places: [...], ... },
  *   joins:    { characters_groups: [...], ... },
@@ -47,7 +47,7 @@ const User = require('../models/User');
 const { RpScene, RpMessage } = require('../models/Roleplay');
 const { CustomEntity, EntityMetadata, ModRecord } = require('../models/Mod');
 
-const FORMAT = 'almanach-universe';
+const FORMAT = 'codex-universe';
 const UPLOADS_ROOT = path.resolve(__dirname, '..', 'uploads');
 const IMAGE_EXTENSIONS = new Set(['.jpg', '.jpeg', '.png', '.gif', '.webp', '.avif', '.svg', '.bmp']);
 // Fichiers copiés avec un univers : images et sons (module « Son »)
