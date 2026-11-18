@@ -1,16 +1,12 @@
 import { useState } from 'react';
-import { Link, useNavigate, useOutletContext, useParams, useSearchParams } from 'react-router';
-import { ArrowLeft, ChevronLeft, ChevronRight, EyeOff, Pencil, Play, Trash2 } from '@/components/ui/icons';
+import { Link, useOutletContext, useParams, useSearchParams } from 'react-router';
+import { ArrowLeft, ChevronLeft, ChevronRight, EyeOff, Pencil, Play } from '@/components/ui/icons';
 import { useEntityList } from '@/api/queries';
-import { useScene, useSceneMutations, useSceneNeighbours } from '@/api/roleplay';
-import { useAuth, usePermissions } from '@/auth/auth';
+import { useScene, useSceneNeighbours } from '@/api/roleplay';
+import { usePermissions } from '@/auth/auth';
 import { getModulesState, isModuleEnabled } from '@/config/modules';
 import { Button } from '@/components/ui/Button';
-import { Combobox } from '@/components/ui/Combobox';
-import { Dialog } from '@/components/ui/Dialog';
 import { EmptyState, Spinner } from '@/components/ui/Feedback';
-import { Field, Input } from '@/components/ui/Field';
-import { useToast } from '@/components/ui/Toast';
 import { RpMessage } from '@/components/roleplay/RpMessage';
 import { RpVisualNovel } from '@/components/roleplay/RpVisualNovel';
 import { continuesMessage, formatRpDate } from '@/components/roleplay/rpMarkup';
@@ -19,7 +15,8 @@ import { plural, universePath } from '@/utils/universe';
 import page from '../Page.module.scss';
 
 /**
- * Lecture d'une scène (/roleplay/scenes/:sceneId), rattachement aux épisodes, modification.
+ * Lecture d'une scène (/roleplay/scenes/:sceneId), sans modification : titre, épisodes, messages et suppression
+ * se modifient dans l'édition (RpSceneEditPage, bouton « Modifier »), y compris l'écriture d'une scène hors roleplay.
  * `?vue=vn` : lecture en visual novel, en plein écran (voir RpVisualNovel).
  * `?histoire=<id>` : scène lue depuis une histoire ; les scènes précédente / suivante sont alors celles de l'histoire
  * (ordre des épisodes), sinon celles de l'univers dans l'ordre chronologique.
@@ -27,10 +24,7 @@ import page from '../Page.module.scss';
 export default function RpScenePage() {
   const { universe } = useOutletContext();
   const { sceneId } = useParams();
-  const navigate = useNavigate();
-  const toast = useToast();
-  const { user } = useAuth();
-  const { canCreate, isAdmin } = usePermissions();
+  const { canCreate } = usePermissions();
   const storiesOn = isModuleEnabled(getModulesState(universe), 'stories');
   const soundOn = isModuleEnabled(getModulesState(universe), 'sound');
   const [searchParams, setSearchParams] = useSearchParams();
@@ -55,9 +49,7 @@ export default function RpScenePage() {
   const { data: places = [] } = useEntityList('places', universe.id);
   const { data: characters = [] } = useEntityList('characters', universe.id);
   const { data: episodes = [] } = useEntityList('episodes', universe.id, { enabled: storiesOn });
-  const mutations = useSceneMutations();
   const [hideHrp, setHideHrp] = useState(true);
-  const [editing, setEditing] = useState(false);
 
   if (isPending) return <Spinner label="Chargement de la scène…" />;
   if (error) {
@@ -75,27 +67,11 @@ export default function RpScenePage() {
   const charactersById = new Map(characters.map((c) => [c.id, c]));
   const placesById = new Map(places.map((p) => [p.id, p]));
   const episodeLabel = (e) => [e.stories?.[0]?.name, e.title].filter(Boolean).join(' — ');
-  const episodeOptions = episodes.map((e) => ({ value: e.id, label: episodeLabel(e) }));
-  const canDelete = isAdmin || scene.createdBy === user?.id;
-
-  const save = (data, success) =>
-    mutations.update.mutateAsync({ id: scene.id, data }).then(() => toast.success(success), (err) => toast.error(err.message));
-
-  const remove = () => {
-    if (!window.confirm(`Supprimer la scène « ${scene.title} » ? Ses messages restent dans le fil du lieu.`)) return;
-    mutations.remove.mutate(scene.id, {
-      onSuccess: () => {
-        toast.success('Scène supprimée.');
-        navigate(universePath(universe, 'roleplay'), { replace: true });
-      },
-      onError: (err) => toast.error(err.message),
-    });
-  };
 
   return (
     <main className={`${page.main} ${page.mainSpaced}`}>
-      <Link to={universePath(universe, 'roleplay')} className={page.backLink}>
-        <ArrowLeft aria-hidden /> Roleplay
+      <Link to={universePath(universe, 'roleplay/scenes')} className={page.backLink}>
+        <ArrowLeft aria-hidden /> Scènes
       </Link>
       <div className={styles.sceneHeader}>
         <div className={styles.sceneHeaderText}>
@@ -104,6 +80,7 @@ export default function RpScenePage() {
             {place && (
               <Link to={universePath(universe, `roleplay/lieux/${place.id}`)}>{place.name}</Link>
             )}
+            {scene.standalone && <span className={styles.sceneTag}>Hors roleplay</span>}
             {' · '}
             {plural(scene.messageCount, 'message')}
             {scene.firstAt && ` · du ${formatRpDate(scene.firstAt)} au ${formatRpDate(scene.lastAt)}`}
@@ -116,8 +93,7 @@ export default function RpScenePage() {
         <Button size="sm" variant="primary" icon={Play} disabled={!scene.messages.some((m) => !m.isHrp)} onClick={() => setVisualNovel(true)}>
           Visual novel
         </Button>
-        {canCreate && <Button size="sm" icon={Pencil} onClick={() => setEditing(true)}>Modifier</Button>}
-        {canDelete && <Button size="sm" variant="danger-ghost" icon={Trash2} onClick={remove}>Supprimer</Button>}
+        {canCreate && <Button size="sm" icon={Pencil} as={Link} to={universePath(universe, `roleplay/scenes/${scene.id}/modifier`)}>Modifier</Button>}
       </div>
 
       {storiesOn && scene.episodeIds.length > 0 && (
@@ -136,11 +112,27 @@ export default function RpScenePage() {
       )}
 
       <div className={styles.reading}>
-        {scene.messages.length === 0 ? (
-          <p className={styles.empty}>Cette scène ne contient plus aucun message.</p>
+        {scene.messages.length === 0 && scene.standalone ? (
+          <p className={styles.empty}>
+            Cette scène hors roleplay n’est pas encore écrite.{canCreate && ' Pour l’écrire, cliquez sur « Modifier ».'}
+          </p>
+        ) : scene.messages.length === 0 ? (
+          <p className={styles.empty}>
+            Cette scène ne contient encore aucun message. Pour l’alimenter, ouvrez le fil{' '}
+            {place ? <Link to={universePath(universe, `roleplay/lieux/${place.id}`)}>{place.name}</Link> : 'du lieu'}, sélectionnez des messages
+            avec « Éditeur de scènes » et ajoutez-les à « {scene.title} ».
+          </p>
         ) : (
           visible.map((m, i) => (
-            <RpMessage key={m.id} universe={universe} message={m} charactersById={charactersById} placesById={placesById} hideHrp={hideHrp} continued={continuesMessage(visible[i - 1], m) && !m.travels?.arrivals.length && !visible[i - 1].travels?.departures.length} />
+            <RpMessage
+              key={m.id}
+              universe={universe}
+              message={m}
+              charactersById={charactersById}
+              placesById={placesById}
+              hideHrp={hideHrp}
+              continued={continuesMessage(visible[i - 1], m) && !m.travels?.arrivals.length && !visible[i - 1].travels?.departures.length}
+            />
           ))
         )}
       </div>
@@ -161,15 +153,6 @@ export default function RpScenePage() {
         />
       )}
 
-      {editing && (
-        <EditSceneDialog
-          scene={scene}
-          episodeOptions={storiesOn ? episodeOptions : null}
-          pending={mutations.update.isPending}
-          onClose={() => setEditing(false)}
-          onSave={(data) => save(data, 'Scène enregistrée.').then(() => setEditing(false))}
-        />
-      )}
     </main>
   );
 }
@@ -216,50 +199,5 @@ function SceneNav({ universe, neighbours, sceneHref }) {
         )}
       </div>
     </nav>
-  );
-}
-
-/** Titre, résumé et épisodes de la scène (`episodeOptions` : null si le module Histoires est inactif). */
-function EditSceneDialog({ scene, episodeOptions, onClose, onSave, pending }) {
-  const [title, setTitle] = useState(scene.title);
-  const [description, setDescription] = useState(scene.description || '');
-  const [episodeIds, setEpisodeIds] = useState(scene.episodeIds);
-  return (
-    <Dialog
-      open
-      onClose={onClose}
-      size="sm"
-      title="Modifier la scène"
-      footer={
-        <>
-          <Button variant="ghost" onClick={onClose} disabled={pending}>Annuler</Button>
-          <Button variant="primary" loading={pending} disabled={!title.trim()} onClick={() => onSave({ title: title.trim(), description, ...(episodeOptions && { episodeIds }) })}>
-            Enregistrer
-          </Button>
-        </>
-      }
-    >
-      <Field label="Titre" required>
-        {(props) => <Input {...props} value={title} autoFocus maxLength={255} onChange={(e) => setTitle(e.target.value)} />}
-      </Field>
-      <Field label="Résumé">
-        {(props) => <Input {...props} value={description} onChange={(e) => setDescription(e.target.value)} />}
-      </Field>
-      {episodeOptions && (
-        <Field label="Épisodes" hint="La scène apparaîtra sur la fiche de ces épisodes.">
-          {(props) => (
-            <Combobox
-              {...props}
-              multiple
-              options={episodeOptions}
-              value={episodeIds}
-              onChange={setEpisodeIds}
-              placeholder="Rattacher à un épisode…"
-              emptyText="Aucun épisode"
-            />
-          )}
-        </Field>
-      )}
-    </Dialog>
   );
 }

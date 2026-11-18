@@ -144,10 +144,11 @@ export default function RoleplayPage() {
           <section aria-labelledby="rp-scenes">
             <div className={styles.sectionHead}>
               <h2 id="rp-scenes">Scènes</h2>
+              <Link to={universePath(universe, 'roleplay/scenes')}>Toutes les scènes</Link>
             </div>
             {overview.scenes.length === 0 ? (
               <p className={styles.meta}>
-                Aucune scène. Dans un fil, le bouton « Scènes » permet de sélectionner des messages et de les regrouper.
+                Aucune scène. Créez-en une depuis la page Scènes, ou, dans un fil, sélectionnez des messages avec le bouton « Scènes » pour les regrouper.
               </p>
             ) : (
               <div className={styles.sceneList}>

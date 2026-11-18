@@ -1094,6 +1094,39 @@
   }
 }
 
+.sceneTag {
+  display: inline-block;
+  margin-left: space(2);
+  padding: 0 space(2);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  color: var(--fg-muted);
+  font-size: 0.75rem;
+  font-weight: 500;
+  vertical-align: middle;
+}
+
+.sceneComposer {
+  margin-top: space(4);
+}
+
+// Édition d'une scène : détails, puis messages
+.sceneEditForm {
+  display: grid;
+  gap: space(3);
+  max-width: 40rem;
+  margin-bottom: space(8);
+}
+
+.sceneEditMessages .reading {
+  margin-top: space(3);
+}
+
+.sceneFilter {
+  flex: 0 1 16rem;
+  min-width: min(12rem, 100%);
+}
+
 .sceneList {
   display: grid;
   gap: space(2);

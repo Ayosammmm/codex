@@ -2,20 +2,23 @@ import { useEffect, useRef } from 'react';
 import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { API_BASE, getToken, request } from './client';
 
+const postMessages = (path, { parts, image, sound }) => {
+  if (!image && !sound) return request(path, { method: 'POST', body: { parts } });
+  const form = new FormData();
+  form.append('parts', JSON.stringify(parts));
+  if (image) form.append('image', image);
+  if (sound) form.append('sound', sound);
+  return request(path, { method: 'POST', body: form });
+};
+
 /** Roleplay écrit : fil de messages par lieu, scènes (voir backend/controllers/roleplayController.js). */
 export const roleplayApi = {
   overview: (universeId) => request(`/roleplay/overview?universe_id=${universeId}`),
   messages: (placeId, { before } = {}) => request(`/roleplay/places/${placeId}/messages${before ? `?before=${before}` : ''}`),
   /** Plusieurs messages d'un coup : { parts: [{ content, characterIds }], image? } (image jointe au dernier). */
-  createMessages: (placeId, { parts, image, sound }) => {
-    const path = `/roleplay/places/${placeId}/messages`;
-    if (!image && !sound) return request(path, { method: 'POST', body: { parts } });
-    const form = new FormData();
-    form.append('parts', JSON.stringify(parts));
-    if (image) form.append('image', image);
-    if (sound) form.append('sound', sound);
-    return request(path, { method: 'POST', body: form });
-  },
+  createMessages: (placeId, data) => postMessages(`/roleplay/places/${placeId}/messages`, data),
+  /** Messages écrits directement dans une scène hors roleplay (même format). */
+  createSceneMessages: (sceneId, data) => postMessages(`/roleplay/scenes/${sceneId}/messages`, data),
   updateMessage: (id, data) => request(`/roleplay/messages/${id}`, { method: 'PUT', body: data }),
   deleteMessage: (id) => request(`/roleplay/messages/${id}`, { method: 'DELETE' }),
   markRead: (placeId, messageId) => request(`/roleplay/places/${placeId}/read`, { method: 'PUT', body: { messageId } }),
@@ -159,6 +162,20 @@ export function useMarkPlaceRead(universeId, placeId, lastMessageId, { enabled =
     return () => document.removeEventListener('visibilitychange', mark);
   }, [enabled, lastMessageId, placeId, universeId, queryClient]);
 }
+
+/**
+ * Messages d'une scène, depuis son édition : écriture (scène hors roleplay seulement), modification, suppression.
+ * La scène, les vues d'ensemble et les fils chargés (messages d'une scène du roleplay) sont rechargés ensuite.
+ */
+export const useSceneMessageMutations = (sceneId) => {
+  const queryClient = useQueryClient();
+  const refresh = () => queryClient.invalidateQueries({ queryKey: roleplayKeys.all });
+  return {
+    createMany: useMutation({ mutationFn: (data) => roleplayApi.createSceneMessages(sceneId, data), onSuccess: refresh }),
+    update: useMutation({ mutationFn: ({ id, data }) => roleplayApi.updateMessage(id, data), onSuccess: refresh }),
+    remove: useMutation({ mutationFn: (id) => roleplayApi.deleteMessage(id), onSuccess: refresh }),
+  };
+};
 
 export const useSceneMutations = () => {
   const queryClient = useQueryClient();

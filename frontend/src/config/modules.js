@@ -1,6 +1,6 @@
 import {
   Users, MapPin, Brain, HeartHandshake, MapIcon, Building2, Dna, PawPrint, BookOpen, CalendarClock,
-  VenusAndMars, Activity, Scale, Medal, Tags, Tag, Sparkles, Library, MessagesSquare, Music,
+  VenusAndMars, Activity, Scale, Medal, Tags, Tag, Sparkles, Library, MessagesSquare, Music, Clapperboard,
 } from '@/components/ui/icons';
 
 /**
@@ -15,6 +15,8 @@ import {
  * - path          : segment d'URL de la page du module dans l'univers (absent = pas de page dédiée)
  * - navLabel      : libellé dans la navigation, s'il diffère du nom du module
  * - navSection    : section de la barre latérale ('games' : « Jeux ») ; absent = « Encyclopédie »
+ * - extraNav      : autres pages du module dans la barre latérale ({ key, path, label, icon, navSection? }),
+ *                   placées dans leur propre section (« Encyclopédie » par défaut), après les modules
  */
 export const MODULES = [
   { key: 'characters', path: 'personnages', label: 'Personnages', icon: Users, core: true,
@@ -48,6 +50,7 @@ export const MODULES = [
     description: 'Moments clés, partagés entre plusieurs épisodes.' },
 
   { key: 'roleplay', path: 'roleplay', label: 'Roleplay', icon: MessagesSquare, defaultEnabled: false, navSection: 'games',
+    extraNav: [{ key: 'rpScenes', path: 'roleplay/scenes', label: 'Scènes', icon: Clapperboard }],
     description: 'Roleplay écrit dans les lieux, au nom des personnages, avec scènes rattachables aux épisodes.' },
 
   { key: 'sound', label: 'Son', icon: Music, defaultEnabled: false,

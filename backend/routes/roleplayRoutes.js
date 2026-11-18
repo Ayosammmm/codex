@@ -18,6 +18,8 @@ router.get("/episodes/:episodeId/scenes", roleplay.episodeScenes);
 router.put("/episodes/:episodeId/scenes", roleplay.setEpisodeScenes);
 router.post("/scenes", roleplay.createScene);
 router.get("/scenes/:id", roleplay.getScene);
+// Scène hors roleplay : messages écrits directement dans la scène
+router.post("/scenes/:id/messages", uploadAttachments, roleplay.createSceneMessages);
 router.get("/scenes/:id/neighbours", roleplay.sceneNeighbours);
 router.put("/scenes/:id", roleplay.updateScene);
 router.delete("/scenes/:id", roleplay.deleteScene);

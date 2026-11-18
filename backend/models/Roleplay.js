@@ -10,7 +10,9 @@ const User = require('./User');
  * Roleplay écrit (module « Roleplay », notes Obsidian « Avancement ») :
  * - un fil de messages par lieu (rp_messages) ;
  * - un message est écrit par un compte, au nom de zéro, un ou plusieurs personnages (rp_message_characters) ;
- * - des messages d'un même lieu peuvent être regroupés en scènes (rp_scenes), rattachables à des épisodes.
+ * - des messages d'un même lieu peuvent être regroupés en scènes (rp_scenes), rattachables à des épisodes ;
+ * - une scène « hors roleplay » (`standalone` : remake, scène d'avant le RP…) est écrite directement dans la scène :
+ *   ses messages (`offThread`) n'apparaissent pas dans le fil du lieu et ne comptent pas dans les déplacements.
  * Le texte utilise des balises (*action*, « dialogue », (pensée), ~chuchotement~, ((HRP)), {onomatopée})
  * découpées à l'affichage.
  * `universe_id` est redondant avec le lieu : il sert à l'export / la duplication / la suppression d'univers.
@@ -29,6 +31,8 @@ const RpScene = sequelize.define('RpScene', {
   title: { type: DataTypes.STRING, allowNull: false },
   description: { type: DataTypes.TEXT, allowNull: true },
   placeId: { type: DataTypes.INTEGER, allowNull: false },
+  // Scène hors roleplay : ses messages sont écrits dans la scène, pas dans le fil du lieu
+  standalone: { type: DataTypes.BOOLEAN, allowNull: false, defaultValue: false },
   createdBy: { type: DataTypes.INTEGER, allowNull: true },
   universe_id: universeColumn,
 }, {
@@ -64,6 +68,8 @@ const RpMessage = sequelize.define('RpMessage', {
   isHrp: { type: DataTypes.BOOLEAN, allowNull: false, defaultValue: false },
   placeId: { type: DataTypes.INTEGER, allowNull: false },
   sceneId: { type: DataTypes.INTEGER, allowNull: true },
+  // Message d'une scène hors roleplay : absent du fil du lieu
+  offThread: { type: DataTypes.BOOLEAN, allowNull: false, defaultValue: false },
   userId: { type: DataTypes.INTEGER, allowNull: true },
   universe_id: universeColumn,
 }, {

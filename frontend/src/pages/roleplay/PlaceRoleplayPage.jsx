@@ -335,7 +335,8 @@ export default function PlaceRoleplayPage() {
             <Button size="sm" variant="primary" disabled={!selected.size} onClick={() => setNewScene(true)}>
               Nouvelle scène
             </Button>
-            {scenes.length > 0 && (
+            {/* Scènes hors roleplay : écrites directement, elles ne reçoivent pas de messages du fil */}
+            {scenes.some((s) => !s.standalone) && (
               <select
                 aria-label="Ajouter à une scène"
                 value=""
@@ -343,7 +344,7 @@ export default function PlaceRoleplayPage() {
                 onChange={(e) => e.target.value && addToScene(Number(e.target.value))}
               >
                 <option value="">Ajouter à une scène…</option>
-                {scenes.map((s) => (
+                {scenes.filter((s) => !s.standalone).map((s) => (
                   <option key={s.id} value={s.id}>{s.title}</option>
                 ))}
               </select>

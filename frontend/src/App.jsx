@@ -38,6 +38,8 @@ import UsersPage from '@/pages/users/UsersPage';
 import RoleplayPage from '@/pages/roleplay/RoleplayPage';
 import PlaceRoleplayPage from '@/pages/roleplay/PlaceRoleplayPage';
 import RpScenePage from '@/pages/roleplay/RpScenePage';
+import RpScenesPage from '@/pages/roleplay/RpScenesPage';
+import RpSceneEditPage from '@/pages/roleplay/RpSceneEditPage';
 import { AdminOnly, RequireAuth, SuperAdminOnly } from '@/auth/RequireAuth';
 import ModsAdminPage from '@/mods/ModsAdminPage';
 import { CustomEntityEditPage, CustomEntityPage, ModSectionPage } from '@/mods/CustomEntityPages';
@@ -102,6 +104,8 @@ export const router = createBrowserRouter([
       { path: 'groupes/:groupId/modifier', element: <ModuleGate module="groups"><GroupEditPage /></ModuleGate> },
       { path: 'roleplay', element: <ModuleGate module="roleplay"><RoleplayPage /></ModuleGate> },
       { path: 'roleplay/lieux/:placeId', element: <ModuleGate module="roleplay"><PlaceRoleplayPage /></ModuleGate> },
+      { path: 'roleplay/scenes', element: <ModuleGate module="roleplay"><RpScenesPage /></ModuleGate> },
+      { path: 'roleplay/scenes/:sceneId/modifier', element: <ModuleGate module="roleplay"><RpSceneEditPage /></ModuleGate> },
       { path: 'roleplay/scenes/:sceneId', element: <ModuleGate module="roleplay"><RpScenePage /></ModuleGate> },
       // Mods : types d'entités et pages de code (voir src/mods)
       { path: 'mods/:modId/:modPath', element: <ModSectionPage /> },

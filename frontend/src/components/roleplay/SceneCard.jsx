@@ -12,7 +12,10 @@ export function SceneCard({ universe, scene, place, charactersById, storyId }) {
   const characters = scene.characterIds.map((id) => charactersById.get(id)).filter(Boolean);
   return (
     <Link to={`${universePath(universe, `roleplay/scenes/${scene.id}`)}${storyId ? `?histoire=${storyId}` : ''}`} className={styles.sceneCard}>
-      <span className={styles.sceneTitle}>{scene.title}</span>
+      <span className={styles.sceneTitle}>
+        {scene.title}
+        {scene.standalone && <span className={styles.sceneTag}>Hors roleplay</span>}
+      </span>
       <span className={styles.sceneMeta}>
         {[place?.name, plural(scene.messageCount, 'message'), scene.firstAt && `du ${formatRpDate(scene.firstAt)} au ${formatRpDate(scene.lastAt)}`, scene.episodeIds.length > 0 && plural(scene.episodeIds.length, 'épisode')]
           .filter(Boolean)
