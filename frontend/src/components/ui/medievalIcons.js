@@ -33,6 +33,8 @@ const smallQuill = (x, angle) => ({
 });
 
 const CHEVRON = ['M9 5c3.5 2.4 5.6 4.7 6.5 7-.9 2.3-3 4.6-6.5 7', 'M9 5c-1.3.1-1.8 1.2-1.1 2'];
+// Deux chevrons décalés (tracés recopiés plutôt que transformés, pour garder l'épaisseur du trait)
+const CHEVRONS = [-3.5, 3].flatMap((dx) => CHEVRON.map((d) => d.replace(/^M9 /, `M${9 + dx} `)));
 const CORNER = ['M5 4c0 6.5 3 9.5 10 10', 'M12 10.5c1.2 1.5 2.6 2.7 5 3.5-2.4.8-3.8 2-5 3.5'];
 const QUILL_PEN = ['M20 3.5c-7 .8-11.6 5.6-13.4 12.4L5.5 20l3.4-2.1C15 15.8 19 11 20 3.5z', 'M7.5 16.5L15 9'];
 const UNDO = ['M4 9h10.5a5.5 5.5 0 0 1 0 11H10', 'M10 20c-1.4 0-1.9-1.3-1-2', head(3.5, 9, 180)];
@@ -66,6 +68,47 @@ const toe = (x, y, angle) => ({
   d: 'M0-3.2c1.3 1.6 1.9 2.7 1.9 3.6a1.9 1.9 0 0 1-3.8 0c0-.9.6-2 1.9-3.6z',
   transform: `translate(${x} ${y}) rotate(${angle})`,
 });
+
+/** Trait « à main levée » horizontal de x1 à x2 à la hauteur y (légèrement bombé, comme Menu). */
+const line = (x1, x2, y) => `M${x1} ${y}c${(x2 - x1) / 4} -.7 ${((x2 - x1) * 3) / 4} -.7 ${x2 - x1} 0`;
+
+/** Étoile à quatre branches aux côtés incurvés (étincelle), centrée en (x, y). */
+const star4 = (x, y, r) => `M${x} ${y - r}Q${x} ${y} ${x + r} ${y}Q${x} ${y} ${x} ${y + r}Q${x} ${y} ${x - r} ${y}Q${x} ${y} ${x} ${y - r}z`;
+
+/** Étoile à cinq branches, rayons extérieur R et intérieur r. */
+const star5 = (cx, cy, R, r) => {
+  const pts = [];
+  for (let k = 0; k < 10; k++) {
+    const a = ((k * 36 - 90) * Math.PI) / 180;
+    const d = k % 2 ? r : R;
+    pts.push(`${+(cx + d * Math.cos(a)).toFixed(2)} ${+(cy + d * Math.sin(a)).toFixed(2)}`);
+  }
+  return `M${pts.join('L')}z`;
+};
+
+/** Cor de chasse (volume), pavillon vers la droite. */
+const HORN = ['M3 9.5c2.5 0 6-1.5 8.5-5v15c-2.5-3.5-6-5-8.5-5z', 'M3 9.5v5'];
+
+/** Œil en amande, iris et pupille en losange. */
+const EYE = [
+  'M2.5 12C5 7.5 8.3 5.5 12 5.5s7 2 9.5 6.5c-2.5 4.5-5.8 6.5-9.5 6.5S5 16.5 2.5 12z',
+  'M12 9a3 3 0 1 0 0 6 3 3 0 0 0 0-6z',
+  lozenge(12, 12, 1.1),
+];
+
+/** Maillon de chaîne horizontal de x à x + 9, centré sur y = 12. */
+const link = (x) => `M${x + 2.5} 9.5h4a2.5 2.5 0 0 1 0 5h-4a2.5 2.5 0 0 1 0-5z`;
+
+/** Lettre X à empattements (indices et exposants), réduite à gauche. */
+const LETTER_X = ['M4 6c2.5 3.5 5 8 7.5 12M11.5 6C9 9.5 6.5 14 4 18', 'M2.5 6h3M10 6h3M2.5 18h3M10 18h3'];
+/** Petit « 2 » manuscrit, haut à (x, y). */
+const two = (x, y) => `M${x} ${y + 1.6}c0-1 .8-1.6 1.7-1.6s1.7.6 1.7 1.6c0 1.6-3.4 2.6-3.4 5h3.6`;
+
+/** Tableau encadré (image). */
+const FRAME = 'M4.5 3.5h15a1 1 0 0 1 1 1v15a1 1 0 0 1-1 1h-15a1 1 0 0 1-1-1v-15a1 1 0 0 1 1-1z';
+
+/** Épée verticale, pointe en haut. */
+const SWORD = ['M12 2.5l1.4 2.2V15h-2.8V4.7z', 'M6.5 15h11', lozenge(6, 15, 1.1), lozenge(18, 15, 1.1), 'M12 15v4.3', lozenge(12, 20.8, 1.3)];
 
 const TAG = ['M3.5 5h9.5l7.5 7-7.5 7H3.5l3-7z', lozenge(14.5, 12, 1.1)];
 
@@ -393,4 +436,235 @@ export const MEDIEVAL_ICONS = {
   // Étiquette à queue d'aronde
   Tag: { paths: TAG },
   Tags: { paths: [...TAG.map((p) => (typeof p === 'string' ? { d: p, transform: 'translate(-1 1.5)' } : { ...p, d: p.d.replace(/^M14.5 12/, 'M13.5 13.5') })), 'M6 3h9.5l7 6.5'] },
+
+  // --- Navigation (compléments) ---
+  ChevronsRight: { paths: CHEVRONS },
+  ChevronsLeft: { paths: CHEVRONS, rotate: 180 },
+  // Message porté par un trait empenné
+  SendHorizontal: {
+    paths: ['M3.5 4.5C9 6.5 15 9 20.5 12 15 15 9 17.5 3.5 19.5c1.3-2.5 2-5 2-7.5s-.7-5-2-7.5z', 'M5.5 12h6'],
+  },
+  CircleHelp: {
+    paths: [
+      'M12 3.5a8.5 8.5 0 1 1 0 17 8.5 8.5 0 0 1 0-17z',
+      'M9.4 9.6c0-1.7 1.2-2.8 2.7-2.8s2.6 1 2.6 2.5c0 2.2-2.7 2.3-2.7 4.4',
+      lozenge(12, 16.6, 1.1),
+    ],
+  },
+
+  // --- Mise en forme du texte (compléments) ---
+  AlignLeft: { paths: [line(4, 20, 6), line(4, 14, 10), line(4, 20, 14), line(4, 14, 18)] },
+  AlignRight: { paths: [line(4, 20, 6), line(4, 14, 10), line(4, 20, 14), line(4, 14, 18)], flip: true },
+  AlignCenter: { paths: [line(4, 20, 6), line(7, 17, 10), line(4, 20, 14), line(7, 17, 18)] },
+  AlignJustify: { paths: [line(4, 20, 6), line(4, 20, 10), line(4, 20, 14), line(4, 20, 18)] },
+  // Lettre A à empattements soulignée (couleur du texte)
+  Baseline: { paths: ['M6.5 16l5.5-12 5.5 12M8.3 12h7.4', 'M4.5 16h4M15.5 16h4', line(4, 20, 20.5)] },
+  Underline: { paths: ['M7 4v7a5 5 0 0 0 10 0V4', 'M5.5 4h3M15.5 4h3', line(5, 19, 20.5)] },
+  Strikethrough: {
+    paths: [
+      'M16.5 6.5C15.6 5.1 14 4.5 12.2 4.5 9.6 4.5 8 5.9 8 7.8c0 1.6 1 2.6 2.6 3.2',
+      'M15.2 14c.5.6.8 1.2.8 1.9 0 2-1.8 3.6-4.6 3.6-2 0-3.7-.8-4.6-2.3',
+      'M3.5 12h17',
+    ],
+  },
+  Subscript: { paths: [...LETTER_X, two(15.5, 13.5)] },
+  Superscript: { paths: [...LETTER_X, two(15.5, 3)] },
+  RemoveFormatting: { paths: ['M4.5 5.5h12M10.5 5.5V19M8.5 19h4', 'M3 5.5v1.5M18 5.5v1.5', 'M15 14l5 5M20 14l-5 5'] },
+  // Pinceau d'enlumineur
+  Highlighter: {
+    paths: [
+      'M20 3.5l-8 8.5',
+      'M12 12c-1.6-.4-3.2.3-3.8 2-.5 1.4-1.3 2.2-3 2.5 2.7 1.5 6 1.1 7.4-1 .8-1.2.6-2.6-.6-3.5z',
+      line(13, 21, 20),
+    ],
+  },
+  // Chevrons à empattements barrés d'un trait de plume
+  Code: {
+    paths: [
+      'M8.5 6.5C6.5 8.5 4.8 10.4 3.5 12c1.3 1.6 3 3.5 5 5.5',
+      'M15.5 6.5c2 2 3.7 3.9 5 5.5-1.3 1.6-3 3.5-5 5.5',
+      'M13.8 4.5c-1.3 4.8-2.3 9.8-3.6 15',
+    ],
+  },
+  SquareCode: {
+    paths: [FRAME, 'M10 8.5c-1 1.2-2 2.4-3 3.5 1 1.1 2 2.3 3 3.5', 'M14 8.5c1 1.2 2 2.4 3 3.5-1 1.1-2 2.3-3 3.5'],
+  },
+  SeparatorHorizontal: {
+    paths: [line(3, 10, 12), line(14, 21, 12), lozenge(12, 12, 1.5), 'M9 7.5l3-3 3 3', 'M9 16.5l3 3 3-3'],
+  },
+  ListTodo: {
+    paths: ['M3 4.5h4.5V9H3z', 'M3.8 6.6l1.4 1.4L9 3.5', 'M3 14.5h4.5V19H3z', 'M11 6.5h9.5M11 12h9.5M11 17h9.5'],
+  },
+
+  // --- Médias ---
+  Image: { paths: [FRAME, 'M3.5 17l5-5 4 4 2.5-2.5 5.5 5.5', lozenge(15.5, 8.5, 1.4)] },
+  Eye: { paths: EYE },
+  EyeOff: { paths: [...EYE, 'M3.5 3.5l17 17'] },
+  // Notes en losange (notation ancienne)
+  Music: {
+    paths: [
+      { d: 'M4.8 17l2.4-2.4 2.4 2.4-2.4 2.4z', fill: true },
+      { d: 'M14.8 15l2.4-2.4 2.4 2.4-2.4 2.4z', fill: true },
+      'M9.6 17V5.5L19.6 3.5V15',
+      'M9.6 8.5l10-2',
+    ],
+  },
+  Play: { paths: ['M7 4.5c4.5 2 8.5 4.5 12 7.5-3.5 3-7.5 5.5-12 7.5z'] },
+  // Deux colonnes à chapiteau
+  Pause: { paths: ['M8 5v14M16 5v14', 'M6 5h4M6 19h4M14 5h4M14 19h4'] },
+  Volume2: { paths: [...HORN, 'M15 9a4 4 0 0 1 0 6', 'M17.5 6.5a7.5 7.5 0 0 1 0 11'] },
+  VolumeX: { paths: [...HORN, 'M15.5 9.5l5 5M20.5 9.5l-5 5'] },
+  // Chaîne
+  Link: { paths: [link(3), link(11.5)], rotate: -45 },
+  Unlink: { paths: [link(1), link(14), 'M12 5.5v2.5M12 16v2.5', 'M9.5 6.5l1 1.5M14.5 6.5l-1 1.5'], rotate: -45 },
+
+  // --- Jeu et divers ---
+  // Deux pièces d'or frappées d'une croix
+  Coins: {
+    paths: [
+      'M10.5 5.6A5.5 5.5 0 1 1 15.6 14.5',
+      'M9.5 7a6.5 6.5 0 1 0 0 13 6.5 6.5 0 0 0 0-13z',
+      'M9.5 10.5v6M6.5 13.5h6',
+    ],
+  },
+  Dices: {
+    paths: [
+      'M3.5 10.5h9v9h-9z',
+      lozenge(6, 13, 0.9),
+      lozenge(8, 15, 0.9),
+      lozenge(10, 17, 0.9),
+      'M14 2.6l7.24 1.94-1.94 7.24-7.24-1.94z',
+      lozenge(15.4, 5.1, 0.9),
+      lozenge(17.9, 9.3, 0.9),
+    ],
+  },
+  Sparkles: { paths: [star4(10, 13, 7.5), star4(18.5, 5.5, 3), lozenge(19, 18, 1.1)] },
+  // Bulles en phylactères
+  MessagesSquare: {
+    paths: ['M3 4.5h11v7.5H8.5L5.5 15v-3H3z', 'M16.5 8.5H21V16h-2v3l-3-3h-5.5v-2'],
+  },
+
+  // --- Icônes proposées aux mods ---
+  Anchor: {
+    paths: [
+      'M12 3a1.8 1.8 0 1 0 0 3.6A1.8 1.8 0 0 0 12 3z',
+      'M12 6.6v14',
+      'M8.5 9.5h7',
+      'M4 13.5c0 4.2 3.5 7 8 7s8-2.8 8-7',
+      'M2.5 15.5L4 13.2l2.2 1.3M21.5 15.5L20 13.2l-2.2 1.3',
+    ],
+  },
+  Boxes: { paths: ['M3.5 12.5h8v8h-8z', 'M12.5 12.5h8v8h-8z', 'M8 4.5h8v8H8z', 'M3.5 12.5l8 8M12.5 12.5l8 8M8 4.5l8 8'] },
+  Castle: {
+    paths: [
+      'M3 21V6h1.7v1.5h1.6V6H8v15',
+      'M16 21V6h1.7v1.5h1.6V6H21v15',
+      'M8 11h1.5v1.5H11V11h2v1.5h1.5V11H16',
+      'M10 21v-3.5a2 2 0 0 1 4 0V21',
+      'M2 21h20',
+    ],
+  },
+  // Couronne fleuronnée
+  Crown: {
+    paths: [
+      'M5 15.5c0-3.5-.5-6-.5-6 2.3 1.3 4.8.5 7.5-3.5 2.7 4 5.2 4.8 7.5 3.5 0 0-.5 2.5-.5 6',
+      'M5 15.5h14v3.5H5z',
+      lozenge(4.5, 8, 1.2),
+      lozenge(12, 4, 1.3),
+      lozenge(19.5, 8, 1.2),
+      lozenge(12, 17.25, 0.9),
+    ],
+  },
+  Feather: {
+    paths: ['M20 3.5c-6.5.5-12 5-13.5 12L6 19c5.5-.5 11.5-5 14-15.5z', 'M3.5 20.5L15 9', 'M9 15h4M11.5 12.5h3.5'],
+  },
+  // Gonfanon
+  Flag: { paths: ['M4.5 3.5h15', lozenge(3.5, 3.5, 1), lozenge(20.5, 3.5, 1), 'M6.5 3.5V20l5.5-3.5 5.5 3.5V3.5', lozenge(12, 9.5, 1.6)] },
+  Flame: {
+    paths: [
+      'M12 21c-4 0-6.5-2.6-6.5-6 0-3.8 3-5.5 3.5-9.5 2 1.3 3 3 3.2 4.8C13.5 8.5 14 6 13.5 3c3.5 2.5 5 6.5 5 11 0 4-2.5 7-6.5 7z',
+      'M12 21c-1.6 0-2.5-1.2-2.5-2.6 0-1.6 1.3-2.4 2-4 .9 1 3 2.3 3 4 0 1.4-1 2.6-2.5 2.6z',
+    ],
+  },
+  // Échiquier
+  Gamepad2: {
+    paths: [
+      'M4 4h16v16H4z',
+      { d: 'M4 4h4v4H4zM12 4h4v4h-4zM8 8h4v4H8zM16 8h4v4h-4zM4 12h4v4H4zM12 12h4v4h-4zM8 16h4v4H8zM16 16h4v4h-4z', fill: true },
+    ],
+  },
+  Gem: { paths: ['M6.5 4h11l3.5 5-9 11.5L3 9z', 'M3 9h18', 'M9.5 4L8 9l4 11.5L16 9l-1.5-5'] },
+  // Orbe crucigère
+  Globe: { paths: ['M12 7.5a6.5 6.5 0 1 1 0 13 6.5 6.5 0 0 1 0-13z', 'M5.5 14h13', 'M12 7.5V14', 'M12 2v5.5M10 3.8h4'] },
+  // Clé à panneton, anneau en quadrilobe
+  Key: {
+    paths: ['M12 2.8a3.2 3.2 0 1 0 0 6.4 3.2 3.2 0 0 0 0-6.4z', lozenge(12, 6, 1.1), 'M12 9.2V21', 'M12 17.5h3.5V20.5H12M12 14h2.5'],
+  },
+  // Sac noué
+  Package: {
+    paths: [
+      'M8.5 8c-2.5 2-4.5 5.5-4.5 8.5 0 3 2 4 8 4s8-1 8-4c0-3-2-6.5-4.5-8.5',
+      'M8 8h8',
+      'M8.5 8C7.5 6 8.2 3.8 9.8 4.6L12 6l2.2-1.4c1.6-.8 2.3 1.4 1.3 3.4',
+      lozenge(12, 14.5, 1.4),
+    ],
+  },
+  Puzzle: { paths: ['M4 7h4.5a2 2 0 1 1 3.5 0H16v4.5a2 2 0 1 1 0 3.5V20h-4a2 2 0 1 0-3.5 0H4z'] },
+  // Comète
+  Rocket: {
+    paths: [star4(16.5, 7.5, 4.5), 'M13.5 10.5C10.5 13.5 7.5 16.5 3.5 20.5', 'M12.5 8.5c-3 1.5-5.5 3.8-8 6.5', 'M15.5 11.5c-1.5 3-3.8 5.5-6.5 8'],
+  },
+  Scroll: {
+    paths: [
+      'M7 17.5V5.5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v1.5h-4',
+      'M17 3.5a2 2 0 0 0-2 2v13a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-1h12v1a2 2 0 0 0 2 2',
+      'M10 8.5h4M10 12h4',
+    ],
+  },
+  // Écu parti et coupé
+  Shield: { paths: ['M4.5 4h15v6c0 5.5-3.5 9-7.5 10.5C8 19 4.5 15.5 4.5 10z', 'M12 4v16.5', 'M4.5 10h15'] },
+  // Nef à voile carrée
+  Ship: {
+    paths: [
+      'M3 15h18l-2.5 4.5h-13z',
+      'M12 3v12',
+      'M6.5 5.5c3.5.6 7.5.6 11 0v6.5c-3.5.6-7.5.6-11 0z',
+      'M12 3l3.5 1L12 5',
+      line(3, 21, 22),
+    ],
+  },
+  Skull: {
+    paths: [
+      'M12 3.5c-4.4 0-7.5 3-7.5 7 0 2.6 1.3 4.3 3 5.3v3.7h9v-3.7c1.7-1 3-2.7 3-5.3 0-4-3.1-7-7.5-7z',
+      lozenge(9, 11, 1.7),
+      lozenge(15, 11, 1.7),
+      { d: 'M12 13.6l.9 1.7h-1.8z', fill: true },
+      'M10.5 19.5v-2M13.5 19.5v-2',
+    ],
+  },
+  Star: { paths: [star5(12, 12.5, 9.5, 4)] },
+  Sword: { paths: SWORD, rotate: 45 },
+  Swords: {
+    paths: [
+      'M20.5 3.5l-.6 2.4-9.1 9.1-1.8-1.8 9.1-9.1z',
+      'M5.8 11.8l6.4 6.4M9.5 14.5l-4 4',
+      lozenge(4.8, 19.2, 1.2),
+      'M3.5 3.5l.6 2.4 9.1 9.1 1.8-1.8-9.1-9.1z',
+      'M18.2 11.8l-6.4 6.4M14.5 14.5l4 4',
+      lozenge(19.2, 19.2, 1.2),
+    ],
+  },
+  // Calice
+  Trophy: {
+    paths: [
+      'M6.5 3.5h11c0 5-2.5 8.5-5.5 8.5S6.5 8.5 6.5 3.5z',
+      'M12 12v5',
+      lozenge(12, 14.5, 1.2),
+      'M7.5 20.5c0-2 2-3.5 4.5-3.5s4.5 1.5 4.5 3.5z',
+    ],
+  },
+  WandSparkles: {
+    paths: ['M3.5 20.5L13.5 10.5', 'M11.5 12.5l1.5 1.5', star4(16.5, 7.5, 4), lozenge(21, 13, 1), lozenge(10, 4, 1)],
+  },
+  Zap: { paths: ['M13.5 2.5C10.5 6.3 7.8 10 5 13.5h6.5l-1.5 8c3-3.6 5.8-7.3 8.5-11H12z'] },
 };
