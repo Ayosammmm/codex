@@ -62,7 +62,7 @@ export function GroupForm({ universe, group, state, refs, errors, sound, modFiel
   return (
     <div className={form.layout}>
       <div className={form.sections}>
-        <FormSection id="identite" title="Identité" description="Le nom du groupe, sa nature et le groupe plus grand auquel il appartient.">
+        <FormSection id="identite" title="Identité" description="Le nom du groupe, sa nature et le groupe auquel il appartient.">
           <Field label="Nom" required error={errors.name}>
             {(props) => <Input {...props} value={f.name} onChange={(e) => update({ name: e.target.value })} maxLength={255} placeholder="Ex. La Compagnie du Corbeau" />}
           </Field>
@@ -84,7 +84,7 @@ export function GroupForm({ universe, group, state, refs, errors, sound, modFiel
                 <Select {...props} options={refs.groupTypes} value={f.groupTypeId} onChange={(groupTypeId) => update({ groupTypeId })} placeholder="Non renseigné" disabled={refs.groupTypes.length === 0} />
               )}
             </Field>
-            <Field label="Groupe parent" hint="Le groupe fera partie de celui-ci (ex. une famille dans un clan).">
+            <Field label="Groupe parent" hint="Le groupe fera partie de celui-ci (ex. une filiale dans un clan).">
               {(props) => <Select {...props} options={parentOptions} value={f.parentId} onChange={(parentId) => update({ parentId })} placeholder="Aucun" />}
             </Field>
           </div>
@@ -103,7 +103,7 @@ export function GroupForm({ universe, group, state, refs, errors, sound, modFiel
           </Field>
         </FormSection>
 
-        <FormSection id="roles" title="Rôles" description="La hiérarchie du groupe : chaque rôle peut commander directement un ou plusieurs autres rôles. L’organigramme suit ces liens.">
+        <FormSection id="roles" title="Rôles" description="La hiérarchie du groupe : chaque rôle peut commander directement un ou plusieurs autres rôles.">
           <RolesField value={f.roles} onChange={(roles) => update({ roles })} members={f.members} error={errors.roles} />
         </FormSection>
 

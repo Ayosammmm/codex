@@ -40,6 +40,9 @@
 
 .body {
   padding: space(5) space(6);
+  &>*{
+    margin-top: space(3);
+  }
 }
 
 .footer {

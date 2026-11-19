@@ -29,7 +29,7 @@ export function AppearanceSection({ state, savedBackground, subject, showColors 
     <FormSection
       id="apparence"
       title={title}
-      description={description ?? `Les couleurs et le fond de la page ${subject}. Une couleur laissée vide reprend celle de l’univers.`}
+      description={description ?? `Les couleurs et le fond ${subject}.`}
     >
       {showColors && (
         <div className={form.colors}>

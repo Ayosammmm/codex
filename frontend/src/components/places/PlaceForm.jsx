@@ -61,7 +61,7 @@ export function PlaceForm({ universe, place, state, refs, modules, errors, sound
   return (
     <div className={form.layout}>
       <div className={form.sections}>
-        <FormSection id="identite" title="Identité" description="Le nom du lieu, sa nature et le lieu plus grand qui le contient.">
+        <FormSection id="identite" title="Identité" description="Le nom du lieu, sa nature et le lieu qui le contient.">
           <Field label="Nom" required error={errors.name}>
             {(props) => <Input {...props} value={f.name} onChange={(e) => update({ name: e.target.value })} maxLength={255} placeholder="Ex. La Taverne du Pendu" />}
           </Field>
@@ -89,7 +89,7 @@ export function PlaceForm({ universe, place, state, refs, modules, errors, sound
           </div>
         </FormSection>
 
-        <FormSection id="image" title="Image" description="L’illustration du lieu, affichée en tête de sa fiche et dans l’archive. 5 Mo maximum.">
+        <FormSection id="image" title="Image" description="L’illustration du lieu. 5 Mo maximum.">
           <ImagePicker
             label="Bannière"
             hint="Format large, ex. 1800 × 600"

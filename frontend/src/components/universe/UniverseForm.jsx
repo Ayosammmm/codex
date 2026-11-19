@@ -168,7 +168,7 @@ function ImagesSection({ universe, form, update, images, setImage, onError }) {
           />
         )}
         {form.backgroundMode !== 'none' && (
-          <Field label="Couleur du voile" hint="Voile semi-transparent posé sur le fond, sous le contenu. Vide : couleur de fond du thème.">
+          <Field label="Couleur du voile" hint="Voile semi-transparent posé sur le fond, sous le contenu. Vide : mode clair/sombre du thème.">
             {(props) => (
               <ColorInput
                 {...props}

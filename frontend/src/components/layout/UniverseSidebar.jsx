@@ -1,30 +1,22 @@
 import { useState } from 'react';
 import { Link, NavLink, useLocation } from 'react-router';
 import { ArrowLeft, ChevronLeft, ChevronRight, Library, Settings, X } from '@/components/ui/icons';
-import { useUniverses } from '@/api/queries';
-import { useRoleplayOverview } from '@/api/roleplay';
-import { getModulesState, getNavModules, getNavReferences } from '@/config/modules';
+import { getModulesState, getNavReferences } from '@/config/modules';
 import { Button } from '@/components/ui/Button';
 import { cx } from '@/components/ui/cx';
 import { UniverseAvatar } from '@/components/universe/UniverseAvatar';
 import { universeRef } from '@/utils/universe';
 import { usePermissions } from '@/auth/auth';
-import { COLLECTION_ENTITY_TYPES, useCollectionFilter } from '@/components/collections/collectionFilter';
+import { useCollectionFilter } from '@/components/collections/collectionFilter';
 import { ColorModeToggle } from './ColorModeToggle';
 import { UserMenu } from './UserMenu';
-import { useUniverseMods } from '@/mods/modsContext';
+import { useUniverseNav } from './useUniverseNav';
 import styles from './UniverseSidebar.module.scss';
-
-// Sections de modules dans la barre latérale (voir `navSection` dans config/modules.js)
-const NAV_SECTIONS = [
-  { key: 'encyclopedia', label: 'Encyclopédie' },
-  { key: 'games', label: 'Jeux' },
-];
 
 /**
  * Navigation d'un univers.
  * - Le logo et le nom mènent à l'accueil de l'univers.
- * - « Encyclopédie » : pages des modules actifs (avec le nombre d'entrées) ; « Jeux » : roleplay…
+ * - « Encyclopédie » / « Jeux » : pages des modules et mods actifs, avec le nombre d'entrées (voir useUniverseNav).
  * - « Collection » (module Collections) : filtre appliqué aux listes et aux compteurs.
  * - « Référentiels » : listes de valeurs (genres, statuts...), repliables.
  * - En bas : paramètres (qui contiennent aussi le choix clair / sombre).
@@ -35,21 +27,9 @@ export function UniverseSidebar({ universe, open, onClose, collapsed = false, on
   const base = `/univers/${universeRef(universe)}`;
   const { isAdmin } = usePermissions();
   const { pathname } = useLocation();
-  const { data: universes } = useUniverses();
-  const stats = universes?.find((u) => u.id === universe.id)?.stats || {};
   const collectionFilter = useCollectionFilter();
-  const { types: modTypes, pages: modPages, customEntities, customLoading } = useUniverseMods();
-  // Nombre de fiches d'un type de mod (filtre de collection compris)
-  const modTypeCount = (t) =>
-    customLoading ? undefined : customEntities.filter((e) => e.modId === t.modId && e.typeKey === t.key && collectionFilter.matches('custom', e.id)).length;
-
+  const sections = useUniverseNav(universe);
   const modulesState = getModulesState(universe);
-  const modules = getNavModules(modulesState);
-  // Autres pages des modules actifs (ex. Scènes du Roleplay, dans l'Encyclopédie)
-  const extraNav = modules.flatMap((m) => m.extraNav || []);
-  const roleplayOn = modules.some((m) => m.key === 'roleplay');
-  const { data: roleplay } = useRoleplayOverview(universe.id, { enabled: roleplayOn });
-  const extraCounts = { rpScenes: roleplay?.scenes.length };
   const references = getNavReferences(modulesState);
   const onReference = references.some((r) => pathname.startsWith(`${base}/${r.path}`));
   const [referencesOpen, setReferencesOpen] = useState(onReference);
@@ -88,49 +68,26 @@ export function UniverseSidebar({ universe, open, onClose, collapsed = false, on
             <CollectionPicker filter={collectionFilter} onExpand={onToggleCollapsed} />
           )}
 
-          {NAV_SECTIONS.map(({ key, label }) => {
-            const items = modules.filter((m) => (m.navSection || 'encyclopedia') === key);
-            const extraItems = extraNav.filter((e) => (e.navSection || 'encyclopedia') === key);
-            // Mods actifs : types d'entités et pages de code, après les modules
-            const modItems = [...modTypes, ...modPages].filter((m) => m.navSection === key);
-            if (!items.length && !extraItems.length && !modItems.length) return null;
-            return (
-              <nav key={key} aria-label={label} className={styles.section}>
-                <p className={styles.sectionLabel}>{label}</p>
-                {items.map((m) => (
-                  // Sur une autre page du module (ex. Scènes), seule celle-ci est mise en avant
-                  <NavLink
-                    key={m.key}
-                    to={`${base}/${m.path}`}
-                    end={m.extraNav?.some((e) => pathname.startsWith(`${base}/${e.path}`))}
-                    className={cx(styles.link, m.parent && styles.child)}
-                    title={tip(m.navLabel || m.label)}
-                    {...navProps}
-                  >
-                    <m.icon aria-hidden />
-                    <span className={styles.label}>{m.navLabel || m.label}</span>
-                    {stats[m.key] !== undefined && (
-                      <span className={styles.count}>{collectionFilter.count(COLLECTION_ENTITY_TYPES[m.key], stats[m.key])}</span>
-                    )}
-                  </NavLink>
-                ))}
-                {extraItems.map((e) => (
-                  <NavLink key={e.key} to={`${base}/${e.path}`} className={styles.link} title={tip(e.label)} {...navProps}>
-                    <e.icon aria-hidden />
-                    <span className={styles.label}>{e.label}</span>
-                    {extraCounts[e.key] !== undefined && <span className={styles.count}>{extraCounts[e.key]}</span>}
-                  </NavLink>
-                ))}
-                {modItems.map((m) => (
-                  <NavLink key={m.id} to={`${base}/${m.basePath}`} className={styles.link} title={tip(m.plural || m.label)} {...navProps}>
-                    <m.Icon aria-hidden />
-                    <span className={styles.label}>{m.plural || m.label}</span>
-                    {m.fields && modTypeCount(m) !== undefined && <span className={styles.count}>{modTypeCount(m)}</span>}
-                  </NavLink>
-                ))}
-              </nav>
-            );
-          })}
+          {sections.map(({ key, label, items }) => (
+            <nav key={key} aria-label={label} className={styles.section}>
+              <p className={styles.sectionLabel}>{label}</p>
+              {items.map((item) => (
+                // Sur une autre page du module (ex. Scènes), seule celle-ci est mise en avant
+                <NavLink
+                  key={item.key}
+                  to={item.to}
+                  end={item.subPaths?.some((p) => pathname.startsWith(p))}
+                  className={cx(styles.link, item.child && styles.child)}
+                  title={tip(item.label)}
+                  {...navProps}
+                >
+                  <item.icon aria-hidden />
+                  <span className={styles.label}>{item.label}</span>
+                  {item.count !== undefined && <span className={styles.count}>{item.count}</span>}
+                </NavLink>
+              ))}
+            </nav>
+          ))}
 
           {references.length > 0 && (
             <details

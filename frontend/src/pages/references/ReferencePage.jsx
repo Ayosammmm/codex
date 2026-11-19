@@ -101,7 +101,6 @@ export default function ReferencePage({ referenceKey }) {
         <>
           <p className={styles.count}>
             {plural(list.length, 'élément')}
-            {isAdmin && ' · Les flèches règlent l’ordre d’affichage dans les listes, les tris et les regroupements.'}
           </p>
           <ol className={styles.list}>
             {list.map((item, index) => {

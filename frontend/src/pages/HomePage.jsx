@@ -32,7 +32,7 @@ export default function HomePage() {
       <main className={styles.main}>
         <div className={styles.top}>
           <div>
-            <h1 className={styles.title}>Vos univers</h1>
+            <h1 className={styles.title}>Tous vos univers</h1>
             <p className={styles.subtitle}>
               {isPending || error ? 'Encyclopédies de mondes fictifs… ou réels.' : universes.length ? plural(universes.length, 'univers', 'univers') : 'Aucun univers pour le moment.'}
             </p>

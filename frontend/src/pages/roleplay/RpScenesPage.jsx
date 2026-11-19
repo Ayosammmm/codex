@@ -75,8 +75,7 @@ export default function RpScenesPage() {
         <div className={styles.sceneHeaderText}>
           <h1 className={page.title}>Scènes</h1>
           <p className={page.lead}>
-            Les moments du roleplay, regroupés et rattachables aux épisodes. Une scène peut aussi être écrite hors roleplay : remake d’une
-            scène iconique, scène d’avant le RP…
+            Les moments du roleplay, et des morceaux d'histoires que vous pouvez lire et revivre.
           </p>
         </div>
         {canCreate && places.length > 0 && (
@@ -182,8 +181,8 @@ function NewSceneDialog({ placeOptions, defaultPlaceId, episodeOptions, pending,
       <Segmented label="Sorte de scène" options={KINDS} value={kind} onChange={setKind} />
       <p className={styles.meta}>
         {kind === 'standalone'
-          ? 'Remake d’une scène iconique, scène d’avant le roleplay… Elle s’écrit directement dans sa page, message par message, sans apparaître dans le fil du lieu.'
-          : 'Ses messages viennent du fil du lieu : ouvrez-le, puis « Éditeur de scènes » pour les sélectionner et les ajouter à la scène.'}
+          ? 'Vous pourrez écrire les dialogues et éléments pour cette scène après l\'avoir créée.'
+          : 'Sélectionnez les messages dans le lieu concerné par le roleplay afin d\'enregistrer votre scène.'}
       </p>
       <Field label="Titre" required>
         {(props) => <Input {...props} value={title} autoFocus maxLength={255} onChange={(e) => setTitle(e.target.value)} placeholder="Ex. L’arrivée du Corsaire" />}

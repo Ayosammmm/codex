@@ -65,6 +65,11 @@
   font-size: 1.25rem;
 }
 
+.sectionHint {
+  font-weight: 400;
+  color: var(--fg-muted);
+}
+
 .modules {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));

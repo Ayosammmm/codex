@@ -1,4 +1,5 @@
 import { createBrowserRouter } from 'react-router';
+import AppRoot from '@/pages/AppRoot';
 import HomePage from '@/pages/HomePage';
 import CreateUniversePage from '@/pages/CreateUniversePage';
 import UniverseLayout from '@/pages/UniverseLayout';
@@ -44,7 +45,7 @@ import { AdminOnly, RequireAuth, SuperAdminOnly } from '@/auth/RequireAuth';
 import ModsAdminPage from '@/mods/ModsAdminPage';
 import { CustomEntityEditPage, CustomEntityPage, ModSectionPage } from '@/mods/CustomEntityPages';
 
-export const router = createBrowserRouter([
+export const router = createBrowserRouter([{ element: <AppRoot />, children: [
   { path: '/connexion', element: <LoginPage /> },
   {
     // Tout le reste demande une connexion
@@ -119,4 +120,4 @@ export const router = createBrowserRouter([
   { path: '*', element: <NotFoundPage /> },
     ],
   },
-]);
+]}]);

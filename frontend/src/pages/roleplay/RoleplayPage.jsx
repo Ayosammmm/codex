@@ -64,7 +64,7 @@ export default function RoleplayPage() {
     <main className={`${page.main} ${page.mainSpaced}`}>
       <h1 className={page.title}>Roleplay</h1>
       <p className={page.lead}>
-        Un fil par lieu, où l’on écrit au nom de ses personnages. Les messages peuvent ensuite être regroupés en scènes, rattachables aux épisodes.
+        Un fil par lieu, où l’on peut faire évoluer nos personnages et créer des histoires. Les messages peuvent ensuite être regroupés en scènes, rattachables aux épisodes.
       </p>
 
       {isPending ? (

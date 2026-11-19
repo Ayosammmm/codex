@@ -1,8 +1,9 @@
 import { useMemo, useState } from 'react';
 import { Link, useOutletContext } from 'react-router';
 import { ArrowRight, Settings, Shuffle } from '@/components/ui/icons';
-import { useEntityList, useUniverses } from '@/api/queries';
-import { getModulesState, getNavModules, isModuleEnabled } from '@/config/modules';
+import { useEntityList } from '@/api/queries';
+import { getModulesState, isModuleEnabled } from '@/config/modules';
+import { useUniverseNav } from '@/components/layout/useUniverseNav';
 import { CharacterGallery } from '@/components/characters/CharacterViews';
 import { GroupGallery } from '@/components/groups/GroupViews';
 import { PlaceGallery } from '@/components/places/PlaceViews';
@@ -16,17 +17,21 @@ import styles from './UniverseHomePage.module.scss';
 import { usePermissions } from '@/auth/auth';
 import { newSeed, sample } from '@/utils/random';
 
+/** Sous-titre des sections de navigation, propre à l'accueil. */
+const SECTION_HINTS = {
+  encyclopedia: 'Toutes les entités enregistrées',
+  games: 'Amusez-vous avec ces entités',
+};
+
 /** Nombre de cartes tirées au hasard par section. */
 const DISCOVER_COUNT = { characters: 5, groups: 4, places: 4 };
 
-/** Accueil d'un univers : présentation et accès rapide aux modules actifs. */
+/** Accueil d'un univers : présentation et accès rapide aux pages de la navigation (modules et mods actifs). */
 export default function UniverseHomePage() {
   const { universe } = useOutletContext();
   const { isAdmin } = usePermissions();
-  const { data: universes } = useUniverses();
-  const stats = universes?.find((u) => u.id === universe.id)?.stats || {};
   const modulesState = getModulesState(universe);
-  const modules = getNavModules(modulesState);
+  const sections = useUniverseNav(universe);
 
   return (
     <main className={styles.main}>
@@ -50,20 +55,28 @@ export default function UniverseHomePage() {
 
       <Discover universe={universe} groupsOn={isModuleEnabled(modulesState, 'groups')} />
 
-      <h2 className={styles.sectionTitle}>Contenu de l’univers</h2>
-      <ul className={styles.modules}>
-        {modules.map((m) => (
-          <li key={m.key}>
-            <Link to={universePath(universe, m.path)} className={styles.module}>
-              <span className={styles.moduleIcon}>
-                <m.icon aria-hidden />
-              </span>
-              <p className={styles.moduleLabel}>{m.navLabel || m.label}</p>
-              {stats[m.key] !== undefined && <p className={styles.moduleCount}>{stats[m.key]}</p>}
-            </Link>
-          </li>
-        ))}
-      </ul>
+      {/* Mêmes sections que la barre latérale : Encyclopédie, Jeux */}
+      {sections.map(({ key, label, items }) => (
+        <section key={key} aria-labelledby={`home-${key}`}>
+          <h2 id={`home-${key}`} className={styles.sectionTitle}>
+            {label}
+            {SECTION_HINTS[key] && <span className={styles.sectionHint}> – {SECTION_HINTS[key]}</span>}
+          </h2>
+          <ul className={styles.modules}>
+            {items.map((item) => (
+              <li key={item.key}>
+                <Link to={item.to} className={styles.module}>
+                  <span className={styles.moduleIcon}>
+                    <item.icon aria-hidden />
+                  </span>
+                  <p className={styles.moduleLabel}>{item.label}</p>
+                  {item.count !== undefined && <p className={styles.moduleCount}>{item.count}</p>}
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </section>
+      ))}
     </main>
   );
 }

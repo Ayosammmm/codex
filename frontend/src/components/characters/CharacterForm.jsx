@@ -85,7 +85,7 @@ export function CharacterForm({ universe, character, state, refs, modules, error
   return (
     <div className={styles.layout}>
       <div className={styles.sections}>
-        <FormSection id="identite" title="Identité" description="Au moins un prénom ou un nom est requis.">
+        <FormSection id="identite" title="Identité">
           <div className={styles.identity}>
             <ImagePicker
               label="Avatar"
@@ -119,7 +119,7 @@ export function CharacterForm({ universe, character, state, refs, modules, error
           </div>
         </FormSection>
 
-        <FormSection id="classification" title="Classification" description="Valeurs issues des référentiels de l’univers.">
+        <FormSection id="classification" title="Classification" description="Les valeurs ici sont issues des référentiels de l’univers.">
           <div className={styles.fields}>
             {referenceSelect('sexe_id', 'Genre', refs.genders, 'genres', 'genres')}
             {referenceSelect('statut_id', 'Statut', refs.statuses, 'statuts', 'statuts')}
@@ -162,7 +162,7 @@ export function CharacterForm({ universe, character, state, refs, modules, error
         </FormSection>
 
         {modules.personality && (
-          <FormSection id="personnalite" title="Personnalité" description="L’évolution du personnage, puis les 24 forces de caractère et leurs faiblesses, regroupées en 6 vertus.">
+          <FormSection id="personnalite" title="Personnalité" description="Le caractère du personnage, définis par 24 forces de caractère regroupés en 6 vertues">
             <DevelopmentField
               value={form.development}
               note={form.developmentNote}
@@ -174,7 +174,7 @@ export function CharacterForm({ universe, character, state, refs, modules, error
         )}
 
         {modules.relations && (
-          <FormSection id="relations" title="Relations" description="Les liens avec les autres personnages. Ils apparaissent sur les deux fiches.">
+          <FormSection id="relations" title="Relations" description="Les liens avec les autres personnages. Ils peuvent être plus ou moins forts.">
             <RelationsField
               value={form.relations}
               onChange={(relations) => update({ relations })}
@@ -187,7 +187,7 @@ export function CharacterForm({ universe, character, state, refs, modules, error
           </FormSection>
         )}
 
-        <FormSection id="apparence" title="Apparence" description="Les couleurs et le fond de la fiche du personnage. Une couleur laissée vide reprend celle de l’univers.">
+        <FormSection id="apparence" title="Apparence" description="Les couleurs correspondant au personnage.">
           <div className={styles.colors}>
             {COLOR_ROLES.map((role) => (
               <Field key={role.key} label={role.label} hint={role.hint}>
