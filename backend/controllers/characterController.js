@@ -15,16 +15,21 @@ const { deleteUpload } = require("../services/universeTransfer");
 const { imageHandlers } = require("../utils/entityImages");
 const { cleanColors } = require("../utils/colors");
 
-// Relations entre personnages : nature (texte), archétype, intensité, ton, évolution
-const RELATION_ATTRIBUTES = ["relation_type", "category", "intensity", "tone", "evolving"];
+// Relations entre personnages : nature, rôles, archétype, intensité, ton, évolution
+// (character1_id : pour savoir qui tient le premier rôle, voir normalizeRelations)
+const RELATION_ATTRIBUTES = ["character1_id", "relation_type", "lead", "category", "intensity", "tone", "evolving"];
 const RELATION_CATEGORIES = ["familiale", "amoureuse", "amicale", "hierarchique", "rivalite", "inimitie", "autre"];
 const clampInt = (v, min, max) => {
   const n = parseInt(v, 10);
   return Number.isFinite(n) ? Math.min(max, Math.max(min, n)) : null;
 };
-/** Champs d'une relation envoyée par le client, nettoyés. */
+/**
+ * Champs d'une relation envoyée par le client, nettoyés. Elle est toujours enregistrée
+ * avec le personnage modifié en character1 : `lead` ('self' | 'other') dit qui tient le premier rôle.
+ */
 const relationFields = (relation) => ({
   relation_type: String(relation.relationType).trim().slice(0, 255),
+  lead: relation.lead === "self" ? 1 : relation.lead === "other" ? 2 : null,
   category: RELATION_CATEGORIES.includes(relation.category) ? relation.category : null,
   intensity: relation.intensity == null || relation.intensity === "" ? null : clampInt(relation.intensity, 1, 5),
   tone: relation.tone == null || relation.tone === "" ? null : clampInt(relation.tone, -2, 2),
@@ -97,24 +102,17 @@ const normalizeRelations = (character) => {
   const characterData = character.toJSON ? character.toJSON() : character;
   const relations = [];
   
-  // Relations où ce personnage est character1
-  if (characterData.relatedCharacters && Array.isArray(characterData.relatedCharacters)) {
-    characterData.relatedCharacters.forEach((rel) => {
-      relations.push({
-        ...rel,
-        CharacterRelation: rel.CharacterRelation,
-      });
-    });
-  }
-  
-  // Relations où ce personnage est character2
-  if (characterData.relatedToCharacters && Array.isArray(characterData.relatedToCharacters)) {
-    characterData.relatedToCharacters.forEach((rel) => {
-      relations.push({
-        ...rel,
-        CharacterRelation: rel.CharacterRelation,
-      });
-    });
+  // lead_id : personnage qui tient le premier rôle (Parent dans Parent / Enfant), ou null
+  const withLead = (link, otherId) => {
+    if (!link) return link;
+    const { character1_id, lead, ...rest } = link;
+    const character2Id = character1_id === characterData.id ? otherId : characterData.id;
+    return { ...rest, lead_id: lead === 1 ? character1_id : lead === 2 ? character2Id : null };
+  };
+
+  // Relations où ce personnage est character1, puis celles où il est character2
+  for (const rel of [...(characterData.relatedCharacters || []), ...(characterData.relatedToCharacters || [])]) {
+    relations.push({ ...rel, CharacterRelation: withLead(rel.CharacterRelation, rel.id) });
   }
   
   // Remplacer relatedCharacters par la liste combinée

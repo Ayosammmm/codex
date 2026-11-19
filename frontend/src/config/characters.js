@@ -74,18 +74,91 @@ export const TRAIT_MIN = -10;
 export const TRAIT_MAX = 10;
 
 // --- Relations (notes Obsidian « Relations ») ---
-// Archétypes, chacun avec des natures suggérées (la nature reste un texte libre).
+// Archétypes : regroupent les natures ; servent aussi à la détection des dynamiques.
 export const RELATION_CATEGORIES = [
-  { value: 'familiale', label: 'Familiale', color: '#a855f7', suggestions: ['Parent / Enfant', 'Frères et sœurs', 'Cousins', 'Famille adoptive', 'Mère protectrice', 'Père abusif', 'Enfant en rébellion'] },
-  { value: 'amoureuse', label: 'Amoureuse', color: '#ec4899', suggestions: ['Couple', 'Fiançailles', 'Amour secret', 'Amour à sens unique', 'Ex'] },
-  { value: 'amicale', label: 'Amicale', color: '#22c55e', suggestions: ['Amitié', 'Meilleurs amis', 'Amis d’enfance', 'Compagnons d’armes'] },
-  { value: 'hierarchique', label: 'Hiérarchique', color: '#3b82f6', suggestions: ['Mentor / Élève', 'Supérieur / Subordonné', 'Maître / Serviteur', 'Camarades', 'Emprise'] },
-  { value: 'rivalite', label: 'Rivalité', color: '#f59e0b', suggestions: ['Rivalité', 'Rivalité amicale', 'Concurrence', 'Reflet inversé'] },
-  { value: 'inimitie', label: 'Inimitié', color: '#ef4444', suggestions: ['Ennemis', 'Ennemi juré', 'Vengeance', 'Méfiance'] },
-  { value: 'autre', label: 'Autre', color: '#94a3b8', suggestions: ['Connaissance', 'Client', 'Allié de circonstance', 'Dette'] },
+  { value: 'familiale', label: 'Familiale', color: '#a855f7' },
+  { value: 'amoureuse', label: 'Amoureuse', color: '#ec4899' },
+  { value: 'amicale', label: 'Amicale', color: '#22c55e' },
+  { value: 'hierarchique', label: 'Hiérarchique', color: '#3b82f6' },
+  { value: 'rivalite', label: 'Rivalité', color: '#f59e0b' },
+  { value: 'inimitie', label: 'Inimitié', color: '#ef4444' },
+  { value: 'autre', label: 'Autre', color: '#94a3b8' },
 ];
 export const relationCategory = (value) => RELATION_CATEGORIES.find((c) => c.value === value);
-export const RELATION_SUGGESTIONS = RELATION_CATEGORIES.flatMap((c) => c.suggestions);
+
+/**
+ * Natures de relation (liste fermée ; positif ou négatif, c'est le ton qui le dit).
+ * - key     : valeur enregistrée (`relation_type`)
+ * - roles   : [rôle A, rôle B] si chacun a sa place (qui est le parent, qui est l'enfant) ;
+ *             absent = relation réciproque (les deux ont le même rôle)
+ * - aliases : anciens libellés libres reconnus (relations saisies avant la liste fermée)
+ */
+export const RELATION_NATURES = [
+  // Familiale
+  { key: 'parent', category: 'familiale', label: 'Parent / Enfant', roles: ['Parent', 'Enfant'],
+    aliases: ['Père / Fils', 'Père / Fille', 'Mère / Fils', 'Mère / Fille', 'Mère protectrice', 'Père abusif', 'Enfant en rébellion'] },
+  { key: 'adoption', category: 'familiale', label: 'Parent adoptif / Enfant adopté', roles: ['Parent adoptif', 'Enfant adopté'], aliases: ['Famille adoptive'] },
+  { key: 'grandparent', category: 'familiale', label: 'Grand-parent / Petit-enfant', roles: ['Grand-parent', 'Petit-enfant'] },
+  { key: 'uncle', category: 'familiale', label: 'Oncle ou tante / Neveu ou nièce', roles: ['Oncle ou tante', 'Neveu ou nièce'] },
+  { key: 'siblings', category: 'familiale', label: 'Frères et sœurs' },
+  { key: 'twins', category: 'familiale', label: 'Jumeaux' },
+  { key: 'cousins', category: 'familiale', label: 'Cousins' },
+  { key: 'in-laws', category: 'familiale', label: 'Belle-famille' },
+  // Amoureuse
+  { key: 'couple', category: 'amoureuse', label: 'Couple' },
+  { key: 'engaged', category: 'amoureuse', label: 'Fiancés', aliases: ['Fiançailles'] },
+  { key: 'married', category: 'amoureuse', label: 'Mariés' },
+  { key: 'crush', category: 'amoureuse', label: 'Crush mutuel' },
+  { key: 'unrequited', category: 'amoureuse', label: 'Amour à sens unique', roles: ['Amoureux', 'Aimé'] },
+  { key: 'secret-love', category: 'amoureuse', label: 'Amour secret' },
+  { key: 'ex', category: 'amoureuse', label: 'Ex' },
+  // Amicale
+  { key: 'friends', category: 'amicale', label: 'Amitié' },
+  { key: 'best-friends', category: 'amicale', label: 'Meilleurs amis' },
+  { key: 'childhood-friends', category: 'amicale', label: 'Amis d’enfance' },
+  { key: 'comrades', category: 'amicale', label: 'Compagnons d’armes', aliases: ['Camarades'] },
+  // Hiérarchique
+  { key: 'mentor', category: 'hierarchique', label: 'Mentor / Élève', roles: ['Mentor', 'Élève'] },
+  { key: 'superior', category: 'hierarchique', label: 'Supérieur / Subordonné', roles: ['Supérieur', 'Subordonné'] },
+  { key: 'master', category: 'hierarchique', label: 'Maître / Serviteur', roles: ['Maître', 'Serviteur'] },
+  { key: 'protector', category: 'hierarchique', label: 'Protecteur / Protégé', roles: ['Protecteur', 'Protégé'] },
+  { key: 'hold', category: 'hierarchique', label: 'Emprise', roles: ['A l’ascendant', 'Sous emprise'] },
+  // Rivalité
+  { key: 'rivals', category: 'rivalite', label: 'Rivalité', aliases: ['Rivalité amicale'] },
+  { key: 'competition', category: 'rivalite', label: 'Concurrence' },
+  { key: 'mirror', category: 'rivalite', label: 'Reflet inversé' },
+  // Inimitié
+  { key: 'enemies', category: 'inimitie', label: 'Ennemis', aliases: ['Ennemi juré'] },
+  { key: 'revenge', category: 'inimitie', label: 'Vengeance', roles: ['Vengeur', 'Cible'] },
+  { key: 'hunt', category: 'inimitie', label: 'Traque', roles: ['Chasseur', 'Proie'] },
+  { key: 'distrust', category: 'inimitie', label: 'Méfiance' },
+  // Autre
+  { key: 'acquaintance', category: 'autre', label: 'Connaissance' },
+  { key: 'allies', category: 'autre', label: 'Alliés de circonstance', aliases: ['Allié de circonstance'] },
+  { key: 'client', category: 'autre', label: 'Client / Prestataire', roles: ['Client', 'Prestataire'], aliases: ['Client'] },
+  { key: 'debt', category: 'autre', label: 'Créancier / Débiteur', roles: ['Créancier', 'Débiteur'], aliases: ['Dette'] },
+];
+
+const simplify = (text = '') => text.normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[’']/g, "'").trim().toLowerCase();
+const NATURES_BY_NAME = new Map(
+  RELATION_NATURES.flatMap((n) => [n.key, n.label, ...(n.aliases || [])].map((name) => [simplify(name), n])),
+);
+/** Nature d'une relation (clé enregistrée, ou ancien libellé libre reconnu) ; undefined si inconnue. */
+export const relationNature = (value) => (value ? NATURES_BY_NAME.get(simplify(value)) : undefined);
+
+/**
+ * Rôle d'un personnage dans une relation (« Parent », « Enfant »…), ou null
+ * (relation réciproque, ou on ne sait pas encore qui est qui).
+ * `link` : { relation_type, lead_id } — `lead_id` : personnage qui tient le premier rôle.
+ */
+export function relationRole(link, characterId) {
+  const nature = relationNature(link?.relation_type);
+  if (!nature?.roles || link.lead_id == null) return null;
+  return nature.roles[link.lead_id === characterId ? 0 : 1];
+}
+
+/** Libellé d'une relation : nature connue, sinon le texte enregistré tel quel. */
+export const relationLabel = (link) => relationNature(link?.relation_type)?.label || link?.relation_type || '';
 
 /** Ton du lien, de très négatif à très positif. */
 export const RELATION_TONES = [

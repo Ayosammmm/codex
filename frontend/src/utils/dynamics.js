@@ -13,6 +13,8 @@
  * tous liés positivement), les disciples rivaux et les groupes divisés.
  */
 
+import { relationNature } from '@/config/characters';
+
 export const DYNAMIC_TYPES = [
   { key: 'triangle', label: 'Triangle amoureux', color: '#ec4899', description: 'Un personnage lié sentimentalement à deux autres, qui ne le sont pas entre eux.' },
   { key: 'band', label: 'Bande soudée', color: '#16a34a', description: 'Au moins quatre personnages tous liés positivement les uns aux autres.' },
@@ -29,18 +31,23 @@ const POSITIVE = new Set(['amicale', 'amoureuse', 'familiale']);
 const NEGATIVE = new Set(['rivalite', 'inimitie']);
 const ROMANTIC_NATURE = /couple|amour|amant|fianc|mari|épou|epou|\bex\b/i;
 
+/** Archétype d'une relation : celui de sa nature, sinon celui enregistré. */
+const categoryOf = (link) => relationNature(link.relation_type)?.category || link.category;
+
 /** Signe d'une relation : +1, -1 ou 0. */
 export function relationSign(link) {
   if (link.tone > 0) return 1;
   if (link.tone < 0) return -1;
   if (link.tone === 0) return 0;
-  if (POSITIVE.has(link.category)) return 1;
-  if (NEGATIVE.has(link.category)) return -1;
+  if (POSITIVE.has(categoryOf(link))) return 1;
+  if (NEGATIVE.has(categoryOf(link))) return -1;
   return 0;
 }
 
-const isRomantic = (link) => link.category === 'amoureuse' || (!link.category && ROMANTIC_NATURE.test(link.relation_type || ''));
-const isHierarchical = (link) => link.category === 'hierarchique';
+const isRomantic = (link) => categoryOf(link) === 'amoureuse' || (!categoryOf(link) && ROMANTIC_NATURE.test(link.relation_type || ''));
+const isHierarchical = (link) => categoryOf(link) === 'hierarchique';
+/** `id` est-il au-dessus dans ce lien hiérarchique (Mentor, Supérieur…) ? Rôles non précisés : on l'admet. */
+const isAbove = (link, id) => link.lead_id == null || !relationNature(link.relation_type)?.roles || link.lead_id === id;
 
 const pairKey = (a, b) => (a < b ? `${a}-${b}` : `${b}-${a}`);
 
@@ -133,7 +140,8 @@ export function detectDynamics(characters, groups = []) {
         if (!link(a, b) || !isRomantic(link(a, b))) add('triangle', [x, a, b], x);
       }
     }
-    const hierarchical = [...graph.get(x)].filter(([, l]) => isHierarchical(l)).map(([id]) => id);
+    // Disciples : personnages sous x (x est leur mentor, leur supérieur…)
+    const hierarchical = [...graph.get(x)].filter(([, l]) => isHierarchical(l) && isAbove(l, x)).map(([id]) => id);
     for (let i = 0; i < hierarchical.length; i++) {
       for (let j = i + 1; j < hierarchical.length; j++) {
         const [a, b] = [hierarchical[i], hierarchical[j]];

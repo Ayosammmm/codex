@@ -22,10 +22,17 @@ const CharacterRelation = sequelize.define('CharacterRelation', {
     onUpdate: 'CASCADE',
     onDelete: 'CASCADE',
   },
-  // Nature de la relation, en texte libre (« Mentor / Élève », « Ex »...)
+  // Nature de la relation : clé de la liste fermée (frontend/src/config/characters.js, RELATION_NATURES),
+  // ou ancien libellé libre (« Mentor / Élève »...) pour les relations saisies avant
   relation_type: {
     type: DataTypes.STRING,
     allowNull: false,
+  },
+  // Natures à deux rôles (Parent / Enfant...) : qui tient le premier rôle — 1 : character1, 2 : character2,
+  // null : relation réciproque ou pas encore précisé
+  lead: {
+    type: DataTypes.TINYINT,
+    allowNull: true,
   },
   // Archétype : familiale, amoureuse, amicale, hierarchique, rivalite, inimitie, autre
   category: {

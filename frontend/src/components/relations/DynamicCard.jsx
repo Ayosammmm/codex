@@ -1,5 +1,5 @@
 import { Link } from 'react-router';
-import { characterName, relationTone } from '@/config/characters';
+import { characterName, relationLabel, relationRole, relationTone } from '@/config/characters';
 import { CharacterAvatar } from '@/components/characters/CharacterAvatar';
 import { cx } from '@/components/ui/cx';
 import { dynamicType } from '@/utils/dynamics';
@@ -62,13 +62,18 @@ export function DynamicCard({ universe, dynamic: d, byId, compact = false }) {
           <ul className={styles.links}>
             {d.links.map(({ a, b, link }) => {
               const tone = relationTone(link.tone);
+              // Nature à deux rôles : « Alice (Parent) — Bob (Enfant) »
+              const named = (id) => {
+                const role = relationRole(link, id);
+                return role ? `${characterName(byId.get(id))} (${role})` : characterName(byId.get(id));
+              };
               return (
                 <li key={`${a}-${b}`} className={styles.link} data-sign={link.sign > 0 ? 'positive' : link.sign < 0 ? 'negative' : 'neutral'}>
                   <span className={styles.pair}>
-                    {characterName(byId.get(a))} — {characterName(byId.get(b))}
+                    {named(a)} — {named(b)}
                   </span>
                   <span className={styles.nature}>
-                    {[link.relation_type, tone?.label].filter(Boolean).join(' · ')}
+                    {[relationLabel(link), tone?.label].filter(Boolean).join(' · ')}
                   </span>
                 </li>
               );

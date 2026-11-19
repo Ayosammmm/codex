@@ -181,6 +181,7 @@ export function CharacterForm({ universe, character, state, refs, modules, error
               characterOptions={refs.characters}
               charactersById={charactersById}
               selfId={character?.id}
+              selfName={form.firstname.trim() || form.name.trim() ? characterName(form) : 'Ce personnage'}
               errors={errors}
               newKey={state.newRelationKey}
             />

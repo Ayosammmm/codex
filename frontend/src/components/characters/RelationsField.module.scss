@@ -105,8 +105,22 @@
   font-weight: 600;
 }
 
-.nature {
-  min-width: 0;
+// Pastille d'un choix obligatoire non fait (nature, rôles)
+.pillInvalid {
+  border-color: color-mix(in oklab, var(--danger) 60%, var(--border));
+}
+
+.hint,
+.legacy {
+  font-size: 0.8125rem;
+  color: var(--fg-muted);
+}
+
+// Nature saisie avant la liste fermée
+.legacy {
+  padding: space(2) space(3);
+  border-radius: var(--r-sm);
+  background: color-mix(in oklab, var(--warning, #f59e0b) 12%, var(--surface));
 }
 
 .details {

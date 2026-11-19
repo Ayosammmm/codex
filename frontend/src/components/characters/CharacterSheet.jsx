@@ -8,6 +8,8 @@ import {
   TRAIT_MAX,
   characterName,
   developmentType,
+  relationLabel,
+  relationRole,
   relationTone,
 } from '@/config/characters';
 import { groupRoles, memberRole, roleName } from '@/config/groups';
@@ -159,7 +161,7 @@ export function CharacterSheet({ universe, character: c, modules, actions, stori
                     <CharacterAvatar character={r} round className={styles.relationAvatar} />
                     <span className={styles.relationText}>
                       <span className={styles.relationName}>{characterName(r)}</span>
-                      <RelationDetails link={r.link} />
+                      <RelationDetails link={r.link} otherId={r.id} />
                     </span>
                   </Link>
                 </li>
@@ -199,12 +201,21 @@ export function CharacterSheet({ universe, character: c, modules, actions, stori
   );
 }
 
-/** Nature, ton et évolution d'une relation (l'archétype ne s'affiche pas sur la fiche). */
-function RelationDetails({ link }) {
+/**
+ * Nature, ton et évolution d'une relation (l'archétype ne s'affiche pas sur la fiche).
+ * Nature à deux rôles : on affiche celui de l'autre personnage (« Parent » : il est le parent de celui-ci).
+ */
+function RelationDetails({ link, otherId }) {
   const tone = relationTone(link.tone);
+  const label = relationLabel(link);
+  const role = relationRole(link, otherId);
   return (
     <>
-      {link.relation_type && <span className={styles.relationType}>{link.relation_type}</span>}
+      {label && (
+        <span className={styles.relationType} title={role ? label : undefined}>
+          {role || label}
+        </span>
+      )}
       {(tone || link.evolving) && (
         <span className={styles.relationMeta}>
           {tone && (

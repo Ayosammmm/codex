@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react';
-import { TRAIT_KEYS } from '@/config/characters';
+import { TRAIT_KEYS, relationNature } from '@/config/characters';
 import { groupRoles, memberRole } from '@/config/groups';
 
 let rowId = 0;
@@ -26,14 +26,21 @@ const toFormState = (c) => ({
   placeIds: c?.places?.map((p) => p.id) || [],
   relations: (c?.relatedCharacters || [])
     .filter((r) => r.id && r.CharacterRelation?.relation_type)
-    .map((r) => ({
-      key: nextRowId(),
-      characterId: r.id,
-      relationType: r.CharacterRelation.relation_type,
-      category: r.CharacterRelation.category || '',
-      tone: r.CharacterRelation.tone ?? null,
-      evolving: Boolean(r.CharacterRelation.evolving),
-    })),
+    .map((r) => {
+      const link = r.CharacterRelation;
+      // Ancien libellé libre reconnu : remplacé par la nature correspondante
+      const nature = relationNature(link.relation_type);
+      return {
+        key: nextRowId(),
+        characterId: r.id,
+        relationType: nature?.key || link.relation_type,
+        category: nature?.category || link.category || '',
+        // Qui tient le premier rôle (Parent dans Parent / Enfant) : ce personnage ('self') ou l'autre ('other')
+        lead: !nature?.roles || link.lead_id == null ? null : link.lead_id === r.id ? 'other' : 'self',
+        tone: link.tone ?? null,
+        evolving: Boolean(link.evolving),
+      };
+    }),
   traits: Object.fromEntries(TRAIT_KEYS.map((k) => [k, c?.[k] ?? null])),
   development: c?.development || '',
   developmentNote: c?.developmentNote || '',
@@ -67,7 +74,11 @@ export function useCharacterForm(character) {
     if (!form.firstname.trim() && !form.name.trim()) errors.identity = 'Indiquez au moins un prénom ou un nom.';
     if (form.age !== '' && (!/^\d+$/.test(form.age) || Number(form.age) > 1_000_000)) errors.age = 'L’âge doit être un nombre entier positif.';
     form.relations.forEach((r, i) => {
-      if (r.characterId && !r.relationType.trim()) errors[`relation-${i}`] = 'Précisez la nature de la relation.';
+      if (!r.characterId) return;
+      const nature = relationNature(r.relationType);
+      if (!r.relationType.trim()) errors[`relation-${i}`] = 'Précisez la nature de la relation.';
+      else if (!nature) errors[`relation-${i}`] = 'Choisissez une nature dans la liste.';
+      else if (nature.roles && !r.lead) errors[`relation-${i}`] = `Précisez qui est « ${nature.roles[0]} » et qui est « ${nature.roles[1]} ».`;
     });
     return errors;
   };
@@ -96,13 +107,17 @@ export function useCharacterForm(character) {
     if (modules.relations) {
       values.relations = form.relations
         .filter((r) => r.characterId && r.relationType.trim())
-        .map((r) => ({
-          characterId: r.characterId,
-          relationType: r.relationType.trim(),
-          category: r.category || null,
-          tone: r.tone,
-          evolving: r.evolving,
-        }));
+        .map((r) => {
+          const nature = relationNature(r.relationType);
+          return {
+            characterId: r.characterId,
+            relationType: nature?.key || r.relationType.trim(),
+            category: nature?.category || r.category || null,
+            lead: nature?.roles ? r.lead : null,
+            tone: r.tone,
+            evolving: r.evolving,
+          };
+        });
     }
     if (modules.personality) {
       Object.assign(values, form.traits);
