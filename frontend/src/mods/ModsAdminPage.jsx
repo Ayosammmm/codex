@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router';
-import { ArrowLeft, CircleAlert, Puzzle, Trash2, Upload } from '@/components/ui/icons';
+import { ArrowLeft, BookOpen, CircleAlert, Puzzle, Trash2, Upload } from '@/components/ui/icons';
 import { useInstallMod, useMods, useRemoveMod } from '@/api/mods';
 import { AppHeader } from '@/components/layout/AppHeader';
 import { Button } from '@/components/ui/Button';
@@ -108,9 +108,14 @@ export default function ModsAdminPage() {
           onDrop={onDrop}
         >
           <p className={styles.note}>Déposez l’archive .zip d’un mod ici. Un mod déjà installé (même « id ») est mis à jour ; ses données sont conservées.</p>
-          <Button variant="primary" icon={Upload} loading={install.isPending} onClick={() => inputRef.current?.click()}>
-            Installer un mod
-          </Button>
+          <div className={styles.dropzoneActions}>
+            <Button variant="primary" icon={Upload} loading={install.isPending} onClick={() => inputRef.current?.click()}>
+              Installer un mod
+            </Button>
+            <Button as={Link} to="/mods/documentation" variant="ghost" icon={BookOpen}>
+              Créer un mod
+            </Button>
+          </div>
           <input
             ref={inputRef}
             type="file"
@@ -167,9 +172,12 @@ export default function ModsAdminPage() {
             Une archive .zip avec un <code>manifest.json</code> à la racine (ou dans un unique dossier). Les types de fiches et les champs
             sont affichés par Codex lui-même ; les pages (<code>entry</code>, fichier .html du mod) s’ouvrent dans une zone isolée et
             utilisent le SDK <code>/mod-files/codex-sdk.js</code>. Types de champs : text, richtext, number, boolean, date, select,
-            multiselect, color, url, ref. Documentation complète : note Obsidian « Modding ».
+            multiselect, color, url, ref.
           </p>
           <pre>{MANIFEST_EXAMPLE}</pre>
+          <Button as={Link} to="/mods/documentation" icon={BookOpen}>
+            Documentation complète
+          </Button>
         </section>
       </main>
 

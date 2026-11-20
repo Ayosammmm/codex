@@ -1,0 +1,296 @@
+// Documentation des mods (/mods/documentation) : sommaire collant + colonne de lecture
+@use '@/styles/mixins' as *;
+
+.layout {
+  display: grid;
+  gap: space(6);
+
+  @include up(lg) {
+    grid-template-columns: 12rem minmax(0, 1fr);
+    gap: space(12);
+  }
+}
+
+// --- Sommaire ---------------------------------------------------------------
+.toc {
+  font-size: 0.875rem;
+
+  ol {
+    display: flex;
+    flex-wrap: wrap;
+    gap: space(2);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  a {
+    display: block;
+    padding: space(1) space(3);
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    color: var(--fg-muted);
+
+    &:hover {
+      color: var(--fg);
+    }
+  }
+
+  @include up(lg) {
+    position: sticky;
+    top: space(20); // sous l'en-tête collant (3,5rem)
+    align-self: start;
+
+    ol {
+      flex-direction: column;
+      flex-wrap: nowrap;
+      gap: 0;
+      border-left: 1px solid var(--border);
+    }
+
+    a {
+      margin-left: -1px;
+      border: 0;
+      border-left: 2px solid transparent;
+      border-radius: 0;
+    }
+  }
+}
+
+.toc a.tocActive {
+  border-color: var(--primary);
+  color: var(--primary);
+  font-weight: 500;
+}
+
+// --- Contenu ----------------------------------------------------------------
+.content {
+  min-width: 0;
+  max-width: 48rem;
+
+  section {
+    padding-top: space(10);
+    scroll-margin-top: space(4);
+  }
+
+  h2 {
+    margin: 0 0 space(3);
+    font-size: 1.375rem;
+  }
+
+  p,
+  ul {
+    margin: 0 0 space(4);
+  }
+
+  ul {
+    padding-left: space(5);
+    list-style: disc;
+  }
+
+  li::marker {
+    color: var(--fg-subtle);
+  }
+
+  li + li {
+    margin-top: space(1.5);
+  }
+
+  code {
+    padding: 0.1em 0.35em;
+    border-radius: var(--r-sm);
+    background: var(--surface-2);
+    font-family: var(--font-mono, monospace);
+    font-size: 0.85em;
+    overflow-wrap: anywhere;
+  }
+}
+
+.kinds {
+  display: grid;
+  gap: space(3);
+
+  @include up(sm) {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  div {
+    display: flex;
+    flex-direction: column;
+    gap: space(1);
+    padding: space(3) space(4);
+    border: 1px solid var(--border);
+    border-radius: var(--r);
+    background: var(--surface);
+  }
+
+  span {
+    color: var(--fg-muted);
+    font-size: 0.8125rem;
+  }
+}
+
+.steps {
+  display: grid;
+  gap: space(3);
+  margin: 0 0 space(4);
+  padding: 0;
+  list-style: none;
+  counter-reset: step;
+
+  li {
+    display: grid;
+    grid-template-columns: space(6) minmax(0, 1fr);
+    gap: space(2);
+    margin: 0;
+    counter-increment: step;
+
+    &::before {
+      content: counter(step);
+      color: var(--secondary);
+      font-family: var(--font-title);
+      font-size: 1.125rem;
+      font-weight: 600;
+      line-height: 1.4;
+    }
+  }
+
+  li + li {
+    margin-top: 0;
+  }
+}
+
+.callout {
+  padding: space(3) space(4);
+  border-left: 3px solid var(--primary);
+  border-radius: var(--r-sm);
+  background: color-mix(in oklab, var(--primary) 8%, var(--surface));
+  font-size: 0.875rem;
+}
+
+// --- Blocs de code ----------------------------------------------------------
+.code {
+  margin: 0 0 space(4);
+  border: 1px solid var(--border);
+  border-radius: var(--r);
+  background: var(--surface-2);
+  overflow: hidden;
+
+  pre {
+    margin: 0;
+    padding: space(3) space(4);
+    overflow-x: auto;
+    font-family: var(--font-mono, monospace);
+    font-size: 0.8125rem;
+    line-height: 1.55;
+  }
+}
+
+.codeBar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: space(1) space(2) space(1) space(4);
+  border-bottom: 1px solid var(--border);
+  color: var(--fg-subtle);
+  font-family: var(--font-mono, monospace);
+  font-size: 0.75rem;
+}
+
+.copy {
+  display: inline-flex;
+  align-items: center;
+  gap: space(1);
+  padding: space(1) space(2);
+  border: 0;
+  border-radius: var(--r-sm);
+  background: none;
+  color: var(--fg-muted);
+  font: inherit;
+  cursor: pointer;
+
+  &:hover {
+    background: var(--surface-3);
+    color: var(--fg);
+  }
+
+  svg {
+    width: 0.875rem;
+    height: 0.875rem;
+  }
+}
+
+// --- Tableaux ---------------------------------------------------------------
+.tableWrap {
+  margin: 0 0 space(4);
+  border: 1px solid var(--border);
+  border-radius: var(--r);
+  overflow-x: auto;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.875rem;
+
+  th,
+  td {
+    padding: space(2) space(3);
+    border-bottom: 1px solid var(--border);
+    text-align: left;
+    vertical-align: top;
+  }
+
+  th {
+    background: var(--surface-2);
+    color: var(--fg-subtle);
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+  }
+
+  td:first-child {
+    white-space: nowrap;
+  }
+
+  tr:last-child td {
+    border-bottom: 0;
+  }
+}
+
+// --- Icônes -----------------------------------------------------------------
+.content .icons {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(9.5rem, 1fr));
+  gap: space(1);
+  padding: 0;
+  list-style: none;
+
+  li {
+    display: flex;
+    align-items: center;
+    gap: space(2);
+    margin: 0;
+    padding: space(1.5) space(2);
+    border-radius: var(--r-sm);
+    font-size: 0.8125rem;
+
+    &:hover {
+      background: var(--surface-2);
+    }
+  }
+
+  svg {
+    flex: none;
+    width: 1.125rem;
+    height: 1.125rem;
+  }
+
+  span {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    font-family: var(--font-mono, monospace);
+  }
+}

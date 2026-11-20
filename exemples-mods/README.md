@@ -14,4 +14,4 @@ cd hunger-games && zip -r ../hunger-games.zip . && cd ..
 - `hunger-games` : simulateur Hunger Games (page « Jeux »). Les événements sont dans `events.js`
   (syntaxe des accords en tête du fichier), la simulation dans `engine.js`, l'interface dans `app.js`.
 
-Format complet : note Obsidian « Modding ».
+Format complet : page « Documentation des mods » de Codex (/mods/documentation) ou note Obsidian « Modding ».

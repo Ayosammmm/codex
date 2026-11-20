@@ -43,6 +43,7 @@ import RpScenesPage from '@/pages/roleplay/RpScenesPage';
 import RpSceneEditPage from '@/pages/roleplay/RpSceneEditPage';
 import { AdminOnly, RequireAuth, SuperAdminOnly } from '@/auth/RequireAuth';
 import ModsAdminPage from '@/mods/ModsAdminPage';
+import ModsDocsPage from '@/mods/ModsDocsPage';
 import { CustomEntityEditPage, CustomEntityPage, ModSectionPage } from '@/mods/CustomEntityPages';
 
 export const router = createBrowserRouter([{ element: <AppRoot />, children: [
@@ -55,6 +56,7 @@ export const router = createBrowserRouter([{ element: <AppRoot />, children: [
   { path: '/utilisateurs', element: <AdminOnly><UsersPage /></AdminOnly> },
   { path: '/nouvel-univers', element: <AdminOnly><CreateUniversePage /></AdminOnly> },
   { path: '/mods', element: <SuperAdminOnly><ModsAdminPage /></SuperAdminOnly> },
+  { path: '/mods/documentation', element: <SuperAdminOnly><ModsDocsPage /></SuperAdminOnly> },
   {
     // :universeRef = « 12-nom-de-l-univers » (l'id fait foi)
     path: '/univers/:universeRef',

@@ -312,6 +312,12 @@
   background: var(--surface);
 }
 
+.dropzoneActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: space(2);
+}
+
 .dropzoneActive {
   border-color: var(--primary);
   background: color-mix(in oklab, var(--primary) 8%, var(--surface));
@@ -347,6 +353,7 @@
     font-family: var(--font-mono, monospace);
     font-size: 0.8125rem;
     line-height: 1.5;
+    margin: 0 0 space(4);
   }
 
   code {
