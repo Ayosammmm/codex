@@ -186,8 +186,9 @@ export default function ModsDocsPage() {
         </Link>
         <h1 className={page.title}>Documentation des mods</h1>
         <p className={page.lead}>
-          Un mod étend un univers sans toucher au code de Codex. Les modules sont livrés avec l’application ; un mod est une archive .zip
-          qu’un super admin installe, puis qu’un admin active dans son univers.
+          Un mod étend un univers sans toucher au code de Codex.
+          Les modules sont livrés avec l’application ; un mod est une archive .zip
+          qu’un super admin installe, puis que lui, ou un admin active dans son univers.
         </p>
 
         <div className={styles.layout}>
@@ -204,7 +205,7 @@ export default function ModsDocsPage() {
           <div className={styles.content}>
             <div className={styles.kinds}>
               <div>
-                <strong>Types de fiches</strong>
+                <strong>Entités</strong>
                 <span>« Artefacts », « Vaisseaux »… avec galerie, arborescence, tableau, fiche, édition, album photo, collections, éditeurs, export / import.</span>
               </div>
               <div>
@@ -212,7 +213,7 @@ export default function ModsDocsPage() {
                 <span>Sur les personnages, lieux, groupes, espèces, créatures, histoires et événements.</span>
               </div>
               <div>
-                <strong>Pages de code</strong>
+                <strong>Pages personnalisées</strong>
                 <span>Jeux, simulateurs, outils en HTML / JS, rangés dans « Encyclopédie » ou « Jeux ».</span>
               </div>
             </div>
@@ -228,8 +229,8 @@ export default function ModsDocsPage() {
                 </div></li>
               </ol>
               <p>
-                Deux mods d’exemple sont fournis dans <code>exemples-mods/</code> du dépôt : <code>artefacts</code> (type de fiche, champs sur les
-                personnages, page « Trésor ») et <code>hunger-games</code> (simulateur avec parties enregistrées).
+                Deux mods d’exemple sont fournis dans <code>exemples-mods/</code> du dépôt : <code>artefacts</code> (entités "Artefacts", champs sur les
+                personnages, page de jeu « Trésor ») et <code>hunger-games</code> (Simulateur avec parties enregistrées).
               </p>
               <CodeBlock label="bash">{ZIP_EXAMPLE}</CodeBlock>
             </section>
@@ -315,9 +316,7 @@ export default function ModsDocsPage() {
             <section id="droits">
               <h2>Droits</h2>
               <ul>
-                <li>Installer / désinstaller : super admins. Activer dans un univers : admins.</li>
                 <li>Fiches des types de mods : mêmes règles que les autres fiches (éditeurs liés, admins).</li>
-                <li>Champs supplémentaires : droits de la fiche concernée.</li>
                 <li>Enregistrements des pages : lecture pour tous, création par les éditeurs, modification / suppression par l’auteur ou un admin.</li>
               </ul>
             </section>
