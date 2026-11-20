@@ -19,6 +19,7 @@ import { RelationsField } from './RelationsField';
 import { DevelopmentField } from './DevelopmentField';
 import { GroupMembershipsField } from './GroupMembershipsField';
 import { TraitsField } from './TraitsField';
+import { CharacterTraits } from './CharacterTraits';
 import { useImagePreview } from '@/components/entity/useImagePreview';
 import styles from '@/components/entity/EntityForm.module.scss';
 
@@ -170,6 +171,12 @@ export function CharacterForm({ universe, character, state, refs, modules, error
               onNoteChange={(developmentNote) => update({ developmentNote })}
             />
             <TraitsField value={form.traits} onChange={(traits) => update({ traits })} />
+            {/* Mis à jour en direct, à partir des curseurs ci-dessus */}
+            <CharacterTraits
+              scores={form.traits}
+              title="Traits de caractère qui en ressortent"
+              emptyText="Aucun pour l’instant : ils apparaissent quand plusieurs traits penchent nettement (±4 ou plus)."
+            />
           </FormSection>
         )}
 

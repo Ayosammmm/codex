@@ -1,0 +1,90 @@
+@use '@/styles/mixins' as *;
+
+.block {
+  display: flex;
+  flex-direction: column;
+  gap: space(2);
+}
+
+.title {
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--fg-muted);
+}
+
+.list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: space(1.5);
+}
+
+.trait {
+  padding: space(1) space(3);
+  border: var(--border-w) solid color-mix(in oklab, var(--primary) 35%, var(--border));
+  border-radius: 999px;
+  background: color-mix(in oklab, var(--primary) 10%, var(--surface));
+  font-size: 0.8125rem;
+  font-weight: 500;
+  color: color-mix(in oklab, var(--primary) 55%, var(--fg));
+  cursor: help;
+  position: relative;
+
+  &:focus-visible {
+    @include focus-ring;
+  }
+
+  // Infobulle : immédiate au survol ou au focus
+  &:hover .tooltip,
+  &:focus .tooltip {
+    visibility: visible;
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+// Au-dessus de la pastille, alignée sur son bord gauche
+.tooltip {
+  position: absolute;
+  bottom: calc(100% + #{space(1.5)});
+  left: 0;
+  z-index: 20;
+  display: flex;
+  flex-direction: column;
+  gap: space(1);
+  width: max-content;
+  max-width: min(18rem, 80vw);
+  padding: space(2) space(3);
+  border-radius: var(--r-sm);
+  background: var(--fg);
+  box-shadow: var(--elev);
+  font-size: 0.8125rem;
+  font-weight: 400;
+  line-height: 1.4;
+  color: var(--bg);
+  text-align: left;
+  pointer-events: none;
+  visibility: hidden;
+  opacity: 0;
+  transform: translateY(2px);
+  transition: opacity 80ms, transform 80ms, visibility 80ms;
+}
+
+.tooltipReasons {
+  font-size: 0.75rem;
+  font-variant-numeric: tabular-nums;
+  opacity: 0.75;
+}
+
+// Trait absolu (+10 / −10) : pastille pleine
+.absolute {
+  border-color: var(--primary);
+  background: color-mix(in oklab, var(--primary) 30%, var(--surface));
+  font-weight: 600;
+}
+
+.empty {
+  font-size: 0.875rem;
+  color: var(--fg-muted);
+}

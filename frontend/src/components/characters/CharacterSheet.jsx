@@ -25,6 +25,7 @@ import { DynamicCard } from '@/components/relations/DynamicCard';
 import { CharacterAppearances } from './CharacterAppearances';
 import { CharacterRoleplaySection } from '@/components/roleplay/RoleplaySections';
 import { CharacterAvatar } from './CharacterAvatar';
+import { CharacterTraits } from './CharacterTraits';
 import styles from './CharacterSheet.module.scss';
 
 const STORY_FIELDS = [
@@ -148,6 +149,7 @@ export function CharacterSheet({ universe, character: c, modules, actions, stori
                 )}
               </div>
             )}
+            {traitsSet && <CharacterTraits scores={c} />}
             {traitsSet && <Traits character={c} />}
           </SheetSection>
         )}
