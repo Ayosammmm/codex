@@ -8,6 +8,10 @@ router.get("/:id", controller.getById);
 router.put("/:id", controller.update);
 router.delete("/:id", controller.delete);
 
+// Récit de l'épisode, en messages (services/messages.js) ; pièces jointes dans /uploads/episodes/messages/...
+router.get("/:id/messages", controller.listMessages);
+router.post("/:id/messages", controller.uploadMessageAttachments, controller.createMessages);
+
 // Image de fond
 const { createUploadMiddleware } = require("../middlewares/upload");
 const uploadEpisodeBackground = createUploadMiddleware("episodes/backgrounds", true);

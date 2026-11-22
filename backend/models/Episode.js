@@ -15,10 +15,7 @@ const Episode = sequelize.define('Episode', {
     type: DataTypes.STRING,
     allowNull: false,
   },
-  description: {
-    type: DataTypes.TEXT,
-    allowNull: true,
-  },
+  // Le récit de l'épisode s'écrit en messages (models/Message.js, `episodeId`)
   // Fond propre à l'épisode (image, ou couleur) ; sans fond, l'épisode prend celui de son histoire
   background: {
     type: DataTypes.STRING,

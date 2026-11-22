@@ -14,7 +14,7 @@ import { Segmented } from '@/components/ui/Segmented';
 import { useToast } from '@/components/ui/Toast';
 import { normalizeText } from '@/components/entity/useListState';
 import { SceneCard } from '@/components/roleplay/SceneCard';
-import styles from '@/components/roleplay/Roleplay.module.scss';
+import styles from '@/components/messages/Messages.module.scss';
 import { plural, universePath } from '@/utils/universe';
 import page from '../Page.module.scss';
 

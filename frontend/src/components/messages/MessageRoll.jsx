@@ -1,7 +1,7 @@
 import { Coins, Dices, ImageIcon, Music } from '@/components/ui/icons';
 import { cx } from '@/components/ui/cx';
-import { describeRoll } from './rpCommands';
-import styles from './Roleplay.module.scss';
+import { describeRoll } from './commands';
+import styles from './Messages.module.scss';
 
 const ICONS = { dice: Dices, coin: Coins, background: ImageIcon, ambience: Music };
 
@@ -15,7 +15,7 @@ export function CommandIcon({ kind, className }) {
  * Résultat d'une commande de hasard d'un message (/d20, /pileface), tiré par le serveur.
  * Un d20 seul qui fait 20 ou 1 est mis en valeur (réussite / échec critique).
  */
-export function RpRoll({ roll }) {
+export function MessageRoll({ roll }) {
   if (roll?.type !== 'dice' && roll?.type !== 'coin') return null;
   const kind = roll.type;
   const crit = kind === 'dice' && roll.count === 1 && roll.sides === 20 ? (roll.rolls[0] === 20 ? 'critSuccess' : roll.rolls[0] === 1 ? 'critFail' : null) : null;

@@ -14,11 +14,6 @@ import { plainText, plural, universePath } from '@/utils/universe';
 import styles from './StorySheet.module.scss';
 import { usePermissions } from '@/auth/auth';
 
-const excerpt = (html, max = 220) => {
-  const text = plainText(html);
-  return text.length > max ? `${text.slice(0, max).trimEnd()}…` : text;
-};
-
 /**
  * Fiche d'une histoire : couverture, période, présentation, épisodes dans l'ordre,
  * puis personnages, lieux et événements réunis depuis ses épisodes.
@@ -77,7 +72,6 @@ export function StorySheet({ universe, story: s, modules, actions }) {
                       <span className={styles.srOnly}>Épisode {i + 1} : </span>
                       {ep.title}
                     </span>
-                    {excerpt(ep.description) && <span className={styles.excerpt}>{excerpt(ep.description)}</span>}
                     {(shown.length > 0 || ep.places?.length > 0) && (
                       <span className={styles.episodeMeta}>
                         <AvatarStack members={shown.slice(0, 5)} total={shown.length} className={styles.stack} />

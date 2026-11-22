@@ -4,7 +4,7 @@ import { characterName } from '@/config/characters';
 import { normalizeText } from '@/components/entity/useListState';
 import { cx } from '@/components/ui/cx';
 import { universePath } from '@/utils/universe';
-import styles from './Roleplay.module.scss';
+import styles from '@/components/messages/Messages.module.scss';
 
 // Genre du personnage (référence libre de l'univers) : accord « arrivée », « partie »
 const isFeminine = (c) => /^(femme|femin|female|fille|woman|girl)/.test(normalizeText(c?.genders?.name || ''));

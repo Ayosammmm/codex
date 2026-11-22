@@ -14,6 +14,7 @@ require("./models/EntityPhoto");
 require("./models/User");
 require("./models/EntityEditor");
 require("./models/EntityCollection");
+const { upgradeMessagesSchema } = require("./models/Message");
 require("./models/Roleplay");
 require("./models/Mod");
 const { authenticate, authorize } = require("./middlewares/authorize");
@@ -43,6 +44,7 @@ const usersRoutes = require("./routes/usersRoutes");
 const editorsRoutes = require("./routes/editorsRoutes");
 const collectionsRoutes = require("./routes/collectionsRoutes");
 const roleplayRoutes = require("./routes/roleplayRoutes");
+const messagesRoutes = require("./routes/messagesRoutes");
 const modsRoutes = require("./routes/modsRoutes");
 const customEntitiesRoutes = require("./routes/customEntitiesRoutes");
 const entityMetadataRoutes = require("./routes/entityMetadataRoutes");
@@ -81,6 +83,7 @@ app.use("/api/alignments", alignmentsRoutes);
 app.use("/api/power-ranks", powerRanksRoutes);
 app.use("/api/collections", collectionsRoutes);
 app.use("/api/roleplay", roleplayRoutes);
+app.use("/api/messages", messagesRoutes);
 app.use("/api/mods", modsRoutes);
 app.use("/api/custom-entities", customEntitiesRoutes);
 app.use("/api/entity-metadata", entityMetadataRoutes);
@@ -107,6 +110,7 @@ app.use((err, req, res, next) => {
 });
 
 sequelize.sync({ alter: true }) // crée/maj la table automatiquement
+  .then(upgradeMessagesSchema) // colonnes que `alter` ne met pas à jour (voir models/Message.js)
   .then(() => console.log("DB connected"))
   .then(bootstrapAdmin) // premier démarrage : super admin depuis le .env
   .catch((err) => console.error(err));

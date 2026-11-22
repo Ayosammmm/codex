@@ -9,7 +9,6 @@ import { Button } from '@/components/ui/Button';
 import { Combobox } from '@/components/ui/Combobox';
 import { Dialog } from '@/components/ui/Dialog';
 import { Field, Input } from '@/components/ui/Field';
-import { RichTextEditor } from '@/components/ui/RichText';
 import { useToast } from '@/components/ui/Toast';
 import { AppearanceSection } from '@/components/entity/AppearanceSection';
 import { EntityThemeZone } from '@/components/entity/EntityThemeZone';
@@ -17,6 +16,7 @@ import { useImagePreview } from '@/components/entity/useImagePreview';
 import form from '@/components/entity/EntityForm.module.scss';
 import { CastField } from '@/components/stories/CastField';
 import { useEpisodeForm } from '@/components/stories/useEpisodeForm';
+import { EpisodeNarrativeEditor } from '@/components/stories/EpisodeNarrative';
 import { FormActionBar } from '@/components/universe/FormActionBar';
 import { FormSection } from '@/components/universe/UniverseForm';
 import { useUnsavedChangesGuard } from '@/components/universe/useUnsavedChangesGuard';
@@ -84,6 +84,8 @@ function EpisodeEditor({ universe, story, episode }) {
         : { background: uploadUrl(story.background), backgroundColor: story.backgroundColor };
   const charactersById = useMemo(() => new Map((characters.data || []).map((c) => [c.id, c])), [characters.data]);
   const placeNames = new Map(options.places.map((o) => [o.value, o.label]));
+  // Personnages de l'épisode : proposés en premier pour écrire le récit
+  const castIds = useMemo(() => f.characters.map((c) => c.characterId), [f.characters]);
 
   const submit = (e) => {
     e.preventDefault();
@@ -137,14 +139,24 @@ function EpisodeEditor({ universe, story, episode }) {
 
         <form onSubmit={submit} noValidate>
           <div className={form.sections}>
-            <FormSection id="recit" title="Récit" description="Ce qui se passe dans cet épisode.">
+            <FormSection id="episode" title="Épisode">
               <Field label="Titre" required error={errors.title}>
                 {(props) => <Input {...props} value={f.title} onChange={(e) => update({ title: e.target.value })} maxLength={255} placeholder="Ex. L’embuscade du col" />}
               </Field>
-              <Field label="Récit">
-                {(props) => <RichTextEditor {...props} label="Récit" minHeight="14rem" value={f.description} onChange={(description) => update({ description })} />}
-              </Field>
             </FormSection>
+
+            {/* Récit en messages : enregistré à l'envoi de chaque message, pas avec le formulaire */}
+            {isNew ? (
+              <FormSection id="recit" title="Récit" description="Le récit s’écrit en messages, au nom des personnages : ajoutez d’abord l’épisode pour pouvoir l’écrire." />
+            ) : (
+              <FormSection
+                id="recit"
+                title="Récit"
+                description="L’épisode raconté en messages, au nom des personnages ou en narration. Il se lit sur la fiche, en fil ou en visual novel. Chaque message est enregistré dès son envoi."
+              >
+                <EpisodeNarrativeEditor universe={universe} episode={episode} castIds={castIds} soundOn={modules.sound} />
+              </FormSection>
+            )}
 
             <FormSection id="personnages" title="Personnages" description="Qui joue un rôle principal, secondaire, ou assiste simplement à la scène.">
               <CastField value={f.characters} onChange={(characters) => update({ characters })} characterOptions={options.characters} charactersById={charactersById} />

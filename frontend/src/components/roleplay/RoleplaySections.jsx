@@ -2,7 +2,7 @@ import { useEntityList } from '@/api/queries';
 import { useCharacterRoleplay, useEpisodeScenes } from '@/api/roleplay';
 import { SheetSection } from '@/components/entity/SheetSection';
 import { SceneCard } from './SceneCard';
-import styles from './Roleplay.module.scss';
+import styles from '@/components/messages/Messages.module.scss';
 
 /** Fiche personnage : scènes de roleplay où il apparaît. */
 export function CharacterRoleplaySection({ universe, character }) {

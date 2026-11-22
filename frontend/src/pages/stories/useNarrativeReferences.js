@@ -12,7 +12,7 @@ const byLabel = (a, b) => a.label.localeCompare(b.label, 'fr');
  */
 export function useNarrativeReferences(universe) {
   const state = getModulesState(universe);
-  const modules = { groups: isModuleEnabled(state, 'groups'), events: isModuleEnabled(state, 'events'), roleplay: isModuleEnabled(state, 'roleplay') };
+  const modules = { groups: isModuleEnabled(state, 'groups'), events: isModuleEnabled(state, 'events'), roleplay: isModuleEnabled(state, 'roleplay'), sound: isModuleEnabled(state, 'sound') };
   const id = universe.id;
 
   const stories = useEntityList('stories', id);

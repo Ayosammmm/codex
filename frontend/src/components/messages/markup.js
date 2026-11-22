@@ -6,9 +6,12 @@
  *   « texte »   dialogue (aussi "texte" et “texte”)
  *   (texte)     pensée
  *   ~texte~     chuchotement
+ *   **texte**   gras, à l'intérieur de n'importe quel passage (ex. ***action en gras*** ou ***action** en partie*)
  * Le reste (texte sans balise) est du dialogue dans un message de personnage, de la narration sinon
  * (voir `plain` de parseRp). Dans un dialogue, une pensée ou un chuchotement, les « ! » hérissent la bulle
- * de piques (3 niveaux : voir shoutLevel). Les balises ne s'imbriquent pas ; à position égale, la première
+ * de piques (3 niveaux : voir shoutLevel).
+ * Narration (message sans personnage) : ni dialogue, ni onomatopée, ni exclamation : « … », "…" et {…} y restent
+ * du texte de narration, et aucune bulle ne se hérisse. Les balises ne s'imbriquent pas ; à position égale, la première
  * de la liste l'emporte (((…)) avant (…)).
  */
 export const RP_MARKUP = [
@@ -20,7 +23,18 @@ export const RP_MARKUP = [
   { type: 'shout', label: 'Exclamation', example: '« Non ! » « Non !! » « NON !!! »', hint: '! · !! · !!!' },
   { type: 'sound', label: 'Onomatopée', example: '{BAM}', hint: '{ … }' },
   { type: 'hrp', label: 'Hors roleplay', example: '((je reviens dans 5 min))', hint: '(( … ))' },
+  { type: 'bold', label: 'Gras', example: '*Il frappe **fort** à la porte.*', hint: '** … **' },
 ];
+
+/*
+ * Gras : les **…** sont remplacés, avant le découpage, par deux caractères réservés (zone privée d'Unicode) qui
+ * traversent les autres balises ; le texte des passages les contient, et MessageText (Message.jsx) les affiche en gras.
+ * Le contenu du gras ne contient pas d'étoile : dans « ***texte*** », le gras est « **texte** » et l'action l'entoure.
+ */
+export const BOLD_OPEN = '\uE000';
+export const BOLD_CLOSE = '\uE001';
+const BOLD = /\*\*([^*\n]+?)\*\*/g;
+
 
 const PATTERN = /\(\(([\s\S]+?)\)\)|\{([^{}\n]+?)\}|\*([^*\n]+?)\*|«\s*([\s\S]+?)\s*»|“([\s\S]+?)”|"([^"]+?)"|\(([^()]+?)\)|~([^~\n]+?)~/g;
 const GROUP_TYPES = [null, 'hrp', 'sound', 'action', 'dialogue', 'dialogue', 'dialogue', 'thought', 'whisper'];
@@ -28,27 +42,40 @@ const GROUP_TYPES = [null, 'hrp', 'sound', 'action', 'dialogue', 'dialogue', 'di
 // Bulles qui peuvent se hérisser de piques
 const BUBBLES = new Set(['dialogue', 'thought', 'whisper']);
 
-/** Intensité d'une bulle selon ses « ! » : 0 (aucun), 1, 2, ou 3 (trois et plus). */
-export const shoutLevel = ({ type, text }) => (BUBBLES.has(type) ? Math.min(3, (text.match(/!/g) || []).length) : 0);
+/** Intensité d'une bulle selon ses « ! » : 0 (aucun, ou passage d'une narration), 1, 2, ou 3 (trois et plus). */
+export const shoutLevel = ({ type, text, calm }) => (BUBBLES.has(type) && !calm ? Math.min(3, (text.match(/!/g) || []).length) : 0);
+
+// Balises sans effet dans une narration : laissées telles quelles dans le texte
+const NOT_IN_NARRATION = new Set(['dialogue', 'sound']);
 
 /**
  * Découpe un message : [{ type, text }], dans l'ordre. `plain` : type du texte sans balise
  * ('dialogue' pour un message de personnage, 'narration' sinon). Les passages vides sont omis.
  */
 export function parseRp(content = '', { plain = 'narration' } = {}) {
+  content = content.replace(BOLD, `${BOLD_OPEN}$1${BOLD_CLOSE}`);
+  const narration = plain === 'narration';
   const segments = [];
-  const pushPlain = (text) => {
-    if (!text.trim()) return;
-    segments.push({ type: plain, text: plain === 'narration' ? text.replace(/^\s*\n|\n\s*$/g, '') : text.trim() });
+  let buffer = ''; // texte sans balise en attente (en narration, « … » et {…} s'y ajoutent)
+  const flush = () => {
+    if (buffer.trim()) segments.push({ type: plain, text: narration ? buffer.replace(/^\s*\n|\n\s*$/g, '') : buffer.trim() });
+    buffer = '';
   };
   let last = 0;
   for (const match of content.matchAll(PATTERN)) {
-    pushPlain(content.slice(last, match.index));
-    const group = match.findIndex((g, i) => i > 0 && g !== undefined);
-    segments.push({ type: GROUP_TYPES[group], text: match[group].trim() });
+    buffer += content.slice(last, match.index);
     last = match.index + match[0].length;
+    const group = match.findIndex((g, i) => i > 0 && g !== undefined);
+    const type = GROUP_TYPES[group];
+    if (narration && NOT_IN_NARRATION.has(type)) {
+      buffer += match[0];
+      continue;
+    }
+    flush();
+    segments.push({ type, text: match[group].trim(), ...(narration && { calm: true }) });
   }
-  pushPlain(content.slice(last));
+  buffer += content.slice(last);
+  flush();
   return segments;
 }
 

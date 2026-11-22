@@ -14,6 +14,8 @@ const { hasRole, isAdmin, canEditEntity, userFromToken, ENTITY_TYPES } = require
  * - entités : création par les éditeurs (qui y sont alors liés), modification / suppression
  *   par les admins ou les éditeurs liés à l'entité ;
  * - roleplay : éditeurs et admins (personnages joués et auteur vérifiés par le contrôleur) ;
+ * - messages (modification / suppression) : éditeurs et admins (auteur, ou droits sur l'épisode, vérifiés par
+ *   services/messages.js) ;
  * - épisodes : selon les droits sur leur histoire ; photos, collections et métadonnées de mods d'une entité :
  *   selon les droits sur l'entité ;
  * - mods : installation / désinstallation par les super admins ; données des pages de mods : éditeurs
@@ -86,6 +88,7 @@ async function authorize(req, res, next) {
     // --- Roleplay : éditeurs et admins ; droits fins (personnages joués, auteur) dans le contrôleur ---
     // (marquer un fil comme lu : tout compte connecté, lecteurs compris)
     if (resource === "roleplay") return hasRole(req.user, "editor") || (id === "places" && subId === "read") ? next() : deny();
+    if (resource === "messages") return hasRole(req.user, "editor") ? next() : deny();
 
     // --- Collections : le référentiel est réservé aux admins, les liens d'une entité suivent ses droits ---
     if (resource === "collections") {

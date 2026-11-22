@@ -4,15 +4,15 @@ import { characterName } from '@/config/characters';
 import { importanceColor } from '@/config/events';
 import { EPISODE_ROLES, episodeRole } from '@/config/stories';
 import { Badge } from '@/components/ui/Badge';
-import { RichText } from '@/components/ui/RichText';
 import { CharacterChip } from '@/components/characters/CharacterChip';
 import { SheetSection } from '@/components/entity/SheetSection';
-import { plainText, universePath } from '@/utils/universe';
+import { universePath } from '@/utils/universe';
 import styles from './EpisodeSheet.module.scss';
 import { EpisodeScenesSection } from '@/components/roleplay/RoleplaySections';
+import { EpisodeNarrative } from './EpisodeNarrative';
 
 /**
- * Fiche d'un épisode : sa place dans l'histoire, le récit, les personnages par rôle,
+ * Fiche d'un épisode : sa place dans l'histoire, le récit (en messages), les personnages par rôle,
  * les lieux et les événements (module actif), puis la navigation vers les épisodes voisins.
  * - `episodes` : épisodes de l'histoire dans l'ordre (pour le numéro et la navigation)
  */
@@ -37,13 +37,10 @@ export function EpisodeSheet({ universe, story, episode: ep, episodes, modules, 
         {actions && <div className={styles.actions}>{actions}</div>}
       </header>
 
-      {plainText(ep.description) ? (
-        <SheetSection id="recit" title="Récit">
-          <RichText html={ep.description} />
-        </SheetSection>
-      ) : (
+      {/* Récit en messages (lecture en fil ou en visual novel), quel que soit le module Roleplay */}
+      <EpisodeNarrative universe={universe} story={story} episode={ep} episodes={episodes} soundOn={modules.sound}>
         <p className={styles.note}>Le récit de cet épisode n’est pas encore écrit.</p>
-      )}
+      </EpisodeNarrative>
 
       {characters.length > 0 && (
         <SheetSection id="personnages" title="Personnages">

@@ -11,10 +11,10 @@ import { Combobox } from '@/components/ui/Combobox';
 import { EmptyState, Spinner } from '@/components/ui/Feedback';
 import { Field, Input } from '@/components/ui/Field';
 import { useToast } from '@/components/ui/Toast';
-import { RpComposer } from '@/components/roleplay/RpComposer';
+import { MessageComposer } from '@/components/messages/MessageComposer';
 import { RpMessage } from '@/components/roleplay/RpMessage';
-import { continuesMessage } from '@/components/roleplay/rpMarkup';
-import styles from '@/components/roleplay/Roleplay.module.scss';
+import { continuesMessage } from '@/components/messages/markup';
+import styles from '@/components/messages/Messages.module.scss';
 import { universePath } from '@/utils/universe';
 import page from '../Page.module.scss';
 
@@ -148,7 +148,7 @@ export default function RpSceneEditPage() {
 
         {scene.standalone && (
           <div className={styles.sceneComposer}>
-            <RpComposer
+            <MessageComposer
               key={scene.id}
               characters={playable}
               storageKey={`codex.rpSpeakers.scene.${scene.id}`}

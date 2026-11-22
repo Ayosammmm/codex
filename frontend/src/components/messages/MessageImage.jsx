@@ -1,10 +1,10 @@
 import { useRef } from 'react';
 import { X } from '@/components/ui/icons';
 import { IMG, uploadUrl } from '@/api/client';
-import styles from './Roleplay.module.scss';
+import styles from './Messages.module.scss';
 
 /** Image envoyée dans un fil : vignette ; un clic l'ouvre en grand (Échap ou clic pour fermer). */
-export function RpImage({ path, alt = 'Image envoyée' }) {
+export function MessageImage({ path, alt = 'Image envoyée' }) {
   const ref = useRef(null);
   const src = uploadUrl(path);
   // Vignette dans le fil, original dans la visionneuse

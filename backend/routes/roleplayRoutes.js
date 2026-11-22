@@ -1,19 +1,17 @@
 const express = require("express");
 const router = express.Router();
 const roleplay = require("../controllers/roleplayController");
-const { createAttachmentsMiddleware } = require("../middlewares/upload");
 
 // Pièces jointes d'un envoi : une image (5 Mo) et/ou un son (20 Mo), joints au dernier message
-const uploadAttachments = createAttachmentsMiddleware({ imageFolder: roleplay.IMAGE_FOLDER, soundFolder: roleplay.SOUND_FOLDER });
+const { uploadAttachments } = roleplay;
 
 // Roleplay écrit. Écriture : éditeurs et admins (middlewares/authorize.js), droits fins dans le contrôleur.
+// Modifier / supprimer un message : routes communes /api/messages/:id (routes/messagesRoutes.js).
 router.get("/overview", roleplay.overview);
 router.get("/sounds", roleplay.sceneSounds);
 router.get("/places/:placeId/messages", roleplay.listMessages);
 router.post("/places/:placeId/messages", uploadAttachments, roleplay.createMessages);
 router.put("/places/:placeId/read", roleplay.markRead);
-router.put("/messages/:id", roleplay.updateMessage);
-router.delete("/messages/:id", roleplay.deleteMessage);
 router.get("/characters/:characterId", roleplay.characterActivity);
 router.get("/episodes/:episodeId/scenes", roleplay.episodeScenes);
 router.put("/episodes/:episodeId/scenes", roleplay.setEpisodeScenes);

@@ -1,17 +1,12 @@
 import { useEffect, useRef } from 'react';
 import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { API_BASE, getToken, request } from './client';
+import { messagesApi, postMessages } from './messages';
 
-const postMessages = (path, { parts, image, sound }) => {
-  if (!image && !sound) return request(path, { method: 'POST', body: { parts } });
-  const form = new FormData();
-  form.append('parts', JSON.stringify(parts));
-  if (image) form.append('image', image);
-  if (sound) form.append('sound', sound);
-  return request(path, { method: 'POST', body: form });
-};
-
-/** Roleplay écrit : fil de messages par lieu, scènes (voir backend/controllers/roleplayController.js). */
+/**
+ * Roleplay écrit : fil de messages par lieu, scènes (voir backend/controllers/roleplayController.js).
+ * Les messages eux-mêmes sont un système commun (api/messages.js) : modification et suppression passent par lui.
+ */
 export const roleplayApi = {
   overview: (universeId) => request(`/roleplay/overview?universe_id=${universeId}`),
   /** Sons joués dans les scènes de l'univers : [{ id, sceneId, soundPath, kind: 'ambience' | 'sound', createdAt }]. */
@@ -21,8 +16,8 @@ export const roleplayApi = {
   createMessages: (placeId, data) => postMessages(`/roleplay/places/${placeId}/messages`, data),
   /** Messages écrits directement dans une scène hors roleplay (même format). */
   createSceneMessages: (sceneId, data) => postMessages(`/roleplay/scenes/${sceneId}/messages`, data),
-  updateMessage: (id, data) => request(`/roleplay/messages/${id}`, { method: 'PUT', body: data }),
-  deleteMessage: (id) => request(`/roleplay/messages/${id}`, { method: 'DELETE' }),
+  updateMessage: messagesApi.update,
+  deleteMessage: messagesApi.remove,
   markRead: (placeId, messageId) => request(`/roleplay/places/${placeId}/read`, { method: 'PUT', body: { messageId } }),
   character: (characterId) => request(`/roleplay/characters/${characterId}`),
   episodeScenes: (episodeId) => request(`/roleplay/episodes/${episodeId}/scenes`),

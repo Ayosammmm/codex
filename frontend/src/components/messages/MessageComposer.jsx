@@ -6,11 +6,13 @@ import { CharacterAvatar } from '@/components/characters/CharacterAvatar';
 import { characterName } from '@/config/characters';
 import { normalizeText } from '@/components/entity/useListState';
 import { cx } from '@/components/ui/cx';
-import { RpContent } from './RpMessage';
-import { RP_MARKUP } from './rpMarkup';
-import { RP_COMMANDS, findCommand, looksLikeDice, matchCommands } from './rpCommands';
-import { CommandIcon } from './RpRoll';
-import styles from './Roleplay.module.scss';
+import { MessageContent } from './Message';
+import { RP_MARKUP } from './markup';
+import { useAutoGrow } from './autoGrow';
+import { UNKNOWN_SPEAKERS, matchUnknowns } from './unknownSpeakers';
+import { RP_COMMANDS, findCommand, looksLikeDice, matchCommands } from './commands';
+import { CommandIcon } from './MessageRoll';
+import styles from './Messages.module.scss';
 
 const MAX_IMAGE_SIZE = 5 * 1024 * 1024; // même limite que le serveur
 const MAX_SUGGESTIONS = 8;
@@ -58,7 +60,7 @@ function matchCharacters(characters, query) {
 }
 
 /**
- * Saisie du roleplay, en lignes : chaque ligne est un message, au nom des personnages de ses badges
+ * Saisie de messages (roleplay, récit d'épisode), en lignes : chaque ligne est un message, au nom des personnages de ses badges
  * (sans badge : narration, ou HRP si tout est entre (( ))).
  * - « / » puis le début d'un nom propose les personnages jouables ; le choix ouvre une nouvelle ligne
  *   avec ce badge. Un « / » au tout début d'une ligne qui a déjà un badge ajoute un personnage au même groupe
@@ -71,11 +73,12 @@ function matchCharacters(characters, query) {
  *   de la ligne ; le texte de la ligne devient un commentaire facultatif.
  * - « /fond » (avec l'image jointe), « /ambiance » (avec le son joint), « /fin-fond », « /fin-ambiance » : mise en scène,
  *   le fond / l'ambiance du fil changent quand le lecteur arrive à ce message.
- * Le groupe de la dernière ligne est repris pour le message suivant (mémorisé par lieu : `storageKey`).
+ * Le groupe de la dernière ligne est repris pour le message suivant (mémorisé par fil : `storageKey`).
  * `characters` : personnages que l'utilisateur peut jouer ; `onSend({ parts, image, sound })` ; `onError(message)`.
  */
-export function RpComposer({ characters, storageKey, onSend, onError, sending, soundEnabled = false }) {
-  const byId = new Map(characters.map((c) => [c.id, c]));
+export function MessageComposer({ characters, storageKey, onSend, onError, sending, soundEnabled = false }) {
+  // Personnages jouables, et les inconnus (« /??? »)
+  const byId = new Map([...characters, ...UNKNOWN_SPEAKERS].map((c) => [c.id, c]));
   const [segments, setSegments] = useState(() => [segment(readSpeakers(storageKey).filter((id) => byId.has(id)))]);
   const [mention, setMention] = useState(null); // { key, start, query, active }
   const [help, setHelp] = useState(false);
@@ -87,6 +90,8 @@ export function RpComposer({ characters, storageKey, onSend, onError, sending, s
   const inputs = useRef(new Map());
   const focusRequest = useRef(null); // { key, caret } appliqué après le rendu
   const fileRef = useRef(null);
+  // Hauteur des lignes de saisie : celle de leur texte (useAutoGrow)
+  useAutoGrow(() => inputs.current.values());
 
   // Aperçu local de l'image : URL libérée quand elle change ou à la fermeture
   useEffect(() => () => image && URL.revokeObjectURL(image.url), [image]);
@@ -118,7 +123,7 @@ export function RpComposer({ characters, storageKey, onSend, onError, sending, s
   const suggestions = (() => {
     if (!mention) return [];
     const commands = matchCommands(mention.query, { sound: soundEnabled });
-    const people = [...(matchesNarrator(mention.query) ? [NARRATOR] : []), ...matchCharacters(characters, mention.query)];
+    const people = [...matchUnknowns(mention.query), ...(matchesNarrator(mention.query) ? [NARRATOR] : []), ...matchCharacters(characters, mention.query)];
     return looksLikeDice(mention.query) ? [...commands, ...people] : [...people, ...commands];
   })();
 
@@ -296,6 +301,11 @@ export function RpComposer({ characters, storageKey, onSend, onError, sending, s
             <span className={styles.helpText}>Nouvelle ligne à son nom · « // » au début d’une ligne : plusieurs personnages ensemble</span>
           </div>
           <div className={styles.helpRow}>
+            <code>/???</code>
+            <span className={styles.helpLabel}>Inconnu</span>
+            <span className={styles.helpText}>Personnage inconnu (« ??? ») · jusqu’à {UNKNOWN_SPEAKERS.length} différents : « /??2 », « /??3 »…</span>
+          </div>
+          <div className={styles.helpRow}>
             <code>/narrateur</code>
             <span className={styles.helpLabel}>Narrateur</span>
             <span className={styles.helpText}>Nouvelle ligne de narration, sans personnage</span>
@@ -313,20 +323,21 @@ export function RpComposer({ characters, storageKey, onSend, onError, sending, s
           <div className={styles.helpRow}>
             <code>/fond · /fin-fond</code>
             <span className={styles.helpLabel}>Fond</span>
-            <span className={styles.helpText}>Change le fond du fil avec l’image jointe (sans image : le retire) quand on arrive à ce message · /fin-fond : retour au fond du lieu</span>
+            <span className={styles.helpText}>Change le fond du fil avec l’image jointe (sans image : le retire) quand on arrive à ce message · /fin-fond : retour au fond de départ</span>
           </div>
           {soundEnabled && (
             <div className={styles.helpRow}>
               <code>/ambiance · /fin-ambiance</code>
               <span className={styles.helpLabel}>Ambiance</span>
-              <span className={styles.helpText}>Change l’ambiance avec le son joint (sans son : silence) · /fin-ambiance : retour à celle du lieu</span>
+              <span className={styles.helpText}>Change l’ambiance avec le son joint (sans son : silence) · /fin-ambiance : retour à celle de départ</span>
             </div>
           )}
           {RP_MARKUP.map((m) => (
             <div key={m.type} className={styles.helpRow}>
               <code>{m.hint}</code>
               <span className={styles.helpLabel}>{m.label}</span>
-              <RpContent content={m.example} />
+              {/* Exemples de dialogue (texte sans balise, « ! », onomatopée) : dans un message de personnage */}
+              <MessageContent content={m.example} plain={m.type === 'narration' ? 'narration' : 'dialogue'} />
             </div>
           ))}
         </div>
@@ -337,7 +348,7 @@ export function RpComposer({ characters, storageKey, onSend, onError, sending, s
             <div key={i} className={styles.previewPart}>
               <p className={styles.previewSpeakers}>{p.characterIds.map((id) => characterName(byId.get(id))).join(' & ') || 'Narration'}</p>
               {p.command && <p className={styles.previewCommand}>Commande : /{p.command}</p>}
-              {p.content && <RpContent content={p.content} plain={p.characterIds.length ? 'dialogue' : 'narration'} />}
+              {p.content && <MessageContent content={p.content} plain={p.characterIds.length ? 'dialogue' : 'narration'} />}
             </div>
           ))}
         </div>
@@ -441,7 +452,7 @@ export function RpComposer({ characters, storageKey, onSend, onError, sending, s
                 ref={(el) => (el ? inputs.current.set(seg.key, el) : inputs.current.delete(seg.key))}
                 className={styles.lineInput}
                 value={seg.text}
-                rows={Math.min(8, Math.max(1, seg.text.split('\n').length))}
+                rows={1}
                 placeholder={
                   seg.command
                     ? findCommand(seg.command)?.hint || 'Commentaire du jet (facultatif)…'

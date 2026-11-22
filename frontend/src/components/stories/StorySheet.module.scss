@@ -149,12 +149,6 @@
   font-size: 1.0625rem;
 }
 
-.excerpt {
-  @include line-clamp(2);
-  font-size: 0.875rem;
-  color: var(--fg-muted);
-}
-
 .episodeMeta {
   display: flex;
   flex-wrap: wrap;

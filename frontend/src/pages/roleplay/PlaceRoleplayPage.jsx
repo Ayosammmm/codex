@@ -12,14 +12,14 @@ import { Dialog } from '@/components/ui/Dialog';
 import { EmptyState, Spinner } from '@/components/ui/Feedback';
 import { Field, Input } from '@/components/ui/Field';
 import { useToast } from '@/components/ui/Toast';
-import { RpComposer } from '@/components/roleplay/RpComposer';
+import { MessageComposer } from '@/components/messages/MessageComposer';
 import { AmbientSound } from '@/components/sound/AmbientSound';
 import { getModulesState, isModuleEnabled } from '@/config/modules';
 import { RpMessage } from '@/components/roleplay/RpMessage';
-import { continuesMessage } from '@/components/roleplay/rpMarkup';
-import { activeEffects } from '@/components/roleplay/rpCommands';
-import { RpBackdrop } from '@/components/roleplay/RpBackdrop';
-import styles from '@/components/roleplay/Roleplay.module.scss';
+import { continuesMessage } from '@/components/messages/markup';
+import { activeEffects } from '@/components/messages/commands';
+import { MessageBackdrop } from '@/components/messages/MessageBackdrop';
+import styles from '@/components/messages/Messages.module.scss';
 import { universePath } from '@/utils/universe';
 
 // Volume des sons joués à l'arrivée d'un message (chaque lecteur se règle ensuite à part)
@@ -255,7 +255,7 @@ export default function PlaceRoleplayPage() {
 
   return (
     <EntityThemeZone universe={universe} colors={place.colors}>
-      <RpBackdrop image={backgroundImage} color={effects.background === 'place' ? place.backgroundColor : null} />
+      <MessageBackdrop image={backgroundImage} color={effects.background === 'place' ? place.backgroundColor : null} />
       <main className={styles.thread}>
         <header className={styles.threadHeader}>
           <Button as={Link} to={universePath(universe, 'roleplay')} variant="ghost" size="sm" iconOnly icon={ArrowLeft} aria-label="Retour au roleplay" />
@@ -357,7 +357,7 @@ export default function PlaceRoleplayPage() {
             </Button>
           </div>
         ) : canCreate ? (
-          <RpComposer
+          <MessageComposer
             key={place.id}
             characters={playable}
             storageKey={`codex.rpSpeakers.${place.id}`}

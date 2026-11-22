@@ -25,7 +25,7 @@ const detailIncludes = [
   {
     model: Episode,
     as: "episodes",
-    attributes: ["id", "title", "description", "order"],
+    attributes: ["id", "title", "order"],
     through: { attributes: [] },
     include: [
       { model: Character, as: "characters", attributes: CHARACTER_ATTRIBUTES, through: { attributes: ["role"] } },

@@ -57,7 +57,7 @@ const MEDIA_EXTENSIONS = new Set([...IMAGE_EXTENSIONS, ...require('../middleware
 // selfRef  : colonne de hiérarchie (parent dans la même table)
 // files    : colonnes contenant un chemin d'image
 // users    : colonnes contenant un id de compte (vidées à l'import si le compte n'existe pas sur ce serveur)
-// keepTimestamps : dates de création / modification conservées (messages de roleplay)
+// keepTimestamps : dates de création / modification conservées (messages)
 // jsonRefs : colonnes JSON pouvant contenir des références { type, id } vers des entités (données des mods)
 const ENTITY_TABLES = [
   { key: 'genders', model: Gender },
@@ -80,7 +80,7 @@ const ENTITY_TABLES = [
   { key: 'events', model: Event, files: ['image', 'background'] },
   { key: 'customEntities', model: CustomEntity, selfRef: 'parentId', files: ['image', 'background'], jsonRefs: ['data'], keepTimestamps: true },
   { key: 'rpScenes', model: RpScene, refs: { placeId: 'places' }, users: ['createdBy'], keepTimestamps: true },
-  { key: 'rpMessages', model: RpMessage, refs: { placeId: 'places', sceneId: 'rpScenes' }, users: ['userId'], keepTimestamps: true, files: ['imagePath', 'soundPath'] },
+  { key: 'rpMessages', model: RpMessage, refs: { placeId: 'places', sceneId: 'rpScenes', episodeId: 'episodes' }, users: ['userId'], keepTimestamps: true, files: ['imagePath', 'soundPath'] },
   { key: 'modRecords', model: ModRecord, users: ['createdBy'], keepTimestamps: true, jsonRefs: ['data'] },
 ];
 

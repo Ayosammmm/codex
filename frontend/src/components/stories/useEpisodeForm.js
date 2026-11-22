@@ -7,7 +7,6 @@ const rank = (role) => EPISODE_ROLES.findIndex((r) => r.value === role);
 
 const toFormState = (e) => ({
   title: e?.title || '',
-  description: e?.description || '',
   // Distribution : principaux d'abord, puis par nom
   characters: [...(e?.characters || [])]
     .sort((a, b) => rank(episodeRole(a)) - rank(episodeRole(b)) || characterName(a).localeCompare(characterName(b), 'fr'))
@@ -44,7 +43,6 @@ export function useEpisodeForm(episode) {
     const values = {
       universe_id: universeId,
       title: form.title.trim(),
-      description: form.description,
       characters: form.characters,
       placeIds: form.placeIds,
       backgroundColor: form.backgroundMode === 'color' ? form.backgroundColor : null,

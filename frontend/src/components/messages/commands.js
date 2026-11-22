@@ -1,7 +1,7 @@
 import { normalizeText } from '@/components/entity/useListState';
 
 /*
- * Commandes du roleplay, proposées par « / » dans la saisie comme les personnages (backend/services/rpCommands.js) :
+ * Commandes des messages (roleplay, récits d'épisodes), proposées par « / » dans la saisie comme les personnages (backend/services/rpCommands.js) :
  * - hasard : le tirage est fait par le serveur et enregistré avec le message (`roll`) ;
  * - mise en scène : le fond ou l'ambiance du fil change à partir du message (`effect`), quand le lecteur
  *   arrive à sa hauteur. `hint` : texte d'aide de la ligne ; `needsSound` : seulement avec le module « Son ».
@@ -24,12 +24,12 @@ export const RP_COMMANDS = [
     command: 'fond', kind: 'background', label: 'Changer le fond (image jointe ; sans image : fond retiré)', keywords: ['image', 'decor'],
     hint: 'Joignez l’image du nouveau fond (sans image : fond retiré) · commentaire facultatif…',
   },
-  { command: 'fin-fond', kind: 'background', label: 'Revenir au fond du lieu', keywords: ['retirer'], hint: 'Retour au fond du lieu · commentaire facultatif…' },
+  { command: 'fin-fond', kind: 'background', label: 'Revenir au fond de départ (lieu, épisode)', keywords: ['retirer'], hint: 'Retour au fond de départ · commentaire facultatif…' },
   {
     command: 'ambiance', kind: 'ambience', label: 'Changer l’ambiance (son joint ; sans son : silence)', keywords: ['musique', 'son'], needsSound: true,
     hint: 'Joignez le son de la nouvelle ambiance (sans son : silence) · commentaire facultatif…',
   },
-  { command: 'fin-ambiance', kind: 'ambience', label: 'Revenir à l’ambiance du lieu', keywords: ['retirer'], needsSound: true, hint: 'Retour à l’ambiance du lieu · commentaire facultatif…' },
+  { command: 'fin-ambiance', kind: 'ambience', label: 'Revenir à l’ambiance de départ', keywords: ['retirer'], needsSound: true, hint: 'Retour à l’ambiance de départ · commentaire facultatif…' },
 ];
 
 export const findCommand = (command) => RP_COMMANDS.find((c) => c.command === command);
@@ -56,7 +56,7 @@ export function matchCommands(query, { sound = true } = {}) {
 /** La recherche ressemble-t-elle à un lancer de dés (« d6 », « 2d1… ») ? Les commandes passent alors en premier. */
 export const looksLikeDice = (query) => /^\d*d\d/i.test(query);
 
-/** Fond et ambiance en vigueur ('place' : ceux du lieu) : { background, ambience }, chacun 'place' | 'none' | message. */
+/** Fond et ambiance en vigueur ('place' : ceux de départ, du lieu ou de l'épisode) : { background, ambience }, chacun 'place' | 'none' | message. */
 export function activeEffects(base, messages, uptoId) {
   const state = { background: 'place', ambience: 'place' };
   const apply = (m) => {

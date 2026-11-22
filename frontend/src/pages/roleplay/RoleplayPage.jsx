@@ -12,8 +12,8 @@ import { entityColorVars } from '@/theme/universeTheme';
 import cards from '@/components/places/PlaceViews.module.scss';
 import { EmptyState, Spinner } from '@/components/ui/Feedback';
 import { SceneCard } from '@/components/roleplay/SceneCard';
-import { formatRpDate } from '@/components/roleplay/rpMarkup';
-import styles from '@/components/roleplay/Roleplay.module.scss';
+import { formatRpDate } from '@/components/messages/markup';
+import styles from '@/components/messages/Messages.module.scss';
 import { plural, universePath } from '@/utils/universe';
 import page from '../Page.module.scss';
 

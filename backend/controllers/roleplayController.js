@@ -1,57 +1,39 @@
 const { Op, fn, col } = require('sequelize');
 const sequelize = require('../config/database');
 const Place = require('../models/Place');
-const Character = require('../models/Character');
 const Episode = require('../models/Episode');
 const Story = require('../models/Story');
-const User = require('../models/User');
-const { RpScene, RpMessage, RpMessageCharacter, RpSceneEpisode, RpRead, isHrpContent } = require('../models/Roleplay');
-const { isAdmin, canEditEntity } = require('../services/auth');
+const { RpScene, RpMessage, RpMessageCharacter, RpSceneEpisode, RpRead } = require('../models/Roleplay');
+const { isAdmin } = require('../services/auth');
 const { broadcast } = require('../services/realtime');
-const { deleteUpload } = require('../services/universeTransfer');
-const { runCommand } = require('../services/rpCommands');
+const messages = require('../services/messages');
 
-// Sous-dossier d'uploads des images envoyées dans les fils (voir routes/roleplayRoutes.js)
-const IMAGE_FOLDER = 'roleplay/images';
-const SOUND_FOLDER = 'roleplay/sounds';
-exports.IMAGE_FOLDER = IMAGE_FOLDER;
-exports.SOUND_FOLDER = SOUND_FOLDER;
-const { MAX_IMAGE_SIZE } = require('../middlewares/upload');
+const { httpError, toId, toIds, handle: handleAs } = messages;
+
+// Sous-dossier d'uploads des pièces jointes envoyées dans les fils (/uploads/roleplay/images|sounds)
+exports.uploadAttachments = messages.attachmentsMiddleware('roleplay');
 
 /*
  * Roleplay écrit : fil de messages par lieu, scènes, liens scène ↔ épisode.
+ * Les messages eux-mêmes (écriture, modification, suppression) sont un système commun : services/messages.js.
+ * Ce contrôleur y ajoute ce qui est propre au roleplay : fils des lieux, déplacements des personnages, temps réel.
  * Lecture : tout compte connecté. Écriture (filtrée par middlewares/authorize.js) : éditeurs et admins, avec :
  * - écrire au nom d'un personnage : admins, ou éditeurs liés à ce personnage ;
- * - modifier / supprimer un message : son auteur, ou un admin ;
  * - supprimer une scène : son créateur, ou un admin.
  * Marquer un fil comme lu : tout compte connecté.
  */
 
-const MAX_CONTENT = 20000;
 const PAGE_SIZE = 50;
 
-const httpError = (status, message) => Object.assign(new Error(message), { status });
-const toId = (v) => (Number.isInteger(Number(v)) && Number(v) > 0 ? Number(v) : null);
-const toIds = (v) => (Array.isArray(v) ? [...new Set(v.map(toId).filter(Boolean))] : []);
-
-const handle = (label, fnc) => async (req, res) => {
-  try {
-    await fnc(req, res);
-  } catch (error) {
-    if (!error.status) console.error(`Erreur roleplay ${label}:`, error);
-    res.status(error.status || 500).json({ error: error.message });
-  }
-};
+const handle = (label, fnc) => handleAs(`roleplay ${label}`, fnc);
 
 // ---------------------------------------------------------------------------
-// Mise en forme des réponses
+// Déplacements des personnages (extension des messages)
 // ---------------------------------------------------------------------------
-
-const authorAttributes = ['id', 'displayName'];
 
 /**
  * Personnages des messages, dans l'ordre, avec pour chacun son message précédent et suivant (tous lieux confondus,
- * hors scènes hors roleplay) :
+ * hors messages hors des fils) :
  * [{ messageId, characterId, prevId, nextId }].
  */
 async function speakerLinks(messageIds) {
@@ -85,100 +67,18 @@ function travelsOf(message, links, placeOf) {
   return { arrivals, departures };
 }
 
-/** Messages (instances avec `author`) → JSON, avec les ids des personnages dans l'ordre et leurs déplacements. */
-async function serializeMessages(messages) {
-  if (!messages.length) return [];
-  const links = await speakerLinks(messages.map((m) => m.id));
-  const speakers = new Map();
-  for (const l of links) {
-    if (!speakers.has(l.messageId)) speakers.set(l.messageId, []);
-    speakers.get(l.messageId).push(l);
-  }
+/** Ajoute leurs déplacements aux messages des fils (les autres, scène hors roleplay ou récit d'épisode, n'en ont pas). */
+async function addTravels(rows, json) {
+  const inThreads = rows.filter((m) => m.placeId && !m.offThread);
+  if (!inThreads.length) return;
+  const links = await speakerLinks(inThreads.map((m) => m.id));
   const neighbourIds = [...new Set(links.flatMap((l) => [l.prevId, l.nextId]).filter(Boolean))];
   const neighbours = neighbourIds.length ? await RpMessage.findAll({ where: { id: neighbourIds }, attributes: ['id', 'placeId'], raw: true }) : [];
   const placeOf = new Map(neighbours.map((n) => [n.id, n.placeId]));
-  return messages.map((m) => ({
-    id: m.id,
-    placeId: m.placeId,
-    sceneId: m.sceneId,
-    content: m.content,
-    imagePath: m.imagePath,
-    soundPath: m.soundPath,
-    roll: m.roll || null,
-    effect: m.effect || null,
-    isHrp: m.isHrp,
-    author: m.author ? { id: m.author.id, displayName: m.author.displayName } : null,
-    characterIds: (speakers.get(m.id) || []).map((l) => l.characterId),
-    // Scène hors roleplay : en dehors de la chronologie des fils, pas d'arrivées ni de départs
-    travels: m.offThread ? { arrivals: [], departures: [] } : travelsOf(m, speakers.get(m.id) || [], placeOf),
-    createdAt: m.createdAt,
-    updatedAt: m.updatedAt,
-  }));
-}
-
-const loadMessage = async (id) => {
-  const message = await RpMessage.findByPk(id, { include: [{ model: User, as: 'author', attributes: authorAttributes }] });
-  return message ? (await serializeMessages([message]))[0] : null;
-};
-
-/** Scènes → JSON avec nombre de messages, dates, personnages et épisodes liés. */
-async function serializeScenes(scenes) {
-  if (!scenes.length) return [];
-  const ids = scenes.map((s) => s.id);
-  const stats = await RpMessage.findAll({
-    attributes: ['sceneId', [fn('COUNT', col('id')), 'count'], [fn('MIN', col('createdAt')), 'firstAt'], [fn('MAX', col('createdAt')), 'lastAt']],
-    where: { sceneId: ids },
-    group: ['sceneId'],
-    raw: true,
-  });
-  const [speakerRows] = await sequelize.query(
-    'SELECT DISTINCT m.sceneId, mc.characterId FROM rp_messages m JOIN rp_message_characters mc ON mc.messageId = m.id WHERE m.sceneId IN (:ids)',
-    { replacements: { ids } },
-  );
-  const episodes = await RpSceneEpisode.findAll({ where: { sceneId: ids }, raw: true });
-  return scenes.map((s) => {
-    const stat = stats.find((r) => r.sceneId === s.id);
-    return {
-      id: s.id,
-      placeId: s.placeId,
-      standalone: s.standalone,
-      title: s.title,
-      description: s.description,
-      createdBy: s.createdBy,
-      messageCount: Number(stat?.count || 0),
-      firstAt: stat?.firstAt || null,
-      lastAt: stat?.lastAt || null,
-      characterIds: speakerRows.filter((r) => r.sceneId === s.id).map((r) => r.characterId),
-      episodeIds: episodes.filter((e) => e.sceneId === s.id).map((e) => e.episodeId),
-    };
+  rows.forEach((m, i) => {
+    if (m.placeId && !m.offThread) json[i].travels = travelsOf(m, links.filter((l) => l.messageId === m.id), placeOf);
   });
 }
-
-const findPlace = async (placeId) => {
-  const place = await Place.findByPk(toId(placeId), { attributes: ['id', 'universe_id'] });
-  if (!place) throw httpError(404, 'Lieu non trouvé');
-  return place;
-};
-
-/** Vérifie que l'utilisateur peut écrire au nom de ces personnages (et qu'ils sont de l'univers du lieu). */
-async function checkSpeakers(user, place, characterIds) {
-  if (!characterIds.length) return;
-  const characters = await Character.findAll({ where: { id: characterIds, universe_id: place.universe_id }, attributes: ['id'] });
-  if (characters.length !== characterIds.length) throw httpError(400, 'Personnage inconnu dans cet univers.');
-  for (const id of characterIds) {
-    if (!(await canEditEntity(user, 'character', id))) {
-      throw httpError(403, 'Vous ne pouvez écrire qu’au nom des personnages qui vous sont liés.');
-    }
-  }
-}
-
-/** Texte d'un message ; `allowEmpty` : message accompagné d'une image. */
-const cleanContent = (content, { allowEmpty = false } = {}) => {
-  const text = typeof content === 'string' ? content.replace(/\r\n/g, '\n').trim() : '';
-  if (!text && !allowEmpty) throw httpError(400, 'Le message est vide.');
-  if (text.length > MAX_CONTENT) throw httpError(400, `Message trop long (${MAX_CONTENT} caractères maximum).`);
-  return text;
-};
 
 /**
  * Messages voisins (précédent et suivant de chaque personnage, tous lieux) d'un message créé, modifié ou supprimé :
@@ -200,21 +100,43 @@ async function refreshNeighbours(around, skip = []) {
     }
   }
   for (const id of ids) {
-    const message = await loadMessage(id);
-    if (message) broadcast(message.placeId, { type: 'message:updated', message });
+    const message = await messages.loadMessage(id);
+    if (message?.placeId) broadcast(message.placeId, { type: 'message:updated', message });
   }
 }
 
-const setSpeakers = (messageId, characterIds, transaction) =>
-  RpMessageCharacter.destroy({ where: { messageId }, transaction }).then(() =>
-    characterIds.length
-      ? RpMessageCharacter.bulkCreate(characterIds.map((characterId, position) => ({ messageId, characterId, position })), { transaction })
-      : null,
-  );
+const logRefresh = (err) => console.error('Erreur roleplay refreshNeighbours:', err);
+
+// Messages des fils modifiés / supprimés par les routes communes (/api/messages/:id) : temps réel et déplacements
+messages.extendMessages({
+  serialize: addTravels,
+  updated: (message, { previousCharacterIds }) => {
+    if (!message.placeId || message.offThread) return;
+    broadcast(message.placeId, { type: 'message:updated', message });
+    // Personnages changés : les déplacements de leurs messages voisins aussi
+    const changed = [
+      ...message.characterIds.filter((id) => id > 0 && !previousCharacterIds.includes(id)),
+      ...previousCharacterIds.filter((id) => !message.characterIds.includes(id)),
+    ];
+    if (changed.length) refreshNeighbours([{ messageId: message.id, characterIds: changed }], [message.id]).catch(logRefresh);
+  },
+  deleted: (row, { characterIds }) => {
+    if (!row.placeId || row.offThread) return;
+    broadcast(row.placeId, { type: 'message:deleted', messageId: row.id, sceneId: row.sceneId });
+    // Le personnage passe désormais directement du message précédent au suivant
+    refreshNeighbours([{ messageId: row.id, characterIds }]).catch(logRefresh);
+  },
+});
 
 // ---------------------------------------------------------------------------
-// Messages
+// Messages des fils
 // ---------------------------------------------------------------------------
+
+const findPlace = async (placeId) => {
+  const place = await Place.findByPk(toId(placeId), { attributes: ['id', 'universe_id'] });
+  if (!place) throw httpError(404, 'Lieu non trouvé');
+  return place;
+};
 
 /**
  * Fond et ambiance en vigueur juste avant un message : dernières commandes /fond… et /ambiance… plus anciennes
@@ -240,163 +162,34 @@ exports.listMessages = handle('listMessages', async (req, res) => {
   const limit = Math.min(Number(req.query.limit) || PAGE_SIZE, 200);
 
   const where = { placeId: place.id, offThread: false, ...(before && { id: { [Op.lt]: before } }) };
-  const rows = await RpMessage.findAll({
-    where,
-    include: [{ model: User, as: 'author', attributes: authorAttributes }],
-    order: [['id', 'DESC']],
-    limit: limit + 1,
-  });
+  const rows = await RpMessage.findAll({ where, include: [messages.authorInclude], order: [['id', 'DESC']], limit: limit + 1 });
   const hasMore = rows.length > limit;
   const page = rows.slice(0, limit).reverse();
-  res.json({ messages: await serializeMessages(page), hasMore, effectsBefore: await effectsBefore(place.id, page[0]?.id) });
+  res.json({ messages: await messages.serializeMessages(page), hasMore, effectsBefore: await effectsBefore(place.id, page[0]?.id) });
 });
 
-const MAX_PARTS = 20;
+/** Nouveaux messages dans le fil d'un lieu (format : services/messages.js, createMessages). */
+exports.createMessages = handle('createMessages', async (req, res) => {
+  const created = await messages.createMessages(req, async () => {
+    const place = await findPlace(req.params.placeId);
+    return { universeId: place.universe_id, values: { placeId: place.id } };
+  });
+  for (const message of created) broadcast(message.placeId, { type: 'message:created', message });
+  res.status(201).json(created);
+  // Message précédent de chaque personnage (souvent dans un autre lieu) : « est parti vers… »
+  // (personnages de l'univers seulement : les inconnus, id négatif, ne se déplacent pas)
+  refreshNeighbours(created.map((m) => ({ messageId: m.id, characterIds: m.characterIds.filter((id) => id > 0) })), created.map((m) => m.id)).catch(logRefresh);
+});
 
-/**
- * Nouveaux messages, envoyés d'un coup dans l'ordre (saisie avec /personnage ; un seul message = une partie) :
- * { parts: [{ content, characterIds, command? }] } en JSON, ou en multipart (`parts` en JSON, `image` / `sound`).
- * L'image va à la ligne « /fond » s'il y en a une, sinon au dernier message ; de même pour le son et « /ambiance ».
- * Tout ou rien : un message refusé annule les autres.
- */
-exports.createMessages = handle('createMessages', (req, res) => insertMessages(req, res, async () => ({ place: await findPlace(req.params.placeId), scene: null })));
-
-/** Nouveaux messages écrits dans une scène hors roleplay (même format que createMessages). */
-exports.createSceneMessages = handle('createSceneMessages', (req, res) =>
-  insertMessages(req, res, async () => {
+/** Nouveaux messages écrits dans une scène hors roleplay (même format) : hors des fils, rien d'autre à mettre à jour. */
+exports.createSceneMessages = handle('createSceneMessages', async (req, res) => {
+  const created = await messages.createMessages(req, async () => {
     const scene = await RpScene.findByPk(toId(req.params.id));
     if (!scene) throw httpError(404, 'Scène non trouvée');
     if (!scene.standalone) throw httpError(400, 'Les messages de cette scène s’écrivent dans le fil de son lieu.');
-    return findPlace(scene.placeId).then((place) => ({ place, scene }));
-  }));
-
-/** `destination()` → { place, scene } : scene null pour le fil du lieu, sinon la scène hors roleplay. */
-async function insertMessages(req, res, destination) {
-  const imageFile = req.files?.image?.[0];
-  const soundFile = req.files?.sound?.[0];
-  const imagePath = imageFile ? `/uploads/${IMAGE_FOLDER}/${imageFile.filename}` : null;
-  const soundPath = soundFile ? `/uploads/${SOUND_FOLDER}/${soundFile.filename}` : null;
-  try {
-    if (imageFile && imageFile.size > MAX_IMAGE_SIZE) throw httpError(400, 'Image trop lourde (5 Mo maximum).');
-    const { place, scene } = await destination();
-    let parts = req.body?.parts;
-    if (typeof parts === 'string') {
-      try {
-        parts = JSON.parse(parts);
-      } catch {
-        parts = null;
-      }
-    }
-    if (!Array.isArray(parts) || !parts.length) throw httpError(400, 'Aucun message à envoyer.');
-    if (parts.length > MAX_PARTS) throw httpError(400, `${MAX_PARTS} messages maximum à la fois.`);
-
-    // Commandes (/d20, /fond...) : tirées ou reconnues ici ; le texte devient facultatif (commentaire)
-    const commands = parts.map((part) => runCommand(part?.command));
-    const target = (effect) => {
-      const i = commands.findIndex((c) => c?.effect === effect);
-      return i === -1 ? parts.length - 1 : i;
-    };
-    const imageIndex = target('background');
-    const soundIndex = target('ambience');
-
-    const cleaned = [];
-    for (const [i, part] of parts.entries()) {
-      const characterIds = toIds(part?.characterIds);
-      await checkSpeakers(req.user, place, characterIds);
-      const image = i === imageIndex ? imagePath : null;
-      const sound = i === soundIndex ? soundPath : null;
-      const roll = commands[i]?.roll || null;
-      let effect = commands[i]?.effect || null;
-      // /fond sans image : fond retiré ; /ambiance sans son : silence
-      if (effect === 'background' && !image) effect = 'background:none';
-      if (effect === 'ambience' && !sound) effect = 'ambience:none';
-      const content = cleanContent(part?.content, { allowEmpty: Boolean(roll || effect || image || sound) });
-      cleaned.push({ content, characterIds, roll, effect, imagePath: image, soundPath: sound });
-    }
-
-    const ids = await sequelize.transaction(async (transaction) => {
-      const created = [];
-      for (const { content, characterIds, roll, effect, imagePath: image, soundPath: sound } of cleaned) {
-        const message = await RpMessage.create(
-          {
-            placeId: place.id, universe_id: place.universe_id, userId: req.user.id, content, roll, effect,
-            ...(scene && { sceneId: scene.id, offThread: true }),
-            imagePath: image, soundPath: sound, isHrp: !image && !sound && !roll && !effect && isHrpContent(content),
-          },
-          { transaction },
-        );
-        await setSpeakers(message.id, characterIds, transaction);
-        created.push(message.id);
-      }
-      return created;
-    });
-    const messages = [];
-    for (const id of ids) {
-      const message = await loadMessage(id);
-      messages.push(message);
-      if (!scene) broadcast(place.id, { type: 'message:created', message });
-    }
-    res.status(201).json(messages);
-    if (scene) return; // hors des fils : rien d'autre à mettre à jour
-    // Message précédent de chaque personnage (souvent dans un autre lieu) : « est parti vers… »
-    refreshNeighbours(messages.map((m) => ({ messageId: m.id, characterIds: m.characterIds })), ids).catch((err) =>
-      console.error('Erreur roleplay refreshNeighbours:', err));
-  } catch (error) {
-    // Envoi refusé : les fichiers reçus ne servent à rien
-    if (imagePath) deleteUpload(imagePath);
-    if (soundPath) deleteUpload(soundPath);
-    throw error;
-  }
-}
-
-const findOwnMessage = async (req) => {
-  const message = await RpMessage.findByPk(toId(req.params.id));
-  if (!message) throw httpError(404, 'Message non trouvé');
-  if (!isAdmin(req.user) && message.userId !== req.user.id) throw httpError(403, 'Seul l’auteur du message peut le modifier.');
-  return message;
-};
-
-exports.updateMessage = handle('updateMessage', async (req, res) => {
-  const message = await findOwnMessage(req);
-  const place = await findPlace(message.placeId);
-  const content = req.body?.content !== undefined
-    ? cleanContent(req.body.content, { allowEmpty: Boolean(message.imagePath || message.soundPath || message.roll || message.effect) })
-    : message.content;
-  const characterIds = req.body?.characterIds !== undefined ? toIds(req.body.characterIds) : null;
-
-  let current = [];
-  if (characterIds) {
-    // Personnages déjà présents : conservés même si l'auteur n'est plus lié à eux
-    current = (await RpMessageCharacter.findAll({ where: { messageId: message.id }, raw: true })).map((l) => l.characterId);
-    await checkSpeakers(req.user, place, characterIds.filter((id) => !current.includes(id)));
-  }
-  await sequelize.transaction(async (transaction) => {
-    await message.update({ content, isHrp: !message.imagePath && !message.soundPath && !message.roll && !message.effect && isHrpContent(content) }, { transaction });
-    if (characterIds) await setSpeakers(message.id, characterIds, transaction);
+    return { universeId: scene.universe_id, values: { placeId: scene.placeId, sceneId: scene.id, offThread: true } };
   });
-  const updated = await loadMessage(message.id);
-  res.json(updated);
-  if (message.offThread) return; // scène hors roleplay : pas dans les fils
-  broadcast(message.placeId, { type: 'message:updated', message: updated });
-  // Personnages changés : les déplacements de leurs messages voisins aussi
-  const changed = characterIds ? [...characterIds.filter((id) => !current.includes(id)), ...current.filter((id) => !characterIds.includes(id))] : [];
-  if (changed.length) {
-    refreshNeighbours([{ messageId: message.id, characterIds: changed }], [message.id]).catch((err) => console.error('Erreur roleplay refreshNeighbours:', err));
-  }
-});
-
-exports.deleteMessage = handle('deleteMessage', async (req, res) => {
-  const message = await findOwnMessage(req);
-  const { id, placeId, sceneId, imagePath, soundPath, offThread } = message;
-  const characterIds = (await RpMessageCharacter.findAll({ where: { messageId: id }, raw: true })).map((l) => l.characterId);
-  await message.destroy();
-  if (imagePath) deleteUpload(imagePath);
-  if (soundPath) deleteUpload(soundPath);
-  res.json({ id });
-  if (offThread) return; // scène hors roleplay : pas dans les fils
-  broadcast(placeId, { type: 'message:deleted', messageId: id, sceneId });
-  // Le personnage passe désormais directement du message précédent au suivant
-  refreshNeighbours([{ messageId: id, characterIds }]).catch((err) => console.error('Erreur roleplay refreshNeighbours:', err));
+  res.status(201).json(created);
 });
 
 /** Marque le fil d'un lieu comme lu jusqu'à { messageId } (jamais en arrière). */
@@ -517,15 +310,11 @@ exports.setEpisodeScenes = handle('setEpisodeScenes', async (req, res) => {
 exports.getScene = handle('getScene', async (req, res) => {
   const scene = await RpScene.findByPk(toId(req.params.id));
   if (!scene) throw httpError(404, 'Scène non trouvée');
-  const messages = await RpMessage.findAll({
-    where: { sceneId: scene.id },
-    include: [{ model: User, as: 'author', attributes: authorAttributes }],
-    order: [['id', 'ASC']],
-  });
+  const list = await messages.listMessages({ sceneId: scene.id });
   const [serialized] = await serializeScenes([scene]);
   // Fond / ambiance en vigueur au début de la scène (vue « visual novel »)
-  const before = scene.standalone ? { background: null, ambience: null } : await effectsBefore(scene.placeId, messages[0]?.id);
-  res.json({ ...serialized, messages: await serializeMessages(messages), effectsBefore: before });
+  const before = scene.standalone ? { background: null, ambience: null } : await effectsBefore(scene.placeId, list[0]?.id);
+  res.json({ ...serialized, messages: list, effectsBefore: before });
 });
 
 /** Comparateur de scènes (ids) dans l'ordre chronologique : premier message, puis id (scènes vides à la fin). */
@@ -664,15 +453,8 @@ exports.deleteScene = handle('deleteScene', async (req, res) => {
   if (!scene) throw httpError(404, 'Scène non trouvée');
   if (!isAdmin(req.user) && scene.createdBy !== req.user.id) throw httpError(403, 'Seul le créateur de la scène peut la supprimer.');
   const { id, placeId } = scene;
-  if (scene.standalone) {
-    // Scène hors roleplay : ses messages n'existent que par elle
-    const messages = await RpMessage.findAll({ where: { sceneId: id, offThread: true }, attributes: ['id', 'imagePath', 'soundPath'] });
-    await RpMessage.destroy({ where: { id: messages.map((m) => m.id) } });
-    for (const m of messages) {
-      if (m.imagePath) deleteUpload(m.imagePath);
-      if (m.soundPath) deleteUpload(m.soundPath);
-    }
-  }
+  // Scène hors roleplay : ses messages n'existent que par elle
+  if (scene.standalone) await messages.destroyMessages({ sceneId: id, offThread: true });
   await scene.destroy(); // scène du roleplay : les messages restent dans le fil (sceneId → NULL)
   broadcast(placeId, { type: 'scenes:changed' });
   res.json({ id });

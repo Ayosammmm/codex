@@ -1,5 +1,5 @@
 import { useLayoutEffect, useRef, useState } from 'react';
-import styles from './Roleplay.module.scss';
+import styles from './Messages.module.scss';
 
 /*
  * Bulle de cri façon BD / manga (2 « ! » et plus) : un contour SVG calculé en pixels à partir de la taille

@@ -1,22 +1,22 @@
 import { IMG, uploadUrl } from '@/api/client';
 import { soundName } from '@/components/sound/soundFiles';
-import { CommandIcon } from './RpRoll';
-import styles from './Roleplay.module.scss';
+import { CommandIcon } from './MessageRoll';
+import styles from './Messages.module.scss';
 
 const LABELS = {
   background: 'Nouveau fond',
   'background:none': 'Fond retiré',
-  'background:reset': 'Retour au fond du lieu',
+  'background:reset': 'Retour au fond de départ',
   ambience: 'Nouvelle ambiance',
   'ambience:none': 'Silence : ambiance coupée',
-  'ambience:reset': 'Retour à l’ambiance du lieu',
+  'ambience:reset': 'Retour à l’ambiance de départ',
 };
 
 /**
  * Commande de mise en scène d'un message (/fond, /ambiance, /fin-fond, /fin-ambiance) : ce qui change à partir d'ici.
  * L'image / le son du message sont le nouveau fond / la nouvelle ambiance (vignette, nom du son).
  */
-export function RpEffect({ message }) {
+export function MessageEffect({ message }) {
   const { effect } = message;
   if (!LABELS[effect]) return null;
   const kind = effect.split(':')[0];

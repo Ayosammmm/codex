@@ -7,6 +7,7 @@ const EpisodeCharacter = require("../models/EpisodeCharacter");
 const { deleteUpload } = require("../services/universeTransfer");
 const { isHexColor } = require("../utils/colors");
 const { imageHandlers } = require("../utils/entityImages");
+const messages = require("../services/messages");
 
 const ROLES = EpisodeCharacter.getAttributes().role.values;
 const CHARACTER_ATTRIBUTES = ["id", "firstname", "name", "title", "avatar", "colors"];
@@ -24,7 +25,6 @@ const toIds = (list) => [...new Set(list.map(toId).filter(Boolean))];
 function pickEpisodeFields(body) {
   const data = {};
   if (body.title !== undefined) data.title = typeof body.title === "string" ? body.title.trim() : body.title;
-  if (body.description !== undefined) data.description = body.description || null;
   if (body.order !== undefined) data.order = toId(body.order);
   if (body.backgroundColor !== undefined) data.backgroundColor = isHexColor(body.backgroundColor) ? body.backgroundColor.toLowerCase() : null;
   return data;
@@ -117,6 +117,8 @@ exports.delete = async (req, res) => {
   try {
     const episode = await Episode.findByPk(req.params.id);
     if (!episode) return res.status(404).json({ error: "Épisode non trouvé" });
+    // Récit : ses messages et leurs pièces jointes
+    await messages.destroyMessages({ episodeId: episode.id });
     await episode.destroy();
     deleteUpload(episode.background);
     res.json({ message: "Épisode supprimé avec succès" });
@@ -130,3 +132,26 @@ exports.delete = async (req, res) => {
 const images = imageHandlers({ Model: Episode, folders: { background: "episodes/backgrounds" }, loadDetail: loadEpisodeDetail, notFound: "Épisode non trouvé" });
 exports.uploadImageField = images.upload;
 exports.deleteImageField = images.remove;
+
+// 🔹 Récit de l'épisode, en messages (système commun avec le roleplay : services/messages.js).
+// Il s'écrit au nom de n'importe quel personnage de l'univers, par qui peut modifier l'épisode (middlewares/authorize.js).
+
+/** Fond et ambiance de départ du récit : aucun (fond de l'épisode, pas d'ambiance), mais même format que le roleplay. */
+const NO_EFFECTS = { background: null, ambience: null };
+
+exports.listMessages = messages.handle("épisode messages", async (req, res) => {
+  const episode = await Episode.findByPk(messages.toId(req.params.id), { attributes: ["id"] });
+  if (!episode) throw messages.httpError(404, "Épisode non trouvé");
+  res.json({ messages: await messages.listMessages({ episodeId: episode.id }), effectsBefore: NO_EFFECTS });
+});
+
+exports.uploadMessageAttachments = messages.attachmentsMiddleware("episodes/messages");
+
+exports.createMessages = messages.handle("épisode messages", async (req, res) => {
+  const created = await messages.createMessages(req, async () => {
+    const episode = await Episode.findByPk(messages.toId(req.params.id), { attributes: ["id", "universe_id"] });
+    if (!episode) throw messages.httpError(404, "Épisode non trouvé");
+    return { universeId: episode.universe_id, values: { episodeId: episode.id, offThread: true }, linkedOnly: false };
+  });
+  res.status(201).json(created);
+});

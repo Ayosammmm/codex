@@ -1,8 +1,8 @@
 import { Link } from 'react-router';
 import { CharacterAvatar } from '@/components/characters/CharacterAvatar';
 import { plural, universePath } from '@/utils/universe';
-import { formatRpDate } from './rpMarkup';
-import styles from './Roleplay.module.scss';
+import { formatRpDate } from '@/components/messages/markup';
+import styles from '@/components/messages/Messages.module.scss';
 
 /**
  * Carte d'une scène de roleplay : titre, lieu, personnages, nombre de messages et dates.

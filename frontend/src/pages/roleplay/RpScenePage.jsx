@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Link, useOutletContext, useParams, useSearchParams } from 'react-router';
 import { ArrowLeft, ChevronLeft, ChevronRight, EyeOff, Pencil, Play } from '@/components/ui/icons';
+import { uploadUrl } from '@/api/client';
 import { useEntityList } from '@/api/queries';
 import { useScene, useSceneNeighbours } from '@/api/roleplay';
 import { usePermissions } from '@/auth/auth';
@@ -8,16 +9,16 @@ import { getModulesState, isModuleEnabled } from '@/config/modules';
 import { Button } from '@/components/ui/Button';
 import { EmptyState, Spinner } from '@/components/ui/Feedback';
 import { RpMessage } from '@/components/roleplay/RpMessage';
-import { RpVisualNovel } from '@/components/roleplay/RpVisualNovel';
-import { continuesMessage, formatRpDate } from '@/components/roleplay/rpMarkup';
-import styles from '@/components/roleplay/Roleplay.module.scss';
+import { MessageVisualNovel } from '@/components/messages/MessageVisualNovel';
+import { continuesMessage, formatRpDate } from '@/components/messages/markup';
+import styles from '@/components/messages/Messages.module.scss';
 import { plural, universePath } from '@/utils/universe';
 import page from '../Page.module.scss';
 
 /**
  * Lecture d'une scène (/roleplay/scenes/:sceneId), sans modification : titre, épisodes, messages et suppression
  * se modifient dans l'édition (RpSceneEditPage, bouton « Modifier »), y compris l'écriture d'une scène hors roleplay.
- * `?vue=vn` : lecture en visual novel, en plein écran (voir RpVisualNovel).
+ * `?vue=vn` : lecture en visual novel, en plein écran (voir MessageVisualNovel).
  * `?histoire=<id>` : scène lue depuis une histoire ; les scènes précédente / suivante sont alors celles de l'histoire
  * (ordre des épisodes), sinon celles de l'univers dans l'ordre chronologique.
  */
@@ -140,15 +141,17 @@ export default function RpScenePage() {
       <SceneNav universe={universe} neighbours={neighbours} sceneHref={sceneHref} />
 
       {visualNovel && scene.messages.some((m) => !m.isHrp) && (
-        <RpVisualNovel
+        <MessageVisualNovel
           key={scene.id}
-          scene={scene}
-          place={place}
+          title={scene.title}
+          messages={scene.messages}
+          effectsBefore={scene.effectsBefore}
+          backdrop={{ image: uploadUrl(place?.background), color: place?.backgroundColor }}
+          ambience={uploadUrl(place?.ambientSound || place?.themeSound)}
           charactersById={charactersById}
           soundOn={soundOn}
-          previous={neighbours?.previous}
-          next={neighbours?.next}
-          sceneHref={(id) => sceneHref(id, { vn: true })}
+          previous={neighbours?.previous && { href: sceneHref(neighbours.previous.id, { vn: true }), title: neighbours.previous.title }}
+          next={neighbours?.next && { href: sceneHref(neighbours.next.id, { vn: true }), title: neighbours.next.title }}
           onClose={() => setVisualNovel(false)}
         />
       )}
