@@ -89,7 +89,7 @@ export function PlaceForm({ universe, place, state, refs, modules, errors, sound
           </div>
         </FormSection>
 
-        <FormSection id="image" title="Image" description="L’illustration du lieu. 5 Mo maximum.">
+        <FormSection id="image" title="Image" description="L’illustration du lieu. Compressée au-delà de 5 Mo.">
           <ImagePicker
             label="Bannière"
             hint="Format large, ex. 1800 × 600"

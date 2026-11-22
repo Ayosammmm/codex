@@ -48,7 +48,7 @@ export function StoryForm({ universe, story, state, errors, modFields, collectio
           </div>
         </FormSection>
 
-        <FormSection id="couverture" title="Couverture" description="Affichée en tête de l’histoire et dans l’archive. 5 Mo maximum.">
+        <FormSection id="couverture" title="Couverture" description="Affichée en tête de l’histoire et dans l’archive. Compressée au-delà de 5 Mo.">
           <ImagePicker
             label="Image"
             hint="Format large, ex. 1800 × 600"

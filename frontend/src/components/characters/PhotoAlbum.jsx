@@ -6,9 +6,8 @@ import { Spinner } from '@/components/ui/Feedback';
 import { useToast } from '@/components/ui/Toast';
 import { cx } from '@/components/ui/cx';
 import { toMemoryFile } from '@/components/ui/memoryFile';
+import { compressionNotice, fitImage } from '@/components/ui/compressImage';
 import styles from './PhotoAlbum.module.scss';
-
-const MAX_SIZE = 5 * 1024 * 1024;
 
 /**
  * Album photo d'une entité. Les ajouts et suppressions sont enregistrés immédiatement
@@ -24,12 +23,20 @@ export function PhotoAlbum({ entityType, entityId }) {
 
   const addFiles = async (fileList) => {
     const files = [...(fileList || [])];
-    const valid = files.filter((f) => f.type.startsWith('image/') && f.size <= MAX_SIZE);
-    if (valid.length < files.length) toast.error('Certains fichiers ont été ignorés (images de 5 Mo maximum).');
+    const valid = files.filter((f) => f.type.startsWith('image/'));
+    if (valid.length < files.length) toast.error('Certains fichiers ont été ignorés (seules les images sont acceptées).');
     setUploading((n) => n + valid.length);
     // Copie immédiate en mémoire : les envois sont successifs, les derniers fichiers
-    // seraient sinon relus du disque bien après le dépôt (voir memoryFile.js)
-    const copies = await Promise.allSettled(valid.map(toMemoryFile));
+    // seraient sinon relus du disque bien après le dépôt (voir memoryFile.js).
+    // Au-delà de 5 Mo, la version compressée en tient lieu.
+    const copies = await Promise.allSettled(
+      valid.map(async (f) => {
+        const fitted = await fitImage(f);
+        if (!fitted.compressed) return toMemoryFile(f);
+        toast.info(`« ${f.name} » : ${compressionNotice(fitted)}`);
+        return fitted.file;
+      }),
+    );
     for (const [i, file] of valid.entries()) {
       try {
         if (copies[i].status === 'rejected') throw copies[i].reason;

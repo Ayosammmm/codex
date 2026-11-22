@@ -39,7 +39,7 @@ export function PlaceMapEditor({ place, places, image, onImageChange, mapPreview
     <div className={styles.root}>
       <ImagePicker
         label="Image de la carte"
-        hint="Plan, carte dessinée… 5 Mo maximum"
+        hint="Plan, carte dessinée… (compressée au-delà de 5 Mo)"
         aspect="16 / 9"
         className={styles.picker}
         currentUrl={uploadUrl(place?.mapImage)}

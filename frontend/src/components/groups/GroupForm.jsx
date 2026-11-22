@@ -90,7 +90,7 @@ export function GroupForm({ universe, group, state, refs, errors, sound, modFiel
           </div>
         </FormSection>
 
-        <FormSection id="images" title="Logo et bannière" description="5 Mo maximum par image.">
+        <FormSection id="images" title="Logo et bannière" description="Compressées au-delà de 5 Mo.">
           <div className={styles.imagesGrid}>
             <ImagePicker label="Logo" hint="Carré" aspect="1" currentUrl={uploadUrl(group?.image, IMG.card)} value={images.image} onChange={(v) => setImage('image', v)} onError={toast.error} />
             <ImagePicker label="Bannière" hint="Format large, ex. 1600 × 400" aspect="4 / 1" dropClassName={styles.bannerDrop} currentUrl={uploadUrl(group?.banner, IMG.card)} value={images.banner} onChange={(v) => setImage('banner', v)} onError={toast.error} />

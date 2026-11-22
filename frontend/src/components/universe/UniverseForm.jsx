@@ -118,7 +118,7 @@ const BACKGROUND_MODES = [
 function ImagesSection({ universe, form, update, images, setImage, onError }) {
   const current = (field) => uploadUrl(universe?.[field], IMG.card);
   return (
-    <FormSection id="images" title="Images" description="Logo, bannière et fond d’ambiance de l’univers. 5 Mo maximum par image.">
+    <FormSection id="images" title="Images" description="Logo, bannière et fond d’ambiance de l’univers. Compressées au-delà de 5 Mo.">
       <div className={styles.imagesGrid}>
         <ImagePicker
           label="Logo"

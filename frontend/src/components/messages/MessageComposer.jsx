@@ -8,6 +8,8 @@ import { CharacterAvatar } from '@/components/characters/CharacterAvatar';
 import { characterName } from '@/config/characters';
 import { normalizeText } from '@/components/entity/useListState';
 import { cx } from '@/components/ui/cx';
+import { compressionNotice, fitImage } from '@/components/ui/compressImage';
+import { useToast } from '@/components/ui/Toast';
 import { MessageContent } from './Message';
 import { RP_MARKUP } from './markup';
 import { useAutoGrow } from './autoGrow';
@@ -16,7 +18,6 @@ import { RP_COMMANDS, findCommand, looksLikeDice, matchCommands } from './comman
 import { CommandIcon } from './MessageRoll';
 import styles from './Messages.module.scss';
 
-const MAX_IMAGE_SIZE = 5 * 1024 * 1024; // même limite que le serveur
 const MAX_SUGGESTIONS = 8;
 
 const readSpeakers = (key) => {
@@ -109,7 +110,7 @@ function matchCharacters(characters, query, currentForms) {
  *   (« // » : plusieurs personnages parlent en même temps).
  * - Retour arrière en début de ligne : retire le dernier badge, puis fusionne avec la ligne précédente.
  * - Entrée envoie toutes les lignes d'un coup, Maj+Entrée va à la ligne.
- * - Une image peut être jointe (bouton, collage, glisser-déposer ; 5 Mo max), au dernier message ;
+ * - Une image peut être jointe (bouton, collage, glisser-déposer ; compressée au-delà de 5 Mo), au dernier message ;
  *   de même pour un son (20 Mo max) si le module « Son » est actif (`soundEnabled`).
  * - « /d20 », « /2d6+1 », « /pileface » : jet de hasard (tiré par le serveur), au nom des personnages
  *   de la ligne ; le texte de la ligne devient un commentaire facultatif.
@@ -154,6 +155,7 @@ export function MessageComposer({ characters, storageKey, onSend, onError, sendi
   const [help, setHelp] = useState(false);
   const [preview, setPreview] = useState(false);
   const [image, setImage] = useState(null); // { file, url }
+  const toast = useToast();
   const [sound, setSound] = useState(null); // { file, url }
   const soundRef = useRef(null);
   const [dragging, setDragging] = useState(false);
@@ -198,15 +200,21 @@ export function MessageComposer({ characters, storageKey, onSend, onError, sendi
   })();
 
   // Image, ou son si le module « Son » est actif
-  const attach = (file) => {
+  const attach = async (file) => {
     if (!file) return;
     if (soundEnabled && isSoundFile(file)) {
       if (file.size > MAX_SOUND_SIZE) return onError?.('Son trop lourd (20 Mo maximum).');
       return setSound({ file, url: URL.createObjectURL(file) });
     }
     if (!file.type.startsWith('image/')) return onError?.(soundEnabled ? 'Seuls les images et les sons peuvent être envoyés.' : 'Seules les images peuvent être envoyées.');
-    if (file.size > MAX_IMAGE_SIZE) return onError?.('Image trop lourde (5 Mo maximum).');
-    setImage({ file, url: URL.createObjectURL(file) });
+    // Au-delà de 5 Mo (limite du serveur) : compressée, avec notification
+    try {
+      const fitted = await fitImage(file);
+      if (fitted.compressed) toast?.info(compressionNotice(fitted));
+      setImage({ file: fitted.file, url: URL.createObjectURL(fitted.file) });
+    } catch (err) {
+      onError?.(err.message);
+    }
   };
   const imageFrom = (dataTransfer) =>
     [...(dataTransfer?.files || [])].find((f) => f.type.startsWith('image/') || (soundEnabled && isSoundFile(f)));

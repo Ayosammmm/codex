@@ -3,9 +3,9 @@ import { ImagePlus, RefreshCw, Trash2 } from '@/components/ui/icons';
 import { Button } from './Button';
 import { cx } from './cx';
 import { toMemoryFile } from './memoryFile';
+import { compressionNotice, fitImage } from './compressImage';
+import { useToast } from './Toast';
 import styles from './ImagePicker.module.scss';
-
-const MAX_SIZE = 5 * 1024 * 1024; // aligné sur la limite du backend
 
 /** Première image du presse-papiers d'un événement `paste` (capture d'écran, « Copier l'image »...). */
 const clipboardImage = (e) => {
@@ -16,7 +16,7 @@ const clipboardImage = (e) => {
 };
 
 /**
- * Choix d'une image (clic, glisser-déposer ou collage) avec aperçu.
+ * Choix d'une image (clic, glisser-déposer ou collage) avec aperçu. Au-delà de 5 Mo, elle est compressée (avec notification).
  * Le collage (Ctrl+V) vise le champ survolé ou sélectionné : plusieurs champs peuvent cohabiter.
  * - currentUrl : image enregistrée
  * - value      : File choisi (nouvelle image) | null (image retirée) | undefined (inchangée)
@@ -26,6 +26,7 @@ const clipboardImage = (e) => {
 export function ImagePicker({ label, hint, currentUrl, value, onChange, aspect = '16 / 9', className, dropClassName, onError }) {
   const inputRef = useRef(null);
   const [dragging, setDragging] = useState(false);
+  const toast = useToast();
 
   const fileUrl = useMemo(() => (value instanceof File ? URL.createObjectURL(value) : null), [value]);
   useEffect(() => () => fileUrl && URL.revokeObjectURL(fileUrl), [fileUrl]);
@@ -35,10 +36,12 @@ export function ImagePicker({ label, hint, currentUrl, value, onChange, aspect =
   const pick = async (file) => {
     if (!file) return;
     if (!file.type.startsWith('image/')) return onError?.('Le fichier doit être une image.');
-    if (file.size > MAX_SIZE) return onError?.('L’image ne doit pas dépasser 5 Mo.');
     // L'envoi n'a lieu qu'à l'enregistrement du formulaire : on garde une copie en mémoire
+    // (au-delà de 5 Mo, la version compressée en est déjà une)
     try {
-      onChange(await toMemoryFile(file));
+      const fitted = await fitImage(file);
+      if (fitted.compressed) toast?.info(compressionNotice(fitted));
+      onChange(fitted.compressed ? fitted.file : await toMemoryFile(file));
     } catch (err) {
       onError?.(err.message);
     }

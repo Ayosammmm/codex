@@ -54,7 +54,7 @@ export function EventForm({ event, state, refs, modules, errors, modFields, coll
           </fieldset>
         </FormSection>
 
-        <FormSection id="image" title="Illustration" description="5 Mo maximum.">
+        <FormSection id="image" title="Illustration" description="Compressée au-delà de 5 Mo.">
           <ImagePicker label="Image" aspect="16 / 9" className={form.background} currentUrl={uploadUrl(event?.image, IMG.card)} value={images.image} onChange={(v) => setImage('image', v)} onError={toast.error} />
         </FormSection>
 

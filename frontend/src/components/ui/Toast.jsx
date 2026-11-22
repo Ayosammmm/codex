@@ -6,7 +6,7 @@ import styles from './Toast.module.scss';
 const ToastContext = createContext(null);
 let nextId = 1;
 
-/** Notifications éphémères : const toast = useToast(); toast.success('...') */
+/** Notifications éphémères : const toast = useToast(); toast.success('...') (aussi .info, .error) */
 export function ToastProvider({ children }) {
   const [toasts, setToasts] = useState([]);
 
@@ -16,13 +16,13 @@ export function ToastProvider({ children }) {
     (type, message) => {
       const id = nextId++;
       setToasts((list) => [...list.slice(-3), { id, type, message }]);
-      setTimeout(() => dismiss(id), type === 'error' ? 7000 : 4000);
+      setTimeout(() => dismiss(id), type === 'success' ? 4000 : 7000);
     },
     [dismiss],
   );
 
   const api = useMemo(
-    () => ({ success: (m) => push('success', m), error: (m) => push('error', m) }),
+    () => ({ success: (m) => push('success', m), info: (m) => push('info', m), error: (m) => push('error', m) }),
     [push],
   );
 
@@ -36,8 +36,8 @@ export function ToastProvider({ children }) {
             role={t.type === 'error' ? 'alert' : 'status'}
             className={styles.toast}
           >
-            {t.type === 'error' ? (
-              <CircleAlert className={cx(styles.icon, styles.error)} aria-hidden />
+            {t.type !== 'success' ? (
+              <CircleAlert className={cx(styles.icon, styles[t.type])} aria-hidden />
             ) : (
               <CircleCheck className={cx(styles.icon, styles.success)} aria-hidden />
             )}
