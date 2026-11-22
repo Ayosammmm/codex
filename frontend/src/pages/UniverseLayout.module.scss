@@ -52,6 +52,11 @@
   @include up(lg) {
     display: none;
   }
+
+  // Lecture en visual novel (plein écran) : masquée
+  :global(html.vn-open) & {
+    display: none;
+  }
 }
 
 .topbarIdentity {

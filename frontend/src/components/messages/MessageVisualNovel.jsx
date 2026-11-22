@@ -137,6 +137,12 @@ export function MessageVisualNovel({ title, messages, effectsBefore, backdrop, a
   const image = current && !current.effect && current.imagePath ? uploadUrl(current.imagePath) : null;
   const stop = (e) => e.stopPropagation();
 
+  // Plein écran : la navigation de l'univers (sidebar, barre du haut) est masquée tant que la lecture est ouverte
+  useEffect(() => {
+    document.documentElement.classList.add('vn-open');
+    return () => document.documentElement.classList.remove('vn-open');
+  }, []);
+
   return (
     <div className={styles.vn} role="dialog" aria-modal="true" aria-label={`Visual novel : ${title}`} onClick={() => !ended && go(index + 1)}>
       <MessageBackdrop image={background} color={effects.background === 'place' ? backdrop?.color : null} vivid />

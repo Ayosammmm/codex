@@ -35,6 +35,12 @@ $rail-width: 4.25rem; // sidebar réduite (grand écran)
   }
 }
 
+// Lecture en visual novel (plein écran, voir MessageVisualNovel) : navigation masquée
+:global(html.vn-open) .sidebar,
+:global(html.vn-open) .overlay {
+  display: none;
+}
+
 .open {
   transform: none;
   visibility: visible;
