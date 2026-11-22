@@ -1,7 +1,7 @@
 import { IMG, uploadUrl } from '@/api/client';
 import { Fragment, useMemo } from 'react';
 import { Link } from 'react-router';
-import { TrendingUp } from '@/components/ui/icons';
+import { ChevronDown, TrendingUp } from '@/components/ui/icons';
 import { usePhotos } from '@/api/queries';
 import {
   TRAIT_GROUPS,
@@ -155,7 +155,16 @@ export function CharacterSheet({ universe, character: c, modules, actions, formS
               </div>
             )}
             {traitsSet && <CharacterTraits scores={c} />}
-            {traitsSet && <Traits character={c} />}
+            {traitsSet && (
+              // Détail des 24 traits : replié, la synthèse ci-dessus suffit par défaut
+              <details className={styles.traitDetails}>
+                <summary className={styles.traitSummary}>
+                  <ChevronDown aria-hidden className={styles.traitSummaryIcon} />
+                  Voir les détails
+                </summary>
+                <Traits character={c} />
+              </details>
+            )}
           </SheetSection>
         )}
 

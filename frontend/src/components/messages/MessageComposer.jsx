@@ -8,7 +8,7 @@ import { CharacterAvatar } from '@/components/characters/CharacterAvatar';
 import { characterName } from '@/config/characters';
 import { normalizeText } from '@/components/entity/useListState';
 import { cx } from '@/components/ui/cx';
-import { compressionNotice, fitImage } from '@/components/ui/compressImage';
+import { compressionNotice, isImageFile, prepareImage } from '@/components/ui/compressImage';
 import { useToast } from '@/components/ui/Toast';
 import { MessageContent } from './Message';
 import { RP_MARKUP } from './markup';
@@ -206,10 +206,11 @@ export function MessageComposer({ characters, storageKey, onSend, onError, sendi
       if (file.size > MAX_SOUND_SIZE) return onError?.('Son trop lourd (20 Mo maximum).');
       return setSound({ file, url: URL.createObjectURL(file) });
     }
-    if (!file.type.startsWith('image/')) return onError?.(soundEnabled ? 'Seuls les images et les sons peuvent être envoyés.' : 'Seules les images peuvent être envoyées.');
+    if (!isImageFile(file)) return onError?.(soundEnabled ? 'Seuls les images et les sons peuvent être envoyés.' : 'Seules les images peuvent être envoyées.');
     // Au-delà de 5 Mo (limite du serveur) : compressée, avec notification
     try {
-      const fitted = await fitImage(file);
+      // Copie en mémoire : le fichier déposé pourrait ne plus être lisible à l'envoi (voir memoryFile.js)
+      const fitted = await prepareImage(file);
       if (fitted.compressed) toast?.info(compressionNotice(fitted));
       setImage({ file: fitted.file, url: URL.createObjectURL(fitted.file) });
     } catch (err) {
@@ -217,7 +218,7 @@ export function MessageComposer({ characters, storageKey, onSend, onError, sendi
     }
   };
   const imageFrom = (dataTransfer) =>
-    [...(dataTransfer?.files || [])].find((f) => f.type.startsWith('image/') || (soundEnabled && isSoundFile(f)));
+    [...(dataTransfer?.files || [])].find((f) => isImageFile(f) || (soundEnabled && isSoundFile(f)));
 
   const update = (key, patch) => setSegments((list) => list.map((s) => (s.key === key ? { ...s, ...patch } : s)));
 

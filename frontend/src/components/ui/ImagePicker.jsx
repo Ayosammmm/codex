@@ -2,8 +2,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { ImagePlus, RefreshCw, Trash2 } from '@/components/ui/icons';
 import { Button } from './Button';
 import { cx } from './cx';
-import { toMemoryFile } from './memoryFile';
-import { compressionNotice, fitImage } from './compressImage';
+import { compressionNotice, isImageFile, prepareImage } from './compressImage';
 import { useToast } from './Toast';
 import styles from './ImagePicker.module.scss';
 
@@ -35,13 +34,12 @@ export function ImagePicker({ label, hint, currentUrl, value, onChange, aspect =
 
   const pick = async (file) => {
     if (!file) return;
-    if (!file.type.startsWith('image/')) return onError?.('Le fichier doit être une image.');
+    if (!isImageFile(file)) return onError?.('Le fichier doit être une image.');
     // L'envoi n'a lieu qu'à l'enregistrement du formulaire : on garde une copie en mémoire
-    // (au-delà de 5 Mo, la version compressée en est déjà une)
     try {
-      const fitted = await fitImage(file);
+      const fitted = await prepareImage(file);
       if (fitted.compressed) toast?.info(compressionNotice(fitted));
-      onChange(fitted.compressed ? fitted.file : await toMemoryFile(file));
+      onChange(fitted.file);
     } catch (err) {
       onError?.(err.message);
     }

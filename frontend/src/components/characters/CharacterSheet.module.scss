@@ -154,6 +154,43 @@
 }
 
 // --- Personnalité ---
+.traitDetails {
+  margin-top: space(4);
+
+  &[open] > .traitSummary {
+    margin-bottom: space(4);
+  }
+
+  &[open] .traitSummaryIcon {
+    transform: rotate(180deg);
+  }
+}
+
+.traitSummary {
+  display: inline-flex;
+  align-items: center;
+  gap: space(1);
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--fg-muted);
+  cursor: pointer;
+  list-style: none;
+
+  &::-webkit-details-marker {
+    display: none;
+  }
+
+  &:hover {
+    color: var(--fg);
+  }
+}
+
+.traitSummaryIcon {
+  width: 1rem;
+  height: 1rem;
+  transition: transform 150ms ease;
+}
+
 .traitGroups {
   display: grid;
   gap: space(6);

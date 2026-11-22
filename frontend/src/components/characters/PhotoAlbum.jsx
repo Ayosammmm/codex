@@ -5,8 +5,7 @@ import { usePhotoMutations, usePhotos } from '@/api/queries';
 import { Spinner } from '@/components/ui/Feedback';
 import { useToast } from '@/components/ui/Toast';
 import { cx } from '@/components/ui/cx';
-import { toMemoryFile } from '@/components/ui/memoryFile';
-import { compressionNotice, fitImage } from '@/components/ui/compressImage';
+import { compressionNotice, isImageFile, prepareImage } from '@/components/ui/compressImage';
 import styles from './PhotoAlbum.module.scss';
 
 /**
@@ -23,7 +22,7 @@ export function PhotoAlbum({ entityType, entityId }) {
 
   const addFiles = async (fileList) => {
     const files = [...(fileList || [])];
-    const valid = files.filter((f) => f.type.startsWith('image/'));
+    const valid = files.filter(isImageFile);
     if (valid.length < files.length) toast.error('Certains fichiers ont été ignorés (seules les images sont acceptées).');
     setUploading((n) => n + valid.length);
     // Copie immédiate en mémoire : les envois sont successifs, les derniers fichiers
@@ -31,9 +30,8 @@ export function PhotoAlbum({ entityType, entityId }) {
     // Au-delà de 5 Mo, la version compressée en tient lieu.
     const copies = await Promise.allSettled(
       valid.map(async (f) => {
-        const fitted = await fitImage(f);
-        if (!fitted.compressed) return toMemoryFile(f);
-        toast.info(`« ${f.name} » : ${compressionNotice(fitted)}`);
+        const fitted = await prepareImage(f);
+        if (fitted.compressed) toast.info(`« ${f.name} » : ${compressionNotice(fitted)}`);
         return fitted.file;
       }),
     );

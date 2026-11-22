@@ -6,11 +6,34 @@
  * La transparence est gardée en WebP ; une image animée (GIF) devient fixe.
  */
 
+import { toMemoryFile } from './memoryFile';
+
 export const MAX_IMAGE_SIZE = 5 * 1024 * 1024; // limite du serveur
 const TARGET_SIZE = MAX_IMAGE_SIZE - 64 * 1024; // marge pour l'enveloppe multipart
 const MAX_DIMENSION = 4096; // au-delà, l'image est réduite d'emblée
 const QUALITIES = [0.9, 0.8, 0.7, 0.6];
 const MAX_SHRINKS = 6;
+
+// Type MIME d'après l'extension : un fichier glissé depuis l'explorateur arrive parfois sans type
+// (navigateur Flatpak / Snap), et le serveur refuse un fichier qui ne se déclare pas comme image.
+const IMAGE_TYPES = {
+  jpg: 'image/jpeg', jpeg: 'image/jpeg', jfif: 'image/jpeg', png: 'image/png', gif: 'image/gif', webp: 'image/webp',
+  avif: 'image/avif', bmp: 'image/bmp', svg: 'image/svg+xml', tif: 'image/tiff', tiff: 'image/tiff',
+  ico: 'image/x-icon', heic: 'image/heic', heif: 'image/heif',
+};
+const typeFromName = (name) => IMAGE_TYPES[/\.([^.]+)$/.exec(name || '')?.[1]?.toLowerCase()] || '';
+
+/** Le fichier est-il une image ? (type MIME, ou extension quand le navigateur n'en donne pas) */
+export const isImageFile = (file) => !!file && (file.type.startsWith('image/') || (!file.type && !!typeFromName(file.name)));
+
+/** Type d'image du fichier (déduit de l'extension s'il manque). */
+export const imageType = (file) => file.type || typeFromName(file.name);
+
+/**
+ * Copie en mémoire d'une image choisie ou déposée, avec son type (voir memoryFile.js), compressée au-delà
+ * de la limite : `{ file, compressed, originalSize }`. La lecture du fichier d'origine commence aussitôt.
+ */
+export const prepareImage = async (file, maxSize = MAX_IMAGE_SIZE) => fitImage(await toMemoryFile(file, imageType(file)), maxSize);
 
 /** Taille lisible : « 8,2 Mo ». */
 export const formatSize = (bytes) =>
