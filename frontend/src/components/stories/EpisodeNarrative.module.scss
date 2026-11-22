@@ -32,3 +32,25 @@
   flex-wrap: wrap;
   gap: space(2);
 }
+
+// Saisie insérée avant / après un message du récit
+.insertion {
+  display: grid;
+  gap: space(2);
+  margin-block: space(2);
+  padding: space(3);
+  border: var(--border-w) dashed var(--primary);
+  border-radius: var(--r);
+  background: color-mix(in oklab, var(--primary) 6%, var(--surface));
+}
+
+.insertionHead {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: space(2);
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--fg-muted);
+}

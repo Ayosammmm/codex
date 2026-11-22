@@ -63,8 +63,9 @@ export function MessageVisualNovel({ title, messages, effectsBefore, backdrop, a
   const current = step?.message;
 
   // --- Fond et ambiance en vigueur au message lu ---
-  const effectMessages = messages.filter((m) => m.effect);
-  const effects = activeEffects(effectsBefore, effectMessages, current?.id ?? 0);
+  // Commandes déjà passées, dans l'ordre de lecture (un message inséré n'a pas forcément l'id le plus petit)
+  const reached = current ? messages.slice(0, messages.indexOf(current) + 1) : [];
+  const effects = activeEffects(effectsBefore, reached.filter((m) => m.effect), Infinity);
   const background =
     effects.background === 'place' ? backdrop?.image : effects.background === 'none' ? null : uploadUrl(effects.background.imagePath);
   const ambience = !soundOn ? null : effects.ambience === 'place' ? baseAmbience : effects.ambience === 'none' ? null : uploadUrl(effects.ambience.soundPath);

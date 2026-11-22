@@ -1,4 +1,5 @@
 const path = require('path');
+const { Op, literal } = require('sequelize');
 const sequelize = require('../config/database');
 const Character = require('../models/Character');
 const Episode = require('../models/Episode');
@@ -97,6 +98,8 @@ async function serializeMessages(rows) {
     sceneId: m.sceneId,
     episodeId: m.episodeId,
     offThread: m.offThread,
+    // Ordre de lecture (insertion entre deux messages, sinon ordre d'écriture)
+    sortKey: m.sortKey ?? m.id,
     content: m.content,
     imagePath: m.imagePath,
     soundPath: m.soundPath,
@@ -124,8 +127,35 @@ const loadMessage = async (id) => {
   return message ? (await serializeMessages([message]))[0] : null;
 };
 
-/** Messages correspondant à `where`, du plus ancien au plus récent. */
-const listMessages = async (where) => serializeMessages(await Message.findAll({ where, include: [authorInclude], order: [['id', 'ASC']] }));
+// Clé d'ordre de lecture d'un message
+const READING_KEY = literal('COALESCE(`RpMessage`.`sortKey`, `RpMessage`.`id`)');
+
+/** Messages correspondant à `where`, dans l'ordre de lecture (ordre d'écriture, sauf messages insérés). */
+const listMessages = async (where) =>
+  serializeMessages(await Message.findAll({ where, include: [authorInclude], order: [[READING_KEY, 'ASC'], ['id', 'ASC']] }));
+
+/**
+ * Clés d'ordre de `count` messages insérés juste après (`position.after`) ou juste avant (`position.before`) un
+ * message de `scope` (ex. { episodeId }) : réparties entre ce message et son voisin. null : pas d'insertion (à la fin).
+ */
+async function insertionKeys(scope, position, count) {
+  const after = toId(position?.after);
+  const before = toId(position?.before);
+  const anchorId = after || before;
+  if (!anchorId) return null;
+  const anchor = await Message.findOne({ where: { ...scope, id: anchorId }, attributes: ['id', 'sortKey'] });
+  if (!anchor) throw httpError(404, 'Message de référence introuvable.');
+  const key = anchor.sortKey ?? anchor.id;
+  const neighbour = await Message.findOne({
+    where: { ...scope, [Op.and]: [sequelize.where(READING_KEY, { [after ? Op.gt : Op.lt]: key })] },
+    attributes: ['id', 'sortKey'],
+    order: [[READING_KEY, after ? 'ASC' : 'DESC']],
+  });
+  // Sans voisin : jusqu'à une unité plus loin (avant le prochain id écrit à la fin)
+  const other = neighbour ? neighbour.sortKey ?? neighbour.id : key + (after ? 1 : -1);
+  const [lo, hi] = after ? [key, other] : [other, key];
+  return Array.from({ length: count }, (_, i) => lo + ((hi - lo) * (i + 1)) / (count + 1));
+}
 
 // ---------------------------------------------------------------------------
 // Écriture
@@ -179,7 +209,8 @@ const hrpOnly = (m, content) => !m.imagePath && !m.soundPath && !m.roll && !m.ef
  * corps { parts: [{ content, characterIds, command? }] } en JSON, ou en multipart (`parts` en JSON, `image` / `sound`).
  * L'image va à la ligne « /fond » s'il y en a une, sinon au dernier message ; de même pour le son et « /ambiance ».
  * Tout ou rien : un message refusé annule les autres (et les fichiers reçus sont supprimés).
- * `destination()` → { universeId, values, linkedOnly } : `values` = colonnes du message (placeId, episodeId, offThread…).
+ * `destination(count)` → { universeId, values, linkedOnly, sortKeys? } : `values` = colonnes du message (placeId, episodeId,
+ * offThread…) ; `sortKeys` : clés d'ordre des `count` messages insérés entre deux autres (voir insertionKeys).
  * Renvoie les messages créés (JSON).
  */
 async function createMessages(req, destination) {
@@ -190,7 +221,6 @@ async function createMessages(req, destination) {
   const soundPath = upload(soundFile);
   try {
     if (imageFile && imageFile.size > MAX_IMAGE_SIZE) throw httpError(400, 'Image trop lourde (5 Mo maximum).');
-    const { universeId, values, linkedOnly = true } = await destination();
     let parts = req.body?.parts;
     if (typeof parts === 'string') {
       try {
@@ -201,6 +231,7 @@ async function createMessages(req, destination) {
     }
     if (!Array.isArray(parts) || !parts.length) throw httpError(400, 'Aucun message à envoyer.');
     if (parts.length > MAX_PARTS) throw httpError(400, `${MAX_PARTS} messages maximum à la fois.`);
+    const { universeId, values, linkedOnly = true, sortKeys = null } = await destination(parts.length);
 
     // Commandes (/d20, /fond...) : tirées ou reconnues ici ; le texte devient facultatif (commentaire)
     const commands = parts.map((part) => runCommand(part?.command));
@@ -228,9 +259,9 @@ async function createMessages(req, destination) {
 
     const ids = await sequelize.transaction(async (transaction) => {
       const created = [];
-      for (const { speakers, ...data } of cleaned) {
+      for (const [i, { speakers, ...data }] of cleaned.entries()) {
         const message = await Message.create(
-          { ...values, ...data, universe_id: universeId, userId: req.user.id, isHrp: hrpOnly(data, data.content) },
+          { ...values, ...data, ...(sortKeys && { sortKey: sortKeys[i] }), universe_id: universeId, userId: req.user.id, isHrp: hrpOnly(data, data.content) },
           { transaction },
         );
         await setSpeakers(message.id, speakers, transaction);
@@ -311,6 +342,7 @@ module.exports = {
   serializeMessages,
   loadMessage,
   listMessages,
+  insertionKeys,
   canEditEpisode,
   createMessages,
   updateMessage,

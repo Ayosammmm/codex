@@ -7,11 +7,16 @@ import { request } from './client';
  * soundPath, isHrp, placeId, sceneId, episodeId, travels, createdAt, updatedAt }.
  */
 
-/** Envoi de plusieurs messages d'un coup : { parts: [{ content, characterIds, command? }], image?, sound? }. */
-export const postMessages = (path, { parts, image, sound }) => {
-  if (!image && !sound) return request(path, { method: 'POST', body: { parts } });
+/**
+ * Envoi de plusieurs messages d'un coup : { parts: [{ content, characterIds, command? }], image?, sound?, after?, before? }
+ * (`after` / `before` : id du message après / avant lequel les insérer, récit d'épisode).
+ */
+export const postMessages = (path, { parts, image, sound, after, before }) => {
+  const position = { ...(after && { after }), ...(before && { before }) };
+  if (!image && !sound) return request(path, { method: 'POST', body: { parts, ...position } });
   const form = new FormData();
   form.append('parts', JSON.stringify(parts));
+  for (const [key, id] of Object.entries(position)) form.append(key, String(id));
   if (image) form.append('image', image);
   if (sound) form.append('sound', sound);
   return request(path, { method: 'POST', body: form });
@@ -34,11 +39,13 @@ export const messageKeys = {
 export const useEpisodeMessages = (episodeId, { enabled = true } = {}) =>
   useQuery({ queryKey: messageKeys.episode(episodeId), queryFn: () => messagesApi.episode(episodeId), enabled: enabled && Number(episodeId) > 0 });
 
-/** Écriture, modification et suppression des messages du récit d'un épisode. */
+/** Écriture (à la fin, ou insérés avec `after` / `before`), modification et suppression des messages du récit d'un épisode. */
 export const useEpisodeMessageMutations = (episodeId) => {
   const queryClient = useQueryClient();
   const key = messageKeys.episode(episodeId);
-  const setMessages = (fn) => queryClient.setQueryData(key, (data) => data && { ...data, messages: fn(data.messages) });
+  // Ordre de lecture (`sortKey`) : un message inséré prend sa place entre les autres
+  const setMessages = (fn) =>
+    queryClient.setQueryData(key, (data) => data && { ...data, messages: fn(data.messages).sort((a, b) => a.sortKey - b.sortKey || a.id - b.id) });
   return {
     createMany: useMutation({
       mutationFn: (data) => messagesApi.createEpisodeMessages(episodeId, data),

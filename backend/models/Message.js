@@ -73,6 +73,9 @@ const Message = sequelize.define('RpMessage', {
   sceneId: { type: DataTypes.INTEGER, allowNull: true },
   // Récit d'un épisode
   episodeId: { type: DataTypes.INTEGER, allowNull: true },
+  // Ordre de lecture, quand un message est inséré entre deux autres (récit d'épisode) ; null : ordre d'écriture (id).
+  // Les messages se lisent par COALESCE(sortKey, id) croissant : voir services/messages.js (insertionKeys).
+  sortKey: { type: DataTypes.DOUBLE, allowNull: true },
   // Absent du fil du lieu (scène hors roleplay, récit d'épisode)
   offThread: { type: DataTypes.BOOLEAN, allowNull: false, defaultValue: false },
   userId: { type: DataTypes.INTEGER, allowNull: true },

@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react';
 import { useSearchParams } from 'react-router';
-import { EyeOff, Play } from '@/components/ui/icons';
+import { ArrowDown, ArrowUp, Check, EyeOff, Play } from '@/components/ui/icons';
 import { useEntityList } from '@/api/queries';
 import { useEpisodeMessageMutations, useEpisodeMessages } from '@/api/messages';
 import { characterName } from '@/config/characters';
@@ -12,6 +12,7 @@ import { Message } from '@/components/messages/Message';
 import { MessageComposer } from '@/components/messages/MessageComposer';
 import { MessageVisualNovel } from '@/components/messages/MessageVisualNovel';
 import { continuesMessage } from '@/components/messages/markup';
+import { speakerOf } from '@/components/messages/unknownSpeakers';
 import messageStyles from '@/components/messages/Messages.module.scss';
 import { universePath } from '@/utils/universe';
 import sheet from '@/components/entity/SheetSection.module.scss';
@@ -128,6 +129,47 @@ export function EpisodeNarrativeEditor({ universe, episode, castIds = [], soundO
     return [...characters].sort((a, b) => Number(cast.has(b.id)) - Number(cast.has(a.id)) || characterName(a).localeCompare(characterName(b), 'fr'));
   }, [characters, castIds]);
   const messages = data?.messages || [];
+  // Point d'insertion : { id, where: 'before' | 'after' } (saisie affichée à côté de ce message), ou null
+  const [insertion, setInsertion] = useState(null);
+  const send = (sent, position) =>
+    mutations.createMany.mutateAsync({ ...sent, ...position }).catch((err) => {
+      toast.error(err.message);
+      throw err;
+    });
+  const composerProps = {
+    characters: playable,
+    storageKey: `codex.messageSpeakers.episode.${episode.id}`,
+    onError: toast.error,
+    sending: mutations.createMany.isPending,
+    soundEnabled: soundOn,
+  };
+
+  /** Saisie insérée avant / après un message : la suite s'écrit à la suite des messages insérés, jusqu'à « Terminer ». */
+  const insertionComposer = (m) => {
+    const author = m.characterIds.map((id) => speakerOf(charactersById, id)).filter(Boolean).map(characterName).join(' & ') || 'la narration';
+    return (
+      <div className={styles.insertion}>
+        <div className={styles.insertionHead}>
+          <span>
+            {insertion.where === 'before' ? 'Insérer avant' : 'Insérer après'} le message de {author}
+          </span>
+          <Button size="sm" variant="ghost" icon={Check} onClick={() => setInsertion(null)}>
+            Terminer
+          </Button>
+        </div>
+        <MessageComposer
+          key={`${insertion.where}-${m.id}`}
+          {...composerProps}
+          onSend={(sent) =>
+            send(sent, { [insertion.where]: insertion.id }).then((created) => {
+              // « Après » : les messages suivants vont après le dernier inséré ; « avant » : toujours juste avant ce message
+              if (insertion.where === 'after' && created.length) setInsertion({ id: created[created.length - 1].id, where: 'after' });
+            })
+          }
+        />
+      </div>
+    );
+  };
 
   return (
     <div className={styles.editor}>
@@ -145,6 +187,18 @@ export function EpisodeNarrativeEditor({ universe, episode, castIds = [], soundO
             manage={(m) => ({
               // Qui peut modifier l'épisode gère tout son récit (vérifié aussi par le serveur)
               canManage: true,
+              extraActions: (
+                <>
+                  <button type="button" onClick={() => setInsertion({ id: m.id, where: 'before' })} aria-label="Insérer un message avant" title="Insérer avant">
+                    <ArrowUp aria-hidden />
+                  </button>
+                  <button type="button" onClick={() => setInsertion({ id: m.id, where: 'after' })} aria-label="Insérer un message après" title="Insérer après">
+                    <ArrowDown aria-hidden />
+                  </button>
+                </>
+              ),
+              before: insertion?.where === 'before' && insertion.id === m.id ? insertionComposer(m) : null,
+              after: insertion?.where === 'after' && insertion.id === m.id ? insertionComposer(m) : null,
               onSave: (content) => mutations.update.mutateAsync({ id: m.id, data: { content } }).catch((err) => toast.error(err.message)),
               onDelete: () => {
                 if (window.confirm('Supprimer ce message du récit ?')) mutations.remove.mutate(m.id, { onError: (err) => toast.error(err.message) });
@@ -154,20 +208,8 @@ export function EpisodeNarrativeEditor({ universe, episode, castIds = [], soundO
         )}
       </div>
       <div className={messageStyles.sceneComposer}>
-        <MessageComposer
-          key={episode.id}
-          characters={playable}
-          storageKey={`codex.messageSpeakers.episode.${episode.id}`}
-          onSend={(sent) =>
-            mutations.createMany.mutateAsync(sent).catch((err) => {
-              toast.error(err.message);
-              throw err;
-            })
-          }
-          onError={toast.error}
-          sending={mutations.createMany.isPending}
-          soundEnabled={soundOn}
-        />
+        {/* À la fin du récit */}
+        <MessageComposer key={episode.id} {...composerProps} onSend={(sent) => send(sent)} />
       </div>
     </div>
   );

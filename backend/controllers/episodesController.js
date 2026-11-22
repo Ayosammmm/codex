@@ -147,11 +147,13 @@ exports.listMessages = messages.handle("épisode messages", async (req, res) => 
 
 exports.uploadMessageAttachments = messages.attachmentsMiddleware("episodes/messages");
 
+// `after` / `before` (id d'un message du récit) : messages insérés juste après / avant lui, sinon ajoutés à la fin
 exports.createMessages = messages.handle("épisode messages", async (req, res) => {
-  const created = await messages.createMessages(req, async () => {
+  const created = await messages.createMessages(req, async (count) => {
     const episode = await Episode.findByPk(messages.toId(req.params.id), { attributes: ["id", "universe_id"] });
     if (!episode) throw messages.httpError(404, "Épisode non trouvé");
-    return { universeId: episode.universe_id, values: { episodeId: episode.id, offThread: true }, linkedOnly: false };
+    const sortKeys = await messages.insertionKeys({ episodeId: episode.id }, { after: req.body?.after, before: req.body?.before }, count);
+    return { universeId: episode.universe_id, values: { episodeId: episode.id, offThread: true }, linkedOnly: false, sortKeys };
   });
   res.status(201).json(created);
 });

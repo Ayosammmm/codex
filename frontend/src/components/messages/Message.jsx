@@ -77,11 +77,11 @@ const shortTime = new Intl.DateTimeFormat('fr-FR', { hour: '2-digit', minute: '2
  * `before` / `after` : contenu affiché juste avant / après le message (déplacements des personnages dans le roleplay…).
  * Un jet de hasard (/d20…) ou une mise en scène (/fond, /ambiance…) s'affiche sous le texte, qui en est le commentaire ;
  * l'image / le son d'une mise en scène ne sont pas affichés comme pièces jointes (ce sont le fond / l'ambiance).
- * - `canManage` : auteur ou admin (modifier / supprimer)
+ * - `canManage` : auteur ou admin (modifier / supprimer) ; `extraActions` : boutons ajoutés à côté (ex. insérer avant / après)
  * - `selectable` / `selected` / `onSelect(event)` : mode « scènes » (case à cocher ; un clic n'importe où sur
  *   le message la coche aussi, Maj+clic pour une plage)
  */
-export function Message({ universe, message, charactersById, before, after, hideHrp, continued = false, canManage, onSave, onDelete, selectable, selected, onSelect, className }) {
+export function Message({ universe, message, charactersById, before, after, hideHrp, continued = false, canManage, extraActions, onSave, onDelete, selectable, selected, onSelect, className }) {
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState(message.content);
   // Zone de modification : à la hauteur de son texte
@@ -106,6 +106,7 @@ export function Message({ universe, message, charactersById, before, after, hide
   const timeTitle = [`${formatRpDate(message.createdAt)} · par ${authorName}`, edited && `modifié le ${formatRpDate(message.updatedAt)}`].filter(Boolean).join(' · ');
   const actions = canManage && !editing && !selectable && (
     <span className={cx(styles.actions, compact && styles.floatingActions)}>
+      {extraActions}
       <button type="button" onClick={() => { setDraft(message.content); setEditing(true); }} aria-label="Modifier le message" title="Modifier">
         <Pencil aria-hidden />
       </button>
