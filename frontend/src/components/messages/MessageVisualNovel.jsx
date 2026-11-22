@@ -217,6 +217,8 @@ export function MessageVisualNovel({ title, messages, effectsBefore, backdrop, a
                   <Fragment key={c.id}>
                     {i > 0 && ' & '}
                     {characterName(c)}
+                    {/* Autre forme que la forme par défaut : son nom, entre parenthèses */}
+                    {c.formId && <span className={styles.vnFormName}> ({c.formName || 'Forme sans nom'})</span>}
                   </Fragment>
                 ))}
               </p>

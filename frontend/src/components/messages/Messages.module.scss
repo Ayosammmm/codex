@@ -1960,3 +1960,9 @@
   font-weight: 400;
   color: var(--fg-muted);
 }
+
+// Visual novel : nom de la forme dans l'étiquette du nom (même couleur de texte que le nom, plus discret)
+.vnFormName {
+  font-weight: 400;
+  opacity: 0.85;
+}
