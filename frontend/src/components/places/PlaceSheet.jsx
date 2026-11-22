@@ -63,7 +63,6 @@ export function PlaceSheet({ universe, place: p, ancestors, subplaces, fauna = [
               </div>
             )}
             <h1 className={styles.name}>{p.name}</h1>
-            {stats.length > 0 && <p className={styles.stats}>{stats.join(' · ')}</p>}
           </div>
           {actions && <div className={styles.actions}>{actions}</div>}
         </div>
