@@ -23,9 +23,10 @@ router.delete("/:id/background", controller.deleteBackground);
 router.post("/:id/themeSound", uploadThemeSound.single("themeSound"), controller.uploadThemeSound);
 router.delete("/:id/themeSound", controller.deleteThemeSound);
 
-// Autres formes du personnage (transformations, changements physiques)
+// Autres formes du personnage (transformations, époques ; « evolve » : faire évoluer)
 router.post("/:id/forms", forms.createForm);
 router.put("/:id/forms/reorder", forms.reorderForms);
+router.post("/:id/forms/evolve", forms.evolve);
 router.put("/:id/forms/:formId", forms.updateForm);
 router.delete("/:id/forms/:formId", forms.deleteForm);
 router.post("/:id/forms/:formId/avatar", uploadFormAvatar.single("avatar"), forms.uploadFile("avatar"));

@@ -11,6 +11,25 @@
   display: contents;
 }
 
+// Liste des époques : mise en avant quand l'une d'elles est affichée
+.past {
+  width: auto;
+  max-width: 16rem;
+
+  select {
+    height: 2rem;
+    border-radius: 999px;
+    font-size: 0.8125rem;
+  }
+}
+
+.pastActive select {
+  border-color: var(--entity-primary, var(--primary));
+  background-color: color-mix(in oklab, var(--entity-primary, var(--primary)) 16%, var(--surface));
+  color: var(--fg);
+  font-weight: 600;
+}
+
 .option {
   display: inline-flex;
   align-items: center;

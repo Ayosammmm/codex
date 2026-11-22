@@ -177,7 +177,10 @@ export const useReorderEntity = (resource, universeId) => {
 
 /**
  * Mutations des autres formes d'un personnage. Chacune renvoie la fiche complète, mise en cache.
- * - add.mutate({ formName? })                 : nouvelle forme, copie de la forme par défaut (sans les images)
+ * - add.mutate({ formName?, formType? })      : nouvelle forme, copie de la forme par défaut (sans les images) ;
+ *                                               `formType` : 'transformation' (défaut) ou 'temporal' (époque, la plus ancienne)
+ * - evolve.mutate({ formName? })              : faire évoluer (la forme par défaut devient l’époque la plus récente)
+ * - reorder.mutate(ids)                       : nouvel ordre des formes d'un type
  * - save.mutate({ formId, values, images })   : `images` comme useSaveEntity ({ champ: File | null })
  * - remove.mutate(formId)
  */
@@ -203,7 +206,9 @@ export const useCharacterFormMutations = (characterId) => {
     onError,
   });
   const remove = useMutation({ mutationFn: (formId) => characterFormsApi.remove(characterId, formId), onSuccess, onError });
-  return { add, save, remove };
+  const evolve = useMutation({ mutationFn: (data) => characterFormsApi.evolve(characterId, data), onSuccess, onError });
+  const reorder = useMutation({ mutationFn: (ids) => characterFormsApi.reorder(characterId, ids), onSuccess, onError });
+  return { add, save, remove, evolve, reorder };
 };
 
 // --- Albums photo ---

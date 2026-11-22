@@ -9,16 +9,17 @@ import { useModFieldsToc } from '@/mods/useModFieldColumns';
 import { CollectionsSection } from '@/components/collections/CollectionsSection';
 import { useCollectionFilter } from '@/components/collections/collectionFilter';
 import { Link, useNavigate, useOutletContext, useParams, useSearchParams } from 'react-router';
-import { ArrowLeft, Trash2 } from '@/components/ui/icons';
+import { ArrowLeft, ChevronLeft, ChevronRight, Sparkles, Trash2 } from '@/components/ui/icons';
 import { useCharacterFormMutations, useDeleteEntity, useSaveEntity } from '@/api/queries';
 import { characterName } from '@/config/characters';
 import { Button } from '@/components/ui/Button';
 import { Dialog } from '@/components/ui/Dialog';
+import { Field, Input } from '@/components/ui/Field';
 import { useToast } from '@/components/ui/Toast';
 import { CharacterDangerZone, CharacterForm } from '@/components/characters/CharacterForm';
 import { useCharacterForm } from '@/components/characters/useCharacterForm';
 import { CharacterFormSwitcher } from '@/components/characters/CharacterFormSwitcher';
-import { DEFAULT_FORM_NAME, characterInForm, findForm } from '@/components/characters/characterForms';
+import { DEFAULT_FORM_NAME, TEMPORAL, characterInForm, findForm, isPastForm, pastForms } from '@/components/characters/characterForms';
 import { FormActionBar } from '@/components/universe/FormActionBar';
 import { useUnsavedChangesGuard } from '@/components/universe/useUnsavedChangesGuard';
 import { universePath } from '@/utils/universe';
@@ -64,6 +65,7 @@ function CharacterEditor({ universe, character, form = null }) {
   const [, setParams] = useSearchParams();
   const [pendingForm, setPendingForm] = useState(null); // changement de forme à confirmer (modifications non enregistrées)
   const [confirmDeleteForm, setConfirmDeleteForm] = useState(false);
+  const [evolveName, setEvolveName] = useState(null); // nom de l’époque à créer (dialogue « Faire évoluer » ouvert)
   const hasForms = (character?.forms?.length ?? 0) > 0;
   const formLabel = (f) => f?.formName || (f ? 'Forme sans nom' : character?.formName || DEFAULT_FORM_NAME);
   const soundOn = isModuleEnabled(getModulesState(universe), 'sound');
@@ -81,19 +83,50 @@ function CharacterEditor({ universe, character, form = null }) {
   const goToForm = (value) => setParams(value ? { forme: String(value) } : {}, { replace: true });
   const selectForm = (value) => (state.isDirty ? setPendingForm(value) : goToForm(value));
 
-  const addForm = () =>
+  const createdForm = (saved) => {
+    const known = new Set((character.forms || []).map((f) => f.id));
+    return (saved.forms || []).find((f) => !known.has(f.id));
+  };
+
+  // Transformation (à la suite des autres) ou époque (la plus ancienne)
+  const addForm = (formType) =>
     formMutations.add.mutate(
-      {},
+      { formType },
       {
         onSuccess: (saved) => {
-          const known = new Set((character.forms || []).map((f) => f.id));
-          const created = (saved.forms || []).find((f) => !known.has(f.id));
-          toast.success(`« ${formLabel(created)} » a été ajoutée : une copie de la forme par défaut, sans les images.`);
+          const created = createdForm(saved);
+          toast.success(
+            formType === TEMPORAL
+              ? `« ${formLabel(created)} » a été ajoutée comme époque la plus ancienne : une copie de la forme par défaut, sans les images.`
+              : `« ${formLabel(created)} » a été ajoutée : une copie de la forme par défaut, sans les images.`,
+          );
           if (created) goToForm(created.id);
         },
         onError: (err) => toast.error(err.message),
       },
     );
+
+  // Faire évoluer : la forme par défaut est copiée (images comprises) en époque la plus récente, puis perd ses images
+  const onEvolve = () =>
+    formMutations.evolve.mutate(
+      { formName: evolveName.trim() },
+      {
+        onSuccess: (saved) => {
+          setEvolveName(null);
+          toast.success(`« ${formLabel(createdForm(saved))} » rejoint les époques. Ajoutez le nouveau portrait et le nouveau fond.`);
+        },
+        onError: (err) => toast.error(err.message),
+      },
+    );
+
+  // Chronologie d’une époque : échange avec sa voisine plus ancienne (-1) ou plus récente (+1)
+  const past = pastForms(character);
+  const pastIndex = isForm && isPastForm(form) ? past.findIndex((f) => f.id === form.id) : -1;
+  const movePast = (delta) => {
+    const ids = past.map((f) => f.id);
+    [ids[pastIndex], ids[pastIndex + delta]] = [ids[pastIndex + delta], ids[pastIndex]];
+    formMutations.reorder.mutate(ids, { onError: (err) => toast.error(err.message) });
+  };
 
   const onDeleteForm = () =>
     formMutations.remove.mutate(form.id, {
@@ -177,7 +210,34 @@ function CharacterEditor({ universe, character, form = null }) {
             adding={formMutations.add.isPending}
             addDisabled={state.isDirty}
             addTitle={state.isDirty ? 'Enregistrez d’abord vos modifications' : 'Copie de la forme par défaut (sans les images), à modifier ensuite'}
+            actions={
+              !isForm && (
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  icon={Sparkles}
+                  onClick={() => setEvolveName(character.formName || '')}
+                  disabled={state.isDirty || formMutations.evolve.isPending}
+                  title={state.isDirty ? 'Enregistrez d’abord vos modifications' : 'Garder la forme actuelle dans le passé, puis lui donner une nouvelle apparence'}
+                >
+                  Faire évoluer
+                </Button>
+              )
+            }
           />
+        )}
+        {pastIndex >= 0 && past.length > 1 && (
+          <div className={page.formChronology}>
+            <span>
+              Époque {pastIndex + 1} sur {past.length}, de la plus ancienne à la plus récente
+            </span>
+            <Button size="sm" variant="ghost" icon={ChevronLeft} onClick={() => movePast(-1)} disabled={pastIndex === 0 || state.isDirty || formMutations.reorder.isPending}>
+              Plus ancienne
+            </Button>
+            <Button size="sm" variant="ghost" icon={ChevronRight} onClick={() => movePast(1)} disabled={pastIndex === past.length - 1 || state.isDirty || formMutations.reorder.isPending}>
+              Plus récente
+            </Button>
+          </div>
         )}
 
         <form onSubmit={submit} noValidate>
@@ -254,6 +314,35 @@ function CharacterEditor({ universe, character, form = null }) {
               </>
             }
           />
+        )}
+        {!isNew && !isForm && (
+          <Dialog
+            open={evolveName !== null}
+            onClose={() => setEvolveName(null)}
+            dismissible={!formMutations.evolve.isPending}
+            size="sm"
+            title="Faire évoluer le personnage ?"
+            description="La forme actuelle est gardée telle quelle, images comprises, comme époque la plus récente. Elle perd ensuite son portrait et son fond, pour accueillir sa nouvelle apparence."
+            footer={
+              <>
+                <Button variant="ghost" onClick={() => setEvolveName(null)} disabled={formMutations.evolve.isPending}>Annuler</Button>
+                <Button variant="primary" icon={Sparkles} onClick={onEvolve} loading={formMutations.evolve.isPending}>Faire évoluer</Button>
+              </>
+            }
+          >
+            <Field label="Nom de l’époque accomplie" hint="Ex. : Enfance, Avant la guerre…">
+              {(field) => (
+                <Input
+                  {...field}
+                  value={evolveName ?? ''}
+                  onChange={(e) => setEvolveName(e.target.value)}
+                  placeholder={`Époque ${past.length + 1}`}
+                  maxLength={255}
+                  onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), onEvolve())}
+                />
+              )}
+            </Field>
+          </Dialog>
         )}
         <Dialog
           open={pendingForm !== null}

@@ -46,7 +46,10 @@ export const characterFormsApi = {
   create: (characterId, data = {}) => request(`/characters/${characterId}/forms`, { method: 'POST', body: data }),
   update: (characterId, formId, data) => request(`/characters/${characterId}/forms/${formId}`, { method: 'PUT', body: data }),
   remove: (characterId, formId) => request(`/characters/${characterId}/forms/${formId}`, { method: 'DELETE' }),
+  /** `ids` : formes d'un même type, dans le nouvel ordre (époques : de la plus ancienne à la plus récente). */
   reorder: (characterId, ids) => request(`/characters/${characterId}/forms/reorder`, { method: 'PUT', body: { ids } }),
+  /** Faire évoluer : la forme par défaut devient l’époque la plus récente (avec ses images), puis perd ses images. */
+  evolve: (characterId, data = {}) => request(`/characters/${characterId}/forms/evolve`, { method: 'POST', body: data }),
   uploadFile: (characterId, formId, field, file) => {
     const form = new FormData();
     form.append(field, file);

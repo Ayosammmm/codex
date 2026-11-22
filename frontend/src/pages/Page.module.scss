@@ -49,6 +49,18 @@
   margin-bottom: space(8);
 }
 
+// Chronologie d’une époque (édition), sous le sélecteur de forme
+.formChronology {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: space(2);
+  margin-top: calc(-1 * space(6));
+  margin-bottom: space(8);
+  font-size: 0.8125rem;
+  color: var(--fg-muted);
+}
+
 .narrow {
   @include container(36rem);
   padding-block: space(16);

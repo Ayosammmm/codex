@@ -1,7 +1,7 @@
 import { Fragment, useEffect, useRef, useState } from 'react';
 import { BookOpen, Check, ChevronDown, CircleHelp, Eye, ImagePlus, Music, SendHorizontal, X } from '@/components/ui/icons';
 import { Menu } from '@/components/ui/Menu';
-import { DEFAULT_FORM_NAME, characterInForm, findForm } from '@/components/characters/characterForms';
+import { DEFAULT_FORM_NAME, characterInForm, findForm, orderedForms } from '@/components/characters/characterForms';
 import { SoundPlayer } from '@/components/sound/SoundPlayer';
 import { MAX_SOUND_SIZE, SOUND_ACCEPT, isSoundFile } from '@/components/sound/soundFiles';
 import { CharacterAvatar } from '@/components/characters/CharacterAvatar';
@@ -91,7 +91,7 @@ function matchCharacters(characters, query, currentForms) {
     const current = findForm(c, currentForms[c.id])?.id ?? null;
     const shown = characterInForm(c, findForm(c, current));
     const nameMatch = !q || startsWithWord(characterName(c), q) || startsWithWord(characterName(shown), q);
-    const others = q && c.forms?.length ? [null, ...c.forms.map((f) => f.id)].filter((id) => id !== current) : [];
+    const others = q && c.forms?.length ? [null, ...orderedForms(c).map((f) => f.id)].filter((id) => id !== current) : [];
     const formMatches = others.filter((id) => nameMatch || startsWithWord(formLabel(c, id), q));
     if (nameMatch) entries.push({ ...shown, id: c.id, currentFormLabel: c.forms?.length ? formLabel(c, current) : null });
     for (const formId of formMatches) {
@@ -544,7 +544,7 @@ export function MessageComposer({ characters, storageKey, onSend, onError, sendi
                                   <ChevronDown aria-hidden />
                                 </button>
                               )}
-                              items={[null, ...base.forms.map((f) => f.id)].map((formId) => ({
+                              items={[null, ...orderedForms(base).map((f) => f.id)].map((formId) => ({
                                 label: formLabel(base, formId),
                                 icon: (formId ?? null) === (findForm(base, current)?.id ?? null) ? Check : undefined,
                                 onSelect: () => setLineForm(seg, id, formId),

@@ -27,6 +27,18 @@ function copyUpload(uploadPath) {
   return `${path.posix.dirname(uploadPath)}/${copyName}`;
 }
 
+const FORM_TYPES = ["transformation", "temporal"];
+const formTypeOf = (value) => (FORM_TYPES.includes(value) ? value : "transformation");
+
+/** Bornes de `position` parmi les formes d'un type : { min, max } (0 s'il n'y en a pas). */
+async function positionBounds(characterId, formType) {
+  const where = { character_id: characterId, formType };
+  return {
+    min: (await CharacterForm.min("position", { where })) ?? 1,
+    max: (await CharacterForm.max("position", { where })) ?? 0,
+  };
+}
+
 const toIds = (list) => [...new Set((Array.isArray(list) ? list : []).map((v) => parseInt(v, 10)).filter((v) => v > 0))];
 
 /** Charge la forme `:formId` du personnage `:id` (ou répond 404). */
@@ -38,26 +50,64 @@ async function findForm(req, res) {
 
 const respond = async (res, characterId) => res.json(await loadCharacterDetail(characterId));
 
-// AJOUT : copie de la forme par défaut (tout sauf les images), à éditer ensuite
+const nameFrom = (body) => (typeof body?.formName === "string" ? body.formName.trim().slice(0, 255) : "");
+
+// AJOUT : copie de la forme par défaut (tout sauf les images), à éditer ensuite.
+// `formType` : « transformation » (à la suite des autres) ou « temporal » (époque, la plus ancienne)
 exports.createForm = async (req, res) => {
   try {
     const character = await Character.findByPk(req.params.id, { include: [{ model: Specie, as: "species" }] });
     if (!character) return res.status(404).json({ error: "Character not found" });
 
-    const count = await CharacterForm.count({ where: { character_id: character.id } });
-    const maxPosition = (await CharacterForm.max("position", { where: { character_id: character.id } })) || 0;
+    const formType = formTypeOf(req.body?.formType);
+    const count = await CharacterForm.count({ where: { character_id: character.id, formType } });
+    const { min, max } = await positionBounds(character.id, formType);
     const values = Object.fromEntries(COPIED_FIELDS.map((key) => [key, character[key]]));
-    const formName = typeof req.body?.formName === "string" ? req.body.formName.trim().slice(0, 255) : "";
+    const defaultName = formType === "temporal" ? `Époque ${count + 1}` : `Forme ${count + 2}`;
 
     const form = await CharacterForm.create({
       ...values,
       character_id: character.id,
       universe_id: character.universe_id,
-      position: maxPosition + 1,
-      formName: formName || `Forme ${count + 2}`,
+      formType,
+      position: formType === "temporal" ? min - 1 : max + 1,
+      formName: nameFrom(req.body) || defaultName,
       themeSound: copyUpload(character.themeSound),
     });
     await form.setSpecies(character.species || []);
+
+    res.status(201);
+    await respond(res, character.id);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+};
+
+// ÉVOLUTION : la forme par défaut (le présent) est copiée, images comprises, en époque la plus récente ;
+// le personnage perd ensuite son portrait et son fond, pour sa nouvelle apparence. Le thème musical est copié.
+exports.evolve = async (req, res) => {
+  try {
+    const character = await Character.findByPk(req.params.id, { include: [{ model: Specie, as: "species" }] });
+    if (!character) return res.status(404).json({ error: "Character not found" });
+
+    const count = await CharacterForm.count({ where: { character_id: character.id, formType: "temporal" } });
+    const { max } = await positionBounds(character.id, "temporal");
+    const values = Object.fromEntries(COPIED_FIELDS.map((key) => [key, character[key]]));
+
+    const form = await CharacterForm.create({
+      ...values,
+      character_id: character.id,
+      universe_id: character.universe_id,
+      formType: "temporal",
+      position: max + 1,
+      formName: nameFrom(req.body) || `Époque ${count + 1}`,
+      // Les fichiers d'images passent à l’époque (pas de copie : le personnage ne les garde pas)
+      avatar: character.avatar,
+      background: character.background,
+      themeSound: copyUpload(character.themeSound),
+    });
+    await form.setSpecies(character.species || []);
+    await character.update({ avatar: null, background: null });
 
     res.status(201);
     await respond(res, character.id);
@@ -103,7 +153,7 @@ exports.deleteForm = async (req, res) => {
   }
 };
 
-// ORDRE : `ids` = toutes les formes du personnage, dans le nouvel ordre
+// ORDRE : `ids` = les formes d'un même type, dans le nouvel ordre (époques : de la plus ancienne à la plus récente)
 exports.reorderForms = async (req, res) => {
   try {
     const ids = toIds(req.body?.ids);

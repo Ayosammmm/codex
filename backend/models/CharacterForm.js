@@ -9,8 +9,8 @@ const Specie = require("./Specie");
 const { profileAttributes } = require("./characterProfile");
 
 /**
- * Autre forme d'un personnage (transformation, changement physique...).
- * La forme par défaut est le personnage lui-même ; une forme reprend toutes les colonnes de son profil
+ * Autre forme d'un personnage : transformation / changement physique, ou version passée (`formType`).
+ * La forme par défaut est le personnage lui-même (dans le présent) ; une forme reprend toutes les colonnes de son profil
  * (voir characterProfile.js) et ses propres espèces. Groupes, lieux, relations, album, collections et
  * éditeurs restent ceux du personnage.
  * `universe_id` : permet l'export / la duplication / la suppression de l'univers (services/universeTransfer.js).
@@ -30,7 +30,13 @@ const CharacterForm = sequelize.define("CharacterForm", {
     onUpdate: "CASCADE",
     onDelete: "SET NULL",
   },
-  // Ordre d'affichage parmi les formes du personnage
+  // « transformation » (transformation, changement physique) ou « temporal » (version passée du personnage)
+  formType: {
+    type: DataTypes.STRING(20),
+    allowNull: false,
+    defaultValue: "transformation",
+  },
+  // Ordre d'affichage parmi les formes du même type ; époques : ordre chronologique (la plus récente en dernier)
   position: {
     type: DataTypes.INTEGER,
     allowNull: true,

@@ -112,7 +112,7 @@ const detailIncludes = [...defaultIncludes, formsInclude];
 const listFormsInclude = {
   model: CharacterForm,
   as: "forms",
-  attributes: ["id", "position", "formName", "firstname", "name", "title", "avatar", "colors"],
+  attributes: ["id", "formType", "position", "formName", "firstname", "name", "title", "avatar", "colors"],
 };
 const detailOrder = [
   [{ model: CharacterForm, as: "forms" }, "position", "ASC"],
