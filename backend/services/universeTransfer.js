@@ -27,6 +27,7 @@ const sequelize = require('../config/database');
 
 const Univers = require('../models/Univers');
 const Character = require('../models/Character');
+const CharacterForm = require('../models/CharacterForm');
 const Place = require('../models/Place');
 const Group = require('../models/Group');
 const Specie = require('../models/Specie');
@@ -74,6 +75,10 @@ const ENTITY_TABLES = [
     key: 'characters', model: Character, files: ['avatar', 'background', 'themeSound'],
     refs: { sexe_id: 'genders', statut_id: 'statuses', rank_id: 'powerRanks', alignment_id: 'alignments' },
   },
+  {
+    key: 'characterForms', model: CharacterForm, files: ['avatar', 'background', 'themeSound'],
+    refs: { character_id: 'characters', sexe_id: 'genders', statut_id: 'statuses', rank_id: 'powerRanks', alignment_id: 'alignments' },
+  },
   { key: 'creatures', model: Creature, refs: { powerRankId: 'powerRanks' }, files: ['image', 'background'] },
   { key: 'stories', model: Story, files: ['image', 'background'] },
   { key: 'episodes', model: Episode, files: ['background'] },
@@ -89,6 +94,7 @@ const JOIN_TABLES = [
   { table: 'characters_groups', refs: { character_id: 'characters', group_id: 'groups' } },
   { table: 'characters_places', refs: { character_id: 'characters', place_id: 'places' } },
   { table: 'characters_species', refs: { character_id: 'characters', specie_id: 'species' } },
+  { table: 'character_forms_species', refs: { form_id: 'characterForms', specie_id: 'species' } },
   { table: 'character_relations', refs: { character1_id: 'characters', character2_id: 'characters' } },
   { table: 'groups_places', refs: { group_id: 'groups', place_id: 'places' } },
   { table: 'creature_places', refs: { creatureId: 'creatures', placeId: 'places' } },
@@ -99,7 +105,7 @@ const JOIN_TABLES = [
   { table: 'events_characters', refs: { event_id: 'events', character_id: 'characters' } },
   { table: 'events_places', refs: { event_id: 'events', place_id: 'places' } },
   { table: 'events_groups', refs: { event_id: 'events', group_id: 'groups' } },
-  { table: 'rp_message_characters', refs: { messageId: 'rpMessages', characterId: 'characters' } },
+  { table: 'rp_message_characters', refs: { messageId: 'rpMessages', characterId: 'characters' }, optionalRefs: { formId: 'characterForms' } },
   { table: 'rp_scene_episodes', refs: { sceneId: 'rpScenes', episodeId: 'episodes' } },
 ];
 
@@ -356,7 +362,7 @@ const importUniverse = async (data, { readFile, name, transaction: outerTransact
     }
 
     const now = new Date();
-    for (const { table, refs } of JOIN_TABLES) {
+    for (const { table, refs, optionalRefs = {} } of JOIN_TABLES) {
       const rows = [];
       for (const row of data.joins?.[table] || []) {
         const values = { ...row };
@@ -364,6 +370,10 @@ const importUniverse = async (data, { readFile, name, transaction: outerTransact
         for (const [column, refKey] of Object.entries(refs)) {
           values[column] = idMaps[refKey].get(row[column]);
           if (values[column] === undefined) valid = false;
+        }
+        // Références facultatives : null si l'entité n'a pas été importée
+        for (const [column, refKey] of Object.entries(optionalRefs)) {
+          if (column in values) values[column] = values[column] == null ? null : idMaps[refKey]?.get(values[column]) ?? null;
         }
         if (!valid) continue;
         if ('createdAt' in values) values.createdAt = now;

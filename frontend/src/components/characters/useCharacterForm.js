@@ -45,13 +45,16 @@ const toFormState = (c) => ({
   development: c?.development || '',
   developmentNote: c?.developmentNote || '',
   colors: { primary: c?.colors?.primary ?? null, secondary: c?.colors?.secondary ?? null, tertiary: c?.colors?.tertiary ?? null },
+  // Nom de la forme (affiché quand le personnage a plusieurs formes)
+  formName: c?.formName || '',
 });
 
 const toNullableId = (v) => (v === '' || v == null ? null : Number(v));
 
 /**
  * État du formulaire de personnage. `images.avatar` / `images.background` : File (nouvelle image) | null (retirée) | absent.
- * `toSubmit(modules)` n'envoie pas les données des modules désactivés, pour ne pas les effacer.
+ * `toSubmit(modules, universeId, { form })` n'envoie pas les données des modules désactivés, pour ne pas les effacer ;
+ * `form: true` (autre forme du personnage) : sans les données communes à toutes les formes (groupes, lieux, relations).
  */
 export function useCharacterForm(character) {
   const initial = useMemo(() => toFormState(character), [character]);
@@ -83,7 +86,7 @@ export function useCharacterForm(character) {
     return errors;
   };
 
-  const toSubmit = (modules, universeId) => {
+  const toSubmit = (modules, universeId, { form: isForm = false } = {}) => {
     const values = {
       universe_id: universeId,
       firstname: form.firstname.trim(),
@@ -98,6 +101,7 @@ export function useCharacterForm(character) {
       extras: form.extras,
       placeIds: form.placeIds,
       colors: Object.values(form.colors).some(Boolean) ? form.colors : null,
+      formName: form.formName.trim() || null,
     };
     // Module désactivé : le rang n'est pas envoyé, donc pas effacé
     if (modules.powers) values.powers = form.powers;
@@ -123,6 +127,9 @@ export function useCharacterForm(character) {
       Object.assign(values, form.traits);
       values.development = form.development || null;
       values.developmentNote = form.developmentNote.trim() ? form.developmentNote : null;
+    }
+    if (isForm) {
+      for (const key of ['universe_id', 'placeIds', 'groups', 'relations']) delete values[key];
     }
     return { values, images };
   };

@@ -12,7 +12,7 @@ import { Message } from '@/components/messages/Message';
 import { MessageComposer } from '@/components/messages/MessageComposer';
 import { MessageVisualNovel } from '@/components/messages/MessageVisualNovel';
 import { continuesMessage } from '@/components/messages/markup';
-import { speakerOf } from '@/components/messages/unknownSpeakers';
+import { messageSpeakers } from '@/components/messages/unknownSpeakers';
 import messageStyles from '@/components/messages/Messages.module.scss';
 import { universePath } from '@/utils/universe';
 import sheet from '@/components/entity/SheetSection.module.scss';
@@ -146,7 +146,7 @@ export function EpisodeNarrativeEditor({ universe, episode, castIds = [], soundO
 
   /** Saisie insérée avant / après un message : la suite s'écrit à la suite des messages insérés, jusqu'à « Terminer ». */
   const insertionComposer = (m) => {
-    const author = m.characterIds.map((id) => speakerOf(charactersById, id)).filter(Boolean).map(characterName).join(' & ') || 'la narration';
+    const author = messageSpeakers(charactersById, m).map(characterName).join(' & ') || 'la narration';
     return (
       <div className={styles.insertion}>
         <div className={styles.insertionHead}>

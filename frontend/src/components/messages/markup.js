@@ -93,6 +93,8 @@ export const continuesMessage = (prev, m) =>
   Boolean(prev) &&
   prev.author?.id === m.author?.id &&
   prev.characterIds.join() === m.characterIds.join() &&
+  // Changement de forme d'un personnage : nouvel en-tête (nouvel avatar)
+  JSON.stringify(prev.characterForms || {}) === JSON.stringify(m.characterForms || {}) &&
   prev.isHrp === m.isHrp &&
   prev.sceneId === m.sceneId &&
   new Date(m.createdAt) - new Date(prev.createdAt) < GROUP_WINDOW;

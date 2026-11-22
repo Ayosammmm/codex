@@ -1,4 +1,5 @@
 import { normalizeText } from '@/components/entity/useListState';
+import { characterInForm, findForm } from '@/components/characters/characterForms';
 
 /*
  * Personnages inconnus (« /??? » dans la saisie) : quelqu'un parle sans qu'on sache encore qui.
@@ -23,8 +24,19 @@ export const unknownSpeaker = (id) => ({
 
 export const UNKNOWN_SPEAKERS = Array.from({ length: UNKNOWN_COUNT }, (_, i) => unknownSpeaker(-(i + 1)));
 
-/** Personnage d'un id de message : un personnage de l'univers, ou un inconnu. */
-export const speakerOf = (charactersById, id) => (isUnknownId(id) ? unknownSpeaker(id) : charactersById.get(id));
+/**
+ * Personnage d'un id de message : un personnage de l'univers (dans sa forme `formId`, voir message.characterForms),
+ * ou un inconnu.
+ */
+export function speakerOf(charactersById, id, formId = null) {
+  if (isUnknownId(id)) return unknownSpeaker(id);
+  const character = charactersById.get(id);
+  return character && formId ? characterInForm(character, findForm(character, formId)) : character;
+}
+
+/** Personnages d'un message, chacun dans sa forme. */
+export const messageSpeakers = (charactersById, message) =>
+  message.characterIds.map((id) => speakerOf(charactersById, id, message.characterForms?.[id])).filter(Boolean);
 
 /** Inconnus proposés pour une recherche « /??? » (« /?2 » : le 2e), ou « /inconnu ». */
 export function matchUnknowns(query) {

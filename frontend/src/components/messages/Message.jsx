@@ -7,7 +7,7 @@ import { cx } from '@/components/ui/cx';
 import { universePath } from '@/utils/universe';
 import { BOLD_CLOSE, BOLD_OPEN, formatRpDate, parseRp, shoutLevel } from './markup';
 import { useAutoGrow } from './autoGrow';
-import { speakerOf } from './unknownSpeakers';
+import { messageSpeakers } from './unknownSpeakers';
 import { MessageImage } from './MessageImage';
 import { uploadUrl } from '@/api/client';
 import { SoundPlayer } from '@/components/sound/SoundPlayer';
@@ -87,7 +87,7 @@ export function Message({ universe, message, charactersById, before, after, hide
   // Zone de modification : à la hauteur de son texte
   const editRef = useRef(null);
   useAutoGrow(() => (editRef.current ? [editRef.current] : []));
-  const speakers = message.characterIds.map((id) => speakerOf(charactersById, id)).filter(Boolean);
+  const speakers = messageSpeakers(charactersById, message);
   const edited = new Date(message.updatedAt) - new Date(message.createdAt) > 2000;
   const authorName = message.author?.displayName || 'Compte supprimé';
   const narration = !speakers.length && !message.isHrp;
@@ -161,8 +161,10 @@ export function Message({ universe, message, charactersById, before, after, hide
                       {c.unknown ? (
                         <span className={styles.name}>{characterName(c)}</span>
                       ) : (
-                        <Link to={universePath(universe, `personnages/${c.id}`)} className={styles.name}>{characterName(c)}</Link>
+                        <Link to={universePath(universe, `personnages/${c.id}${c.formId ? `?forme=${c.formId}` : ''}`)} className={styles.name}>{characterName(c)}</Link>
                       )}
+                      {/* Autre forme que la forme par défaut : son nom, entre parenthèses */}
+                      {c.formId && <span className={styles.formName}> ({c.formName || 'Forme sans nom'})</span>}
                     </span>
                   ))}
                   <span className={styles.by}>par {authorName}</span>

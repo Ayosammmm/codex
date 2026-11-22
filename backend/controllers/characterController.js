@@ -11,6 +11,7 @@ const Place = require("../models/Place");
 const Specie = require("../models/Specie");
 const CharacterRelation = require("../models/CharacterRelation");
 const EntityPhoto = require("../models/EntityPhoto");
+const CharacterForm = require("../models/CharacterForm");
 const { deleteUpload } = require("../services/universeTransfer");
 const { imageHandlers } = require("../utils/entityImages");
 const { cleanColors } = require("../utils/colors");
@@ -93,6 +94,31 @@ const defaultIncludes = [
     attributes: ["id", "name", "firstname", "avatar", "colors"],
   },
 ];
+
+// Fiche complète : avec les autres formes du personnage (voir characterFormsController.js)
+const formsInclude = {
+  model: CharacterForm,
+  as: "forms",
+  include: [
+    { model: Gender, as: "genders" },
+    { model: Status, as: "statuses" },
+    { model: PowerRank, as: "power_ranks" },
+    { model: Alignment, as: "alignments" },
+    { model: Specie, as: "species", through: { attributes: [] } },
+  ],
+};
+const detailIncludes = [...defaultIncludes, formsInclude];
+// Listes : formes allégées (choix de la forme dans les messages, affichage des messages)
+const listFormsInclude = {
+  model: CharacterForm,
+  as: "forms",
+  attributes: ["id", "position", "formName", "firstname", "name", "title", "avatar", "colors"],
+};
+const detailOrder = [
+  [{ model: CharacterForm, as: "forms" }, "position", "ASC"],
+  [{ model: CharacterForm, as: "forms" }, "id", "ASC"],
+];
+const findDetail = (id) => Character.findByPk(id, { include: detailIncludes, order: detailOrder });
 
 // Fonction helper pour normaliser les relations (combiner relatedCharacters et relatedToCharacters)
 const normalizeRelations = (character) => {
@@ -192,9 +218,7 @@ exports.createCharacter = async (req, res) => {
     }
 
     // On recharge le personnage avec les associations
-    const createdCharacter = await Character.findByPk(character.id, {
-      include: defaultIncludes,
-    });
+    const createdCharacter = await findDetail(character.id);
 
     // Normaliser les relations
     const normalizedCharacter = normalizeRelations(createdCharacter);
@@ -225,7 +249,8 @@ exports.getCharacters = async (req, res) => {
     
     const characters = await Character.findAll({
       where: whereClause,
-      include: defaultIncludes,
+      include: [...defaultIncludes, listFormsInclude],
+      order: [["id", "ASC"], ...detailOrder],
     });
     
     // Normaliser les relations pour chaque personnage
@@ -240,9 +265,7 @@ exports.getCharacters = async (req, res) => {
 // READ ONE
 exports.getCharacter = async (req, res) => {
   try {
-    const character = await Character.findByPk(req.params.id, {
-      include: defaultIncludes,
-    });
+    const character = await findDetail(req.params.id);
     if (character) {
       // Normaliser les relations
       const normalizedCharacter = normalizeRelations(character);
@@ -326,9 +349,7 @@ exports.updateCharacter = async (req, res) => {
     }
 
     // Recharge le personnage avec les relations
-    const updatedCharacter = await Character.findByPk(req.params.id, {
-      include: defaultIncludes,
-    });
+    const updatedCharacter = await findDetail(req.params.id);
 
     // Normaliser les relations
     const normalizedCharacter = normalizeRelations(updatedCharacter);
@@ -342,21 +363,23 @@ exports.updateCharacter = async (req, res) => {
 // DELETE
 exports.deleteCharacter = async (req, res) => {
   try {
-    const character = await Character.findByPk(req.params.id, {
-      include: defaultIncludes,
-    });
+    const character = await findDetail(req.params.id);
     if (!character)
       return res.status(404).json({ error: "Character not found" });
 
     // Album photo (lié par entityType/entityId, sans clé étrangère) : lignes et fichiers
     const photos = await EntityPhoto.findAll({ where: { entityType: "character", entityId: character.id } });
     await EntityPhoto.destroy({ where: { entityType: "character", entityId: character.id } });
+    // Autres formes : lignes (et leurs espèces, en cascade) et fichiers
+    const forms = await CharacterForm.findAll({ where: { character_id: character.id } });
+    await CharacterForm.destroy({ where: { character_id: character.id } });
     await character.destroy(); // relations et appartenances supprimées en cascade
 
     deleteUpload(character.avatar);
     deleteUpload(character.background);
     deleteUpload(character.themeSound);
     photos.forEach((photo) => deleteUpload(photo.imagePath));
+    forms.forEach((form) => [form.avatar, form.background, form.themeSound].forEach(deleteUpload));
 
     res.json({ message: "Character deleted", deleted: character });
   } catch (err) {
@@ -397,9 +420,7 @@ exports.uploadAvatar = async (req, res) => {
     await character.update({ avatar: avatarPath });
 
     // Recharger le personnage avec les associations pour retourner les données complètes
-    const updatedCharacter = await Character.findByPk(id, {
-      include: defaultIncludes,
-    });
+    const updatedCharacter = await findDetail(id);
 
     // Normaliser les relations
     const normalizedCharacter = normalizeRelations(updatedCharacter);
@@ -433,9 +454,7 @@ exports.deleteAvatar = async (req, res) => {
     await character.update({ avatar: null });
 
     // Recharger le personnage avec les associations
-    const updatedCharacter = await Character.findByPk(id, {
-      include: defaultIncludes,
-    });
+    const updatedCharacter = await findDetail(id);
 
     // Normaliser les relations
     const normalizedCharacter = normalizeRelations(updatedCharacter);
@@ -459,7 +478,7 @@ exports.uploadBackground = async (req, res) => {
     const oldPath = character.background;
     await character.update({ background: newPath });
     if (oldPath) deleteUpload(oldPath);
-    const updated = await Character.findByPk(character.id, { include: defaultIncludes });
+    const updated = await findDetail(character.id);
     res.json(normalizeRelations(updated));
   } catch (error) {
     console.error("Erreur upload fond:", error);
@@ -474,7 +493,7 @@ exports.deleteBackground = async (req, res) => {
     const oldPath = character.background;
     await character.update({ background: null });
     if (oldPath) deleteUpload(oldPath);
-    const updated = await Character.findByPk(character.id, { include: defaultIncludes });
+    const updated = await findDetail(character.id);
     res.json(normalizeRelations(updated));
   } catch (error) {
     console.error("Erreur suppression fond:", error);
@@ -486,8 +505,12 @@ exports.deleteBackground = async (req, res) => {
 const sounds = imageHandlers({
   Model: Character,
   folders: { themeSound: "characters/sounds" },
-  loadDetail: async (id) => normalizeRelations(await Character.findByPk(id, { include: defaultIncludes })),
+  loadDetail: async (id) => normalizeRelations(await findDetail(id)),
   notFound: "Character not found",
 });
 exports.uploadThemeSound = sounds.upload("themeSound");
 exports.deleteThemeSound = sounds.remove("themeSound");
+
+// Partagés avec le contrôleur des formes
+exports.loadCharacterDetail = async (id) => normalizeRelations(await findDetail(id));
+exports.cleanBody = cleanBody;

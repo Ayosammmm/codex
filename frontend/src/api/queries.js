@@ -1,6 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { universesApi, UNIVERSE_IMAGE_FIELDS } from './universes';
-import { RESOURCES, photosApi } from './resources';
+import { RESOURCES, characterFormsApi, photosApi } from './resources';
 
 export const universeKeys = {
   all: ['universes'],
@@ -171,6 +171,39 @@ export const useReorderEntity = (resource, universeId) => {
     // Les entités qui affichent ce référentiel (tri, regroupements) se mettent à jour
     onSettled: () => invalidateEntities(queryClient),
   });
+};
+
+// --- Formes d'un personnage ---
+
+/**
+ * Mutations des autres formes d'un personnage. Chacune renvoie la fiche complète, mise en cache.
+ * - add.mutate({ formName? })                 : nouvelle forme, copie de la forme par défaut (sans les images)
+ * - save.mutate({ formId, values, images })   : `images` comme useSaveEntity ({ champ: File | null })
+ * - remove.mutate(formId)
+ */
+export const useCharacterFormMutations = (characterId) => {
+  const queryClient = useQueryClient();
+  const onSuccess = (character) => {
+    queryClient.setQueryData(entityKeys.detail('characters', character.id), character);
+    invalidateEntities(queryClient, entityKeys.detail('characters', character.id));
+  };
+  const onError = () => queryClient.invalidateQueries({ queryKey: entityKeys.detail('characters', characterId) });
+  const add = useMutation({ mutationFn: (data) => characterFormsApi.create(characterId, data), onSuccess, onError });
+  const save = useMutation({
+    mutationFn: async ({ formId, values, images = {} }) => {
+      let character = await characterFormsApi.update(characterId, formId, values);
+      for (const [field, value] of Object.entries(images)) {
+        character = value
+          ? await characterFormsApi.uploadFile(characterId, formId, field, value)
+          : await characterFormsApi.deleteFile(characterId, formId, field);
+      }
+      return character;
+    },
+    onSuccess,
+    onError,
+  });
+  const remove = useMutation({ mutationFn: (formId) => characterFormsApi.remove(characterId, formId), onSuccess, onError });
+  return { add, save, remove };
 };
 
 // --- Albums photo ---

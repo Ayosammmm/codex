@@ -1,8 +1,10 @@
 import { SoundSheetSection } from '@/components/sound/SoundSections';
-import { Link } from 'react-router';
+import { Link, useSearchParams } from 'react-router';
 import { ArrowLeft, Pencil } from '@/components/ui/icons';
 import { Button } from '@/components/ui/Button';
 import { CharacterSheet } from '@/components/characters/CharacterSheet';
+import { CharacterFormSwitcher } from '@/components/characters/CharacterFormSwitcher';
+import { characterInForm, findForm } from '@/components/characters/characterForms';
 import { EntityThemeZone } from '@/components/entity/EntityThemeZone';
 import { getModulesState, isModuleEnabled } from '@/config/modules';
 import { uploadUrl } from '@/api/client';
@@ -18,8 +20,19 @@ export default function CharacterPage() {
   return <CharacterLoader>{(character, universe) => <CharacterView key={character.id} universe={universe} character={character} />}</CharacterLoader>;
 }
 
-function CharacterView({ universe, character }) {
+function CharacterView({ universe, character: base }) {
   const { canEdit } = usePermissions();
+  // Forme affichée (?forme=id) ; forme par défaut si absente ou inconnue
+  const [params, setParams] = useSearchParams();
+  const form = findForm(base, params.get('forme'));
+  const character = characterInForm(base, form);
+  const selectForm = (value) =>
+    setParams((p) => {
+      const next = new URLSearchParams(p);
+      if (value) next.set('forme', value);
+      else next.delete('forme');
+      return next;
+    }, { replace: true });
   const state = getModulesState(universe);
   const on = (key) => isModuleEnabled(state, key);
   const modules = { groups: on('groups'), species: on('species'), personality: on('personality'), relations: on('relations'), powers: on('powers'), ranks: on('powerRanks'), roleplay: on('roleplay') };
@@ -51,13 +64,14 @@ function CharacterView({ universe, character }) {
             universe={universe}
             character={character}
             modules={modules}
+            formSwitcher={<CharacterFormSwitcher character={base} value={form ? form.id : ''} onChange={selectForm} />}
             sound={on('sound') && <SoundSheetSection sounds={[{ label: 'Thème', path: character.themeSound, autoPlay: true }]} />}
             stories={on('stories') ? stories : []}
             events={on('events') ? events : []}
             dynamics={dynamics}
             actions={
               canEdit('character', character.id) && (
-                <Button as={Link} to={universePath(universe, `personnages/${character.id}/modifier`)} variant="primary" icon={Pencil}>
+                <Button as={Link} to={universePath(universe, `personnages/${character.id}/modifier${form ? `?forme=${form.id}` : ''}`)} variant="primary" icon={Pencil}>
                   Modifier
                 </Button>
               )

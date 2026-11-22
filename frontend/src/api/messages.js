@@ -3,12 +3,14 @@ import { request } from './client';
 
 /*
  * Messages : système commun du roleplay (fils, scènes : api/roleplay.js) et des récits d'épisodes
- * (voir backend/services/messages.js). Un message : { id, content, characterIds, author, roll, effect, imagePath,
+ * (voir backend/services/messages.js). Un message : { id, content, characterIds, characterForms, author, roll, effect, imagePath,
  * soundPath, isHrp, placeId, sceneId, episodeId, travels, createdAt, updatedAt }.
+ * `characterForms` : { [characterId]: formId } — forme des personnages qui ne sont pas dans leur forme par défaut.
  */
 
 /**
- * Envoi de plusieurs messages d'un coup : { parts: [{ content, characterIds, command? }], image?, sound?, after?, before? }
+ * Envoi de plusieurs messages d'un coup : { parts: [{ content, characterIds, formIds?, command? }], image?, sound?, after?, before? }
+ * (`formIds` : { [characterId]: formId }, forme de chaque personnage ; absente : forme par défaut).
  * (`after` / `before` : id du message après / avant lequel les insérer, récit d'épisode).
  */
 export const postMessages = (path, { parts, image, sound, after, before }) => {

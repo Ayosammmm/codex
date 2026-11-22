@@ -2,6 +2,7 @@ const path = require('path');
 const { Op, literal } = require('sequelize');
 const sequelize = require('../config/database');
 const Character = require('../models/Character');
+const CharacterForm = require('../models/CharacterForm');
 const Episode = require('../models/Episode');
 const Story = require('../models/Story');
 const User = require('../models/User');
@@ -32,10 +33,11 @@ const toIds = (v) => (Array.isArray(v) ? [...new Set(v.map(toId).filter(Boolean)
 const UNKNOWN_COUNT = 5;
 
 /**
- * `characterIds` reçus → { characterIds (personnages de l'univers), unknown ([{ slot, position }] ou null), positions }.
+ * `characterIds` reçus → { characterIds (personnages de l'univers), unknown ([{ slot, position }] ou null), positions, forms }.
  * `positions` : place de chaque personnage de l'univers dans la liste complète (ordre d'affichage).
+ * `formIds` : { [characterId]: formId } — forme de chaque personnage (absente : forme par défaut) ; vérifiée par checkForms.
  */
-function parseSpeakers(value) {
+function parseSpeakers(value, formIds) {
   const ids = Array.isArray(value) ? [...new Set(value.map(Number).filter((n) => Number.isInteger(n) && n !== 0))] : [];
   const characterIds = [];
   const positions = [];
@@ -46,7 +48,17 @@ function parseSpeakers(value) {
       positions.push(position);
     } else if (-id <= UNKNOWN_COUNT) unknown.push({ slot: -id, position });
   });
-  return { characterIds, positions, unknown: unknown.length ? unknown : null };
+  const forms = characterIds.map((id) => toId(formIds && typeof formIds === 'object' ? formIds[id] : null));
+  return { characterIds, positions, unknown: unknown.length ? unknown : null, forms };
+}
+
+/** Formes inconnues ou d'un autre personnage : remplacées par la forme par défaut (null). */
+async function checkForms(speakers) {
+  const wanted = speakers.forms.filter(Boolean);
+  if (!wanted.length) return speakers;
+  const rows = await CharacterForm.findAll({ where: { id: wanted }, attributes: ['id', 'character_id'], raw: true });
+  const owner = new Map(rows.map((r) => [r.id, r.character_id]));
+  return { ...speakers, forms: speakers.forms.map((formId, i) => (formId && owner.get(formId) === speakers.characterIds[i] ? formId : null)) };
 }
 
 /** Contrôleur Express : erreurs `httpError` renvoyées telles quelles, les autres journalisées. */
@@ -114,6 +126,8 @@ async function serializeMessages(rows) {
     ]
       .sort((a, b) => a.position - b.position)
       .map((s) => s.id),
+    // Forme de chaque personnage qui n'est pas dans sa forme par défaut : { [characterId]: formId }
+    characterForms: Object.fromEntries(links.filter((l) => l.messageId === m.id && l.formId).map((l) => [l.characterId, l.formId])),
     travels: { arrivals: [], departures: [] },
     createdAt: m.createdAt,
     updatedAt: m.updatedAt,
@@ -195,10 +209,10 @@ const cleanContent = (content, { allowEmpty = false } = {}) => {
 };
 
 /** Personnages de l'univers d'un message (`positions` : leur place parmi tous les personnages, inconnus compris). */
-const setSpeakers = (messageId, { characterIds, positions }, transaction) =>
+const setSpeakers = (messageId, { characterIds, positions, forms = [] }, transaction) =>
   MessageCharacter.destroy({ where: { messageId }, transaction }).then(() =>
     characterIds.length
-      ? MessageCharacter.bulkCreate(characterIds.map((characterId, i) => ({ messageId, characterId, position: positions[i] })), { transaction })
+      ? MessageCharacter.bulkCreate(characterIds.map((characterId, i) => ({ messageId, characterId, position: positions[i], formId: forms[i] || null })), { transaction })
       : null,
   );
 
@@ -206,7 +220,7 @@ const hrpOnly = (m, content) => !m.imagePath && !m.soundPath && !m.roll && !m.ef
 
 /**
  * Nouveaux messages, envoyés d'un coup dans l'ordre (saisie avec /personnage ; un seul message = une partie) :
- * corps { parts: [{ content, characterIds, command? }] } en JSON, ou en multipart (`parts` en JSON, `image` / `sound`).
+ * corps { parts: [{ content, characterIds, formIds?, command? }] } (`formIds` : { [characterId]: formId }) en JSON, ou en multipart (`parts` en JSON, `image` / `sound`).
  * L'image va à la ligne « /fond » s'il y en a une, sinon au dernier message ; de même pour le son et « /ambiance ».
  * Tout ou rien : un message refusé annule les autres (et les fichiers reçus sont supprimés).
  * `destination(count)` → { universeId, values, linkedOnly, sortKeys? } : `values` = colonnes du message (placeId, episodeId,
@@ -244,7 +258,7 @@ async function createMessages(req, destination) {
 
     const cleaned = [];
     for (const [i, part] of parts.entries()) {
-      const speakers = parseSpeakers(part?.characterIds);
+      const speakers = await checkForms(parseSpeakers(part?.characterIds, part?.formIds));
       await checkSpeakers(req.user, universeId, speakers.characterIds, { linkedOnly });
       const image = i === imageIndex ? imagePath : null;
       const sound = i === soundIndex ? soundPath : null;
@@ -287,13 +301,13 @@ async function findManageable(req) {
   throw httpError(403, 'Seul l’auteur du message peut le modifier.');
 }
 
-/** PUT /api/messages/:id — { content?, characterIds? } */
+/** PUT /api/messages/:id — { content?, characterIds?, formIds? } (`formIds` : avec `characterIds`) */
 const updateMessage = handle('message', async (req, res) => {
   const message = await findManageable(req);
   const content = req.body?.content !== undefined
     ? cleanContent(req.body.content, { allowEmpty: Boolean(message.imagePath || message.soundPath || message.roll || message.effect) })
     : message.content;
-  const speakers = req.body?.characterIds !== undefined ? parseSpeakers(req.body.characterIds) : null;
+  const speakers = req.body?.characterIds !== undefined ? await checkForms(parseSpeakers(req.body.characterIds, req.body.formIds)) : null;
 
   const current = (await MessageCharacter.findAll({ where: { messageId: message.id }, order: [['position', 'ASC']], raw: true })).map((l) => l.characterId);
   if (speakers) {

@@ -29,12 +29,16 @@ import styles from '@/components/entity/EntityForm.module.scss';
  * - `refs`       : options des référentiels (useCharacterReferences)
  * - `modules`    : modules actifs { groups, species, personality, relations, powers, ranks }
  * - `dangerZone` : contenu de la zone de suppression (édition uniquement)
+ * - `isForm`     : édition d'une autre forme du personnage (`character` : le personnage dans cette forme) ;
+ *                  les données communes à toutes les formes (groupes, lieux, relations, album...) sont masquées
+ * - `showFormName` : champ « Nom de la forme » (personnage à plusieurs formes)
  */
-export function CharacterForm({ universe, character, state, refs, modules, errors, sound, modFields, collections, editors, dangerZone }) {
+export function CharacterForm({ universe, character, state, refs, modules, errors, sound, modFields, collections, editors, dangerZone, isForm = false, showFormName = false }) {
   const { form, update, images, setImages } = state;
   const toast = useToast();
   const avatar = useImagePreview(character?.avatar, images.avatar);
   const isEdit = Boolean(character?.id);
+  const shared = !isForm; // sections communes à toutes les formes
 
   // Personnages de l'univers par id (avatars des relations)
   const charactersById = useMemo(() => new Map((refs.allCharacters || []).map((c) => [c.id, c])), [refs.allCharacters]);
@@ -51,12 +55,12 @@ export function CharacterForm({ universe, character, state, refs, modules, error
   const sections = [
     { id: 'identite', label: 'Identité' },
     { id: 'classification', label: 'Classification' },
-    { id: 'appartenances', label: 'Appartenances' },
+    (shared || modules.species) && { id: 'appartenances', label: isForm ? 'Espèces' : 'Appartenances' },
     { id: 'recit', label: 'Récit' },
     modules.personality && { id: 'personnalite', label: 'Personnalité' },
-    modules.relations && { id: 'relations', label: 'Relations' },
+    shared && modules.relations && { id: 'relations', label: 'Relations' },
     { id: 'apparence', label: 'Apparence' },
-    { id: 'album', label: 'Album photo' },
+    shared && { id: 'album', label: 'Album photo' },
     sound && { id: 'son', label: 'Son' },
     modFields && { id: 'champs-mods', label: 'Champs des mods' },
     collections && { id: 'collections', label: 'Collections' },
@@ -97,6 +101,11 @@ export function CharacterForm({ universe, character, state, refs, modules, error
               onError={toast.error}
             />
             <div className={styles.fields}>
+              {showFormName && (
+                <Field label="Nom de la forme" hint={isForm ? 'Transformation, changement physique… : « Forme démoniaque », « Après l’accident »…' : 'Nom de la forme par défaut, affiché dans le choix des formes.'}>
+                  {(props) => <Input {...props} value={form.formName} onChange={(e) => update({ formName: e.target.value })} placeholder={isForm ? 'Forme sans nom' : 'Forme de base'} autoComplete="off" />}
+                </Field>
+              )}
               <Field label="Prénom">
                 {(props) => (
                   <Input {...props} aria-invalid={errors.identity ? true : undefined} value={form.firstname} onChange={(e) => update({ firstname: e.target.value })} autoComplete="off" />
@@ -129,6 +138,15 @@ export function CharacterForm({ universe, character, state, refs, modules, error
           </div>
         </FormSection>
 
+        {isForm ? (
+          modules.species && (
+            <FormSection id="appartenances" title="Espèces" description="Les espèces de cette forme. Groupes et lieux d’origine sont communs à toutes les formes.">
+              <Field label="Espèces">
+                {(props) => <Combobox {...props} multiple options={refs.species} value={form.specieIds} onChange={(specieIds) => update({ specieIds })} placeholder="Ajouter une espèce…" />}
+              </Field>
+            </FormSection>
+          )
+        ) : (
         <FormSection id="appartenances" title="Appartenances" description="Les groupes, espèces et lieux auxquels le personnage est rattaché.">
           {modules.groups && (
             <Field label="Groupes" hint="Le rôle proposé dépend des rôles définis dans chaque groupe.">
@@ -144,6 +162,7 @@ export function CharacterForm({ universe, character, state, refs, modules, error
             {(props) => <Combobox {...props} multiple options={refs.places} value={form.placeIds} onChange={(placeIds) => update({ placeIds })} placeholder="Ajouter un lieu…" />}
           </Field>
         </FormSection>
+        )}
 
         <FormSection id="recit" title="Récit" description="Tout ce qui raconte le personnage.">
           {modules.powers && (
@@ -180,7 +199,7 @@ export function CharacterForm({ universe, character, state, refs, modules, error
           </FormSection>
         )}
 
-        {modules.relations && (
+        {shared && modules.relations && (
           <FormSection id="relations" title="Relations" description="Les liens avec les autres personnages. Ils peuvent être plus ou moins forts.">
             <RelationsField
               value={form.relations}
@@ -221,13 +240,15 @@ export function CharacterForm({ universe, character, state, refs, modules, error
           />
         </FormSection>
 
-        <FormSection id="album" title="Album photo" description="Les photos sont enregistrées dès leur ajout.">
-          {isEdit ? (
-            <PhotoAlbum entityType="character" entityId={character.id} />
-          ) : (
-            <p className={styles.note}>L’album sera disponible une fois le personnage créé.</p>
-          )}
-        </FormSection>
+        {shared && (
+          <FormSection id="album" title="Album photo" description="Les photos sont enregistrées dès leur ajout.">
+            {isEdit ? (
+              <PhotoAlbum entityType="character" entityId={character.id} />
+            ) : (
+              <p className={styles.note}>L’album sera disponible une fois le personnage créé.</p>
+            )}
+          </FormSection>
+        )}
 
         {sound}
         {modFields}
@@ -266,13 +287,13 @@ export function CharacterForm({ universe, character, state, refs, modules, error
   );
 }
 
-/** Zone de suppression d'un personnage. */
-export function CharacterDangerZone({ onDelete }) {
+/** Zone de suppression d'un personnage (ou d'une de ses formes : `title`, `note`). */
+export function CharacterDangerZone({ onDelete, title = 'Supprimer le personnage', note = 'Ses relations, son album photo et ses autres formes seront aussi supprimés.' }) {
   return (
     <section aria-labelledby="danger-title" className={styles.danger}>
       <div>
-        <p id="danger-title" className={styles.dangerTitle}>Supprimer le personnage</p>
-        <p className={styles.note}>Ses relations et son album photo seront aussi supprimés.</p>
+        <p id="danger-title" className={styles.dangerTitle}>{title}</p>
+        <p className={styles.note}>{note}</p>
       </div>
       {onDelete}
     </section>

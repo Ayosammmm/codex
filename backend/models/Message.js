@@ -91,6 +91,9 @@ const MessageCharacter = sequelize.define('RpMessageCharacter', {
   messageId: { type: DataTypes.INTEGER, primaryKey: true },
   characterId: { type: DataTypes.INTEGER, primaryKey: true },
   position: { type: DataTypes.INTEGER, allowNull: false, defaultValue: 0 },
+  // Forme du personnage dans ce message (models/CharacterForm.js) ; null : forme par défaut.
+  // Sans clé étrangère : la suppression d'une forme remet ses messages à null (controllers/characterFormsController.js).
+  formId: { type: DataTypes.INTEGER, allowNull: true },
 }, {
   tableName: 'rp_message_characters',
   engine: 'InnoDB',

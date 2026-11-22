@@ -49,8 +49,9 @@ function mergeRelations(character) {
  * Fiche d'un personnage en lecture seule.
  * - `modules` : modules actifs { groups, species, personality, relations, powers, ranks, roleplay }
  * - `actions` : boutons affichés en haut de la fiche (ex. « Modifier »)
+ * - `formSwitcher` : choix de la forme affichée (`c` est alors le personnage dans cette forme)
  */
-export function CharacterSheet({ universe, character: c, modules, actions, stories = [], events = [], dynamics = null, sound = null }) {
+export function CharacterSheet({ universe, character: c, modules, actions, formSwitcher = null, stories = [], events = [], dynamics = null, sound = null }) {
   const { data: photos = [] } = usePhotos('character', c.id);
   const relations = useMemo(() => (modules.relations ? mergeRelations(c) : []), [c, modules.relations]);
   const story = STORY_FIELDS.filter((f) => (!f.module || modules[f.module]) && plainText(c[f.key]));
@@ -114,6 +115,7 @@ export function CharacterSheet({ universe, character: c, modules, actions, stori
           </div>
           {actions && <div className={styles.actions}>{actions}</div>}
         </header>
+        {formSwitcher && <div className={styles.forms}>{formSwitcher}</div>}
         <div className={styles.infobox}>
           <ImageZoom src={uploadUrl(c.avatar)} label={`Portrait de ${characterName(c)}`} fill>
             <CharacterAvatar character={c} className={styles.portrait} />

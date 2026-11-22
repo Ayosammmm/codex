@@ -44,6 +44,11 @@
   color: var(--fg-muted);
 }
 
+// Choix de la forme d'un personnage (édition), sous l'introduction
+.formSwitcher {
+  margin-bottom: space(8);
+}
+
 .narrow {
   @include container(36rem);
   padding-block: space(16);

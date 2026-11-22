@@ -1,0 +1,52 @@
+@use '@/styles/mixins' as *;
+
+.switcher {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: space(1.5);
+}
+
+.options {
+  display: contents;
+}
+
+.option {
+  display: inline-flex;
+  align-items: center;
+  gap: space(1.5);
+  min-height: 2rem;
+  padding: space(1) space(3);
+  border: var(--border-w, 1px) solid color-mix(in oklab, var(--entity-primary, var(--border)) 45%, var(--border));
+  border-radius: 999px;
+  background: var(--surface);
+  font-size: 0.8125rem;
+  color: var(--fg-muted);
+  transition: background-color 150ms, color 150ms, border-color 150ms;
+
+  &:hover:not(:disabled) {
+    color: var(--fg);
+    border-color: var(--entity-primary, var(--fg-muted));
+  }
+
+  &[aria-checked='true'] {
+    border-color: var(--entity-primary, var(--primary));
+    background: color-mix(in oklab, var(--entity-primary, var(--primary)) 16%, var(--surface));
+    color: var(--fg);
+    font-weight: 600;
+  }
+
+  &:disabled {
+    opacity: 0.55;
+    cursor: not-allowed;
+  }
+
+  svg {
+    width: 0.875rem;
+    height: 0.875rem;
+  }
+}
+
+.add {
+  border-style: dashed;
+}

@@ -41,6 +41,20 @@ export const RESOURCES = {
   customEntities: createResource('/custom-entities'),
 };
 
+/** Autres formes d'un personnage : chaque appel renvoie la fiche complète du personnage. */
+export const characterFormsApi = {
+  create: (characterId, data = {}) => request(`/characters/${characterId}/forms`, { method: 'POST', body: data }),
+  update: (characterId, formId, data) => request(`/characters/${characterId}/forms/${formId}`, { method: 'PUT', body: data }),
+  remove: (characterId, formId) => request(`/characters/${characterId}/forms/${formId}`, { method: 'DELETE' }),
+  reorder: (characterId, ids) => request(`/characters/${characterId}/forms/reorder`, { method: 'PUT', body: { ids } }),
+  uploadFile: (characterId, formId, field, file) => {
+    const form = new FormData();
+    form.append(field, file);
+    return request(`/characters/${characterId}/forms/${formId}/${field}`, { method: 'POST', body: form });
+  },
+  deleteFile: (characterId, formId, field) => request(`/characters/${characterId}/forms/${formId}/${field}`, { method: 'DELETE' }),
+};
+
 /** Albums photo (personnages, créatures, lieux, groupes, espèces, entités de mods). */
 export const photosApi = {
   list: (entityType, entityId) => request(`/entity-photos/${entityType}/${entityId}`),

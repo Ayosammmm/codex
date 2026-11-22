@@ -10,7 +10,7 @@ import { isHexColor, readableTextOn } from '@/theme/color';
 import { cx } from '@/components/ui/cx';
 import { parseRp, shoutLevel } from './markup';
 import { MessageText } from './Message';
-import { speakerOf } from './unknownSpeakers';
+import { messageSpeakers } from './unknownSpeakers';
 import { MessageRoll } from './MessageRoll';
 import { MessageBackdrop } from './MessageBackdrop';
 import { activeEffects } from './commands';
@@ -131,7 +131,7 @@ export function MessageVisualNovel({ title, messages, effectsBefore, backdrop, a
     };
   }, []);
 
-  const speakers = current ? current.characterIds.map((id) => speakerOf(charactersById, id)).filter(Boolean) : [];
+  const speakers = current ? messageSpeakers(charactersById, current) : [];
   const narration = !speakers.length;
   const tint = speakers.find((c) => isHexColor(c.colors?.primary))?.colors.primary;
   const image = current && !current.effect && current.imagePath ? uploadUrl(current.imagePath) : null;
