@@ -55,7 +55,7 @@ export function SpecieSheet({ universe, specie: s, ancestors, subspecies, action
           {actions && <div className={styles.actions}>{actions}</div>}
         </header>
         <div className={styles.infobox}>
-          <EntityBanner src={specieImage(s, IMG.large)} className={styles.portrait} />
+          <EntityBanner src={specieImage(s, IMG.large)} zoom={specieImage(s)} label={`Image de ${s.name}`} className={styles.portrait} />
           <dl className={styles.facts}>
             {facts.map((f) => (
               <div key={f.label} className={styles.fact}>

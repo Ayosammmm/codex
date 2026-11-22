@@ -1,4 +1,4 @@
-import { IMG } from '@/api/client';
+import { IMG, uploadUrl } from '@/api/client';
 import { Fragment, useMemo } from 'react';
 import { Link } from 'react-router';
 import { TrendingUp } from '@/components/ui/icons';
@@ -19,6 +19,7 @@ import { cx } from '@/components/ui/cx';
 import { entityColorVars } from '@/theme/universeTheme';
 import { plainText, universePath } from '@/utils/universe';
 import { PhotoGallery } from '@/components/entity/PhotoGallery';
+import { ImageZoom } from '@/components/entity/ImageZoom';
 import { ModFieldsSheetSections } from '@/mods/ModFieldsSections';
 import { SheetSection } from '@/components/entity/SheetSection';
 import { DynamicCard } from '@/components/relations/DynamicCard';
@@ -114,7 +115,9 @@ export function CharacterSheet({ universe, character: c, modules, actions, stori
           {actions && <div className={styles.actions}>{actions}</div>}
         </header>
         <div className={styles.infobox}>
-          <CharacterAvatar character={c} className={styles.portrait} />
+          <ImageZoom src={uploadUrl(c.avatar)} label={`Portrait de ${characterName(c)}`} fill>
+            <CharacterAvatar character={c} className={styles.portrait} />
+          </ImageZoom>
           {facts.length > 0 && (
             <dl className={styles.facts}>
               {facts.map((f) => (

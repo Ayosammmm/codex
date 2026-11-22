@@ -44,7 +44,7 @@ export function PlaceSheet({ universe, place: p, ancestors, subplaces, fauna = [
     <article className={styles.sheet}>
       <header className={styles.hero}>
         {/* Sans image, pas de bandeau vide : l'en-tête commence directement par le nom */}
-        {image && <EntityBanner src={image} className={styles.banner} />}
+        {image && <EntityBanner src={image} zoom={placeImage(p)} label={`Image de ${p.name}`} className={styles.banner} />}
         <div className={styles.identity}>
           <div className={styles.heading}>
             {(ancestors.length > 0 || p.type) && (

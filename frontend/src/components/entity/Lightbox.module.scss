@@ -1,0 +1,136 @@
+@use '@/styles/mixins' as *;
+
+// Visionneuse plein écran : photo centrée, navigation sur les côtés
+.lightbox {
+  width: 100vw;
+  max-width: none;
+  height: 100dvh;
+  max-height: none;
+  margin: 0;
+  padding: space(4) space(16);
+  overflow: hidden;
+  border: 0;
+  background: transparent;
+  cursor: zoom-out;
+  touch-action: pan-y;
+
+  &[open] {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  &::backdrop {
+    background: rgb(0 0 0 / 0.85);
+  }
+
+  img {
+    display: block;
+    max-width: 100%;
+    // Place laissée à la légende et au compteur
+    max-height: calc(100dvh - 9rem);
+    border-radius: var(--r);
+    object-fit: contain;
+    cursor: default;
+    user-select: none;
+    animation: lightbox-in 200ms $ease-out;
+  }
+
+  @media (max-width: 40rem) {
+    padding-inline: space(2);
+  }
+}
+
+@keyframes lightbox-in {
+  from {
+    opacity: 0;
+    transform: scale(0.98);
+  }
+}
+
+.lightboxButton {
+  position: fixed;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.75rem;
+  height: 2.75rem;
+  border-radius: 50%;
+  background: rgb(0 0 0 / 0.5);
+  color: #fff;
+  cursor: pointer;
+  transition: background 150ms;
+
+  &:hover {
+    background: rgb(0 0 0 / 0.75);
+  }
+
+  &:focus-visible {
+    @include focus-ring;
+  }
+
+  svg {
+    width: 1.375rem;
+    height: 1.375rem;
+  }
+}
+
+.lightboxClose {
+  top: space(4);
+  right: space(4);
+}
+
+.lightboxPrev,
+.lightboxNext {
+  top: 50%;
+  translate: 0 -50%;
+}
+
+.lightboxPrev {
+  left: space(4);
+}
+
+.lightboxNext {
+  right: space(4);
+}
+
+// Petit écran : boutons en bas pour ne pas masquer la photo (le glissé reste possible)
+@media (max-width: 40rem) {
+  .lightboxPrev,
+  .lightboxNext {
+    top: auto;
+    bottom: space(4);
+    translate: none;
+  }
+}
+
+.lightboxCounter {
+  position: fixed;
+  top: space(4);
+  left: 50%;
+  translate: -50% 0;
+  padding: space(1) space(3);
+  border-radius: 999px;
+  background: rgb(0 0 0 / 0.5);
+  font-size: 0.8125rem;
+  font-variant-numeric: tabular-nums;
+  color: #fff;
+}
+
+.lightboxFigure {
+  display: flex;
+  max-width: 100%;
+  margin: 0;
+  flex-direction: column;
+  align-items: center;
+  gap: space(3);
+}
+
+.lightboxCaption {
+  max-width: min(92vw, 48rem);
+  font-size: 1rem;
+  text-align: center;
+  color: #fff;
+  text-shadow: 0 1px 4px rgb(0 0 0 / 0.6);
+  cursor: default;
+}

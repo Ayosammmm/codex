@@ -53,7 +53,7 @@ export function CustomEntitySheet({ universe, type, entity: e, ancestors, childr
           {actions && <div className={styles.actions}>{actions}</div>}
         </header>
         <div className={styles.infobox}>
-          <EntityBanner src={customImage(e, IMG.large)} className={styles.portrait} />
+          <EntityBanner src={customImage(e, IMG.large)} zoom={customImage(e)} label={`Image de ${e.name}`} className={styles.portrait} />
           <dl className={styles.facts}>
             <div className={styles.fact}>
               <dt>Type</dt>

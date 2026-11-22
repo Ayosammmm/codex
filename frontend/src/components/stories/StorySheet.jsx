@@ -36,7 +36,7 @@ export function StorySheet({ universe, story: s, modules, actions }) {
   return (
     <article className={styles.sheet}>
       <header className={styles.hero}>
-        {image && <EntityBanner src={image} className={styles.banner} />}
+        {image && <EntityBanner src={image} zoom={storyImage(s)} label={`Image de ${s.name}`} className={styles.banner} />}
         <div className={styles.identity}>
           <div className={styles.heading}>
             {storyPeriod(s) && (

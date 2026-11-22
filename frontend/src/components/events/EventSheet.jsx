@@ -42,7 +42,7 @@ export function EventSheet({ universe, event: e, prev, next, modules, actions })
   return (
     <article className={story.sheet}>
       <header className={story.hero}>
-        {image && <EntityBanner src={image} className={story.banner} />}
+        {image && <EntityBanner src={image} zoom={eventImage(e)} label={`Image de ${e.name}`} className={story.banner} />}
         <div className={story.identity}>
           <div className={story.heading}>
             <p className={styles.kicker}>

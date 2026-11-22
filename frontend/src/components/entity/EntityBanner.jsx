@@ -1,9 +1,20 @@
 import { cx } from '@/components/ui/cx';
 import { CharacterAvatar } from '@/components/characters/CharacterAvatar';
+import { ImageZoom } from './ImageZoom';
 import styles from './EntityBanner.module.scss';
 
-/** Bannière d'une entité : image (`src`), sinon dégradé de ses couleurs (--entity-*), sinon fond neutre. */
-export function EntityBanner({ src, className }) {
+/**
+ * Bannière d'une entité : image (`src`), sinon dégradé de ses couleurs (--entity-*), sinon fond neutre.
+ * `zoom` (URL de l'image d'origine, HD) : la bannière devient cliquable et s'ouvre en grand ; `label` la nomme.
+ */
+export function EntityBanner({ src, zoom, label, className }) {
+  if (src && zoom) {
+    return (
+      <ImageZoom src={zoom} label={label} fill className={cx(styles.banner, className)}>
+        <img src={src} alt="" loading="lazy" decoding="async" />
+      </ImageZoom>
+    );
+  }
   return (
     <span className={cx(styles.banner, className)} aria-hidden>
       {src && <img src={src} alt="" loading="lazy" decoding="async" />}

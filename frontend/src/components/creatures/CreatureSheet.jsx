@@ -76,7 +76,7 @@ export function CreatureSheet({ universe, creature: c, modules = {}, actions }) 
           {actions && <div className={layout.actions}>{actions}</div>}
         </header>
         <div className={layout.infobox}>
-          <EntityBanner src={creatureImage(c, IMG.large)} className={layout.portrait} />
+          <EntityBanner src={creatureImage(c, IMG.large)} zoom={creatureImage(c)} label={`Image de ${c.name}`} className={layout.portrait} />
           {facts.length > 0 && (
             <dl className={layout.facts}>
               {facts.map((f) => (

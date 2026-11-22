@@ -10,6 +10,7 @@ import { plainText, plural, universePath } from '@/utils/universe';
 import { GroupLogo } from './GroupLogo';
 import { GroupOrgChart } from './GroupOrgChart';
 import { EntityBanner } from '@/components/entity/EntityBanner';
+import { ImageZoom } from '@/components/entity/ImageZoom';
 import styles from './GroupSheet.module.scss';
 
 /**
@@ -34,9 +35,11 @@ export function GroupSheet({ universe, group: g, subgroups, actions, sound = nul
   return (
     <article className={styles.sheet}>
       <header className={styles.hero}>
-        <EntityBanner src={uploadUrl(g.banner, IMG.large)} className={styles.banner} />
+        <EntityBanner src={uploadUrl(g.banner, IMG.large)} zoom={uploadUrl(g.banner)} label={`Bannière de ${g.name}`} className={styles.banner} />
         <div className={styles.identity}>
-          <GroupLogo group={g} className={styles.logo} />
+          <ImageZoom src={uploadUrl(g.image)} label={`Logo de ${g.name}`} className={styles.logoZoom}>
+            <GroupLogo group={g} className={styles.logo} />
+          </ImageZoom>
           <div className={styles.heading}>
             <div className={styles.kicker}>
               {g.type && <span className={styles.type}>{g.type.name}</span>}
