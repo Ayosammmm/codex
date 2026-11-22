@@ -452,6 +452,28 @@ exports.overview = handle('overview', async (req, res) => {
   });
 });
 
+/**
+ * Sons joués dans les scènes de l'univers (page « Sons » du module Son), du plus ancien au plus récent :
+ * ambiances (/ambiance avec un son joint) et sons joints aux messages.
+ */
+exports.sceneSounds = handle('sceneSounds', async (req, res) => {
+  const universeId = toId(req.query.universe_id);
+  if (!universeId) throw httpError(400, 'Paramètre universe_id requis');
+  const messages = await RpMessage.findAll({
+    where: { universe_id: universeId, sceneId: { [Op.ne]: null }, soundPath: { [Op.ne]: null } },
+    attributes: ['id', 'sceneId', 'soundPath', 'effect', 'createdAt'],
+    order: [['id', 'ASC']],
+    raw: true,
+  });
+  res.json(messages.map((m) => ({
+    id: m.id,
+    sceneId: m.sceneId,
+    soundPath: m.soundPath,
+    kind: m.effect?.startsWith('ambience') ? 'ambience' : 'sound',
+    createdAt: m.createdAt,
+  })));
+});
+
 /** Roleplay d'un personnage : scènes où il apparaît. */
 exports.characterActivity = handle('characterActivity', async (req, res) => {
   const characterId = toId(req.params.characterId);

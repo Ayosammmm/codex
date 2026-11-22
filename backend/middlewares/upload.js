@@ -21,6 +21,19 @@ function getFileExtension(filename) {
   return path.extname(filename).toLowerCase();
 }
 
+/**
+ * Nom d'origine d'un fichier envoyé, en UTF-8. Multer (busboy) lit le nom du formulaire en latin1 :
+ * les caractères non latins (japonais…) arrivent déformés (« ä¸¸ã® » au lieu de « 丸の »). On le relit en UTF-8,
+ * sauf s'il n'était pas de l'UTF-8 (caractère invalide).
+ */
+function originalName(file) {
+  const name = Buffer.from(file.originalname, "latin1").toString("utf8");
+  return name.includes("\uFFFD") ? file.originalname : name;
+}
+
+/** Nom d'enregistrement : horodatage + nom d'origine sans espaces. */
+const storedName = (file) => Date.now() + "-" + originalName(file).replace(/\s+/g, "_");
+
 // Fonction pour créer un middleware multer avec un sous-dossier spécifique
 function createUploadMiddleware(subfolder = "", useIdNaming = false) {
   const uploadDir = subfolder 
@@ -46,8 +59,7 @@ function createUploadMiddleware(subfolder = "", useIdNaming = false) {
         cb(null, filename);
       } else {
         // Format par défaut (rétrocompatibilité)
-        const safeName = file.originalname.replace(/\s+/g, "_");
-        cb(null, Date.now() + "-" + safeName);
+        cb(null, storedName(file));
       }
     },
   });
@@ -79,7 +91,7 @@ function diskStorage(subfolder) {
   if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
   return multer.diskStorage({
     destination: (req, file, cb) => cb(null, dir),
-    filename: (req, file, cb) => cb(null, Date.now() + "-" + file.originalname.replace(/\s+/g, "_")),
+    filename: (req, file, cb) => cb(null, storedName(file)),
   });
 }
 

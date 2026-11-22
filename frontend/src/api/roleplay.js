@@ -14,6 +14,8 @@ const postMessages = (path, { parts, image, sound }) => {
 /** Roleplay écrit : fil de messages par lieu, scènes (voir backend/controllers/roleplayController.js). */
 export const roleplayApi = {
   overview: (universeId) => request(`/roleplay/overview?universe_id=${universeId}`),
+  /** Sons joués dans les scènes de l'univers : [{ id, sceneId, soundPath, kind: 'ambience' | 'sound', createdAt }]. */
+  sceneSounds: (universeId) => request(`/roleplay/sounds?universe_id=${universeId}`),
   messages: (placeId, { before } = {}) => request(`/roleplay/places/${placeId}/messages${before ? `?before=${before}` : ''}`),
   /** Plusieurs messages d'un coup : { parts: [{ content, characterIds }], image? } (image jointe au dernier). */
   createMessages: (placeId, data) => postMessages(`/roleplay/places/${placeId}/messages`, data),
@@ -36,6 +38,7 @@ export const roleplayApi = {
 export const roleplayKeys = {
   all: ['roleplay'],
   overview: (universeId) => ['roleplay', 'overview', Number(universeId)],
+  sounds: (universeId) => ['roleplay', 'sounds', Number(universeId)],
   place: (placeId) => ['roleplay', 'messages', Number(placeId)],
   character: (characterId) => ['roleplay', 'character', Number(characterId)],
   episode: (episodeId) => ['roleplay', 'episode', Number(episodeId)],
@@ -44,6 +47,9 @@ export const roleplayKeys = {
 
 export const useRoleplayOverview = (universeId, { enabled = true } = {}) =>
   useQuery({ queryKey: roleplayKeys.overview(universeId), queryFn: () => roleplayApi.overview(universeId), enabled: enabled && Boolean(universeId) });
+
+export const useSceneSounds = (universeId, { enabled = true } = {}) =>
+  useQuery({ queryKey: roleplayKeys.sounds(universeId), queryFn: () => roleplayApi.sceneSounds(universeId), enabled: enabled && Boolean(universeId) });
 
 export const useCharacterRoleplay = (characterId, { enabled = true } = {}) =>
   useQuery({ queryKey: roleplayKeys.character(characterId), queryFn: () => roleplayApi.character(characterId), enabled: enabled && Number(characterId) > 0 });

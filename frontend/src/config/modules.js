@@ -53,7 +53,7 @@ export const MODULES = [
     extraNav: [{ key: 'rpScenes', path: 'roleplay/scenes', label: 'Scènes', icon: Clapperboard }],
     description: 'Roleplay écrit dans les lieux, au nom des personnages, avec scènes rattachables aux épisodes.' },
 
-  { key: 'sound', label: 'Son', icon: Music, defaultEnabled: false,
+  { key: 'sound', path: 'sons', navLabel: 'Sons', label: 'Son', icon: Music, defaultEnabled: false,
     description: 'Thèmes musicaux des personnages, groupes et lieux ; ambiance des lieux et sons dans le roleplay.' },
 
   { key: 'collections', label: 'Collections', icon: Library, defaultEnabled: false,

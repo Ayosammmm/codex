@@ -8,6 +8,7 @@ const uploadAttachments = createAttachmentsMiddleware({ imageFolder: roleplay.IM
 
 // Roleplay écrit. Écriture : éditeurs et admins (middlewares/authorize.js), droits fins dans le contrôleur.
 router.get("/overview", roleplay.overview);
+router.get("/sounds", roleplay.sceneSounds);
 router.get("/places/:placeId/messages", roleplay.listMessages);
 router.post("/places/:placeId/messages", uploadAttachments, roleplay.createMessages);
 router.put("/places/:placeId/read", roleplay.markRead);

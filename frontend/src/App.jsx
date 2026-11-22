@@ -41,6 +41,7 @@ import PlaceRoleplayPage from '@/pages/roleplay/PlaceRoleplayPage';
 import RpScenePage from '@/pages/roleplay/RpScenePage';
 import RpScenesPage from '@/pages/roleplay/RpScenesPage';
 import RpSceneEditPage from '@/pages/roleplay/RpSceneEditPage';
+import SoundsPage from '@/pages/sound/SoundsPage';
 import { AdminOnly, RequireAuth, SuperAdminOnly } from '@/auth/RequireAuth';
 import ModsAdminPage from '@/mods/ModsAdminPage';
 import ModsDocsPage from '@/mods/ModsDocsPage';
@@ -110,6 +111,7 @@ export const router = createBrowserRouter([{ element: <AppRoot />, children: [
       { path: 'roleplay/scenes', element: <ModuleGate module="roleplay"><RpScenesPage /></ModuleGate> },
       { path: 'roleplay/scenes/:sceneId/modifier', element: <ModuleGate module="roleplay"><RpSceneEditPage /></ModuleGate> },
       { path: 'roleplay/scenes/:sceneId', element: <ModuleGate module="roleplay"><RpScenePage /></ModuleGate> },
+      { path: 'sons', element: <ModuleGate module="sound"><SoundsPage /></ModuleGate> },
       // Mods : types d'entités et pages de code (voir src/mods)
       { path: 'mods/:modId/:modPath', element: <ModSectionPage /> },
       { path: 'mods/:modId/:modPath/nouveau', element: <CustomEntityEditPage /> },

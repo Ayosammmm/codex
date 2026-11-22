@@ -10,8 +10,9 @@ const formatTime = (s) => (Number.isFinite(s) ? `${Math.floor(s / 60)}:${String(
  * `loop` : lecture en boucle (thèmes musicaux) ; `label` : titre affiché à côté ;
  * `autoPlay` : lancé dès l'affichage, si le navigateur l'autorise (sinon il reste à l'arrêt).
  * `volume` (0 à 1) : volume de départ ; chaque lecteur se règle ensuite indépendamment.
+ * `preload` : 'metadata' (durée affichée d'emblée) ou 'none' (rien n'est chargé avant la lecture : longues listes).
  */
-export function SoundPlayer({ src, label, loop = false, volume = 1, autoPlay = false, className }) {
+export function SoundPlayer({ src, label, loop = false, volume = 1, autoPlay = false, preload = 'metadata', className }) {
   const ref = useRef(null);
   const [playing, setPlaying] = useState(false);
   const [time, setTime] = useState(0);
@@ -42,7 +43,7 @@ export function SoundPlayer({ src, label, loop = false, volume = 1, autoPlay = f
         ref={ref}
         src={src}
         loop={loop}
-        preload="metadata"
+        preload={preload}
         // Autre fichier : retour au début, à l'arrêt
         onLoadStart={() => {
           setPlaying(false);
