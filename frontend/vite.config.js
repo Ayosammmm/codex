@@ -3,11 +3,14 @@ import react from '@vitejs/plugin-react';
 import path from 'node:path';
 
 export default defineConfig(({ mode }) => {
-  const env = loadEnv(mode, process.cwd(), '');
+  // .env partagé à la racine du projet (seules les variables VITE_* sont exposées au navigateur)
+  const envDir = path.resolve(import.meta.dirname, '..');
+  const env = loadEnv(mode, envDir, '');
   // Le backend est servi via le proxy de Vite : pas de CORS, URLs relatives (/api, /uploads)
   const backend = env.VITE_BACKEND_URL || 'http://localhost:5000';
 
   return {
+    envDir,
     plugins: [react()],
     css: {
       modules: {

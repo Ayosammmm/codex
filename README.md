@@ -64,7 +64,7 @@ Il y a également deux mods exemples afin de vous amuser, ou bien de prendre en 
 Vous pourrez créer vos mods et aller encore plus loin. J'ai envie de créer un générateur d'histoires, pouvant pousser loin l'évolution des relations entre les personnages, ou même un mod ajoutant un système de combat poussé. Ou alors je fais quelque chose de plus simple comme un simulateur de combats pokemon, ou l'équivalent du WaifuArena de Mudae.
 
 ## Installation
-- Dans "backend", créez un fichier .env avec les champs du .env.example, puis complétez les à votre convenance. Le but est de connecter l'application à une base de données, et de créer un premier compte super admin.
+- À la racine du projet, créez un fichier .env avec les champs du .env.example, puis complétez les à votre convenance. Le but est de connecter l'application à une base de données, et de créer un premier compte super admin.
 
 - Installez les dépendances.
 

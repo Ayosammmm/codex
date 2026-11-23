@@ -1,5 +1,5 @@
 const { Sequelize } = require("sequelize");
-require("dotenv").config({ path: require("path").join(__dirname, "..", ".env") });
+require("dotenv").config({ path: require("path").join(__dirname, "..", "..", ".env") });
 
 // Connexion à la base : les identifiants viennent du fichier `.env` (voir `.env.example`)
 // DB_PASSWORD peut être vide (MySQL local sans mot de passe) mais la ligne doit exister
