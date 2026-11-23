@@ -16,7 +16,7 @@
 import { relationNature } from '@/config/characters';
 
 export const DYNAMIC_TYPES = [
-  { key: 'triangle', label: 'Triangle amoureux', color: '#ec4899', description: 'Un personnage lié sentimentalement à deux autres, qui ne le sont pas entre eux.' },
+  { key: 'triangle', label: 'Triangle amoureux', color: '#ec4899', description: 'Un personnage lié sentimentalement à deux autres, qui ne le sont pas entre eux (les ex ne comptent pas).' },
   { key: 'band', label: 'Bande soudée', color: '#16a34a', description: 'Au moins quatre personnages tous liés positivement les uns aux autres.' },
   { key: 'trio', label: 'Trio soudé', color: '#22c55e', description: 'Trois personnages tous liés positivement.' },
   { key: 'torn', label: 'Ami commun déchiré', color: '#f59e0b', description: 'Un personnage apprécie deux autres qui s’opposent : un équilibre instable.' },
@@ -29,7 +29,10 @@ export const dynamicType = (key) => DYNAMIC_TYPES.find((t) => t.key === key);
 
 const POSITIVE = new Set(['amicale', 'amoureuse', 'familiale']);
 const NEGATIVE = new Set(['rivalite', 'inimitie']);
-const ROMANTIC_NATURE = /couple|amour|amant|fianc|mari|épou|epou|\bex\b/i;
+const ROMANTIC_NATURE = /couple|amour|amant|fianc|mari|épou|epou/i;
+/** Natures amoureuses qui ne comptent pas dans les triangles : un ex n'est plus amoureux. */
+const PAST_ROMANCE = new Set(['ex']);
+const PAST_NATURE = /^\s*ex\b/i;
 
 /** Archétype d'une relation : celui de sa nature, sinon celui enregistré. */
 const categoryOf = (link) => relationNature(link.relation_type)?.category || link.category;
@@ -44,7 +47,12 @@ export function relationSign(link) {
   return 0;
 }
 
-const isRomantic = (link) => categoryOf(link) === 'amoureuse' || (!categoryOf(link) && ROMANTIC_NATURE.test(link.relation_type || ''));
+/** Lien amoureux actuel (un ex n'est pas compté : s'il est encore amoureux, la relation le dit). */
+const isRomantic = (link) => {
+  const nature = relationNature(link.relation_type);
+  if (PAST_ROMANCE.has(nature?.key) || PAST_NATURE.test(link.relation_type || '')) return false;
+  return categoryOf(link) === 'amoureuse' || (!categoryOf(link) && ROMANTIC_NATURE.test(link.relation_type || ''));
+};
 const isHierarchical = (link) => categoryOf(link) === 'hierarchique';
 /** `id` est-il au-dessus dans ce lien hiérarchique (Mentor, Supérieur…) ? Rôles non précisés : on l'admet. */
 const isAbove = (link, id) => link.lead_id == null || !relationNature(link.relation_type)?.roles || link.lead_id === id;

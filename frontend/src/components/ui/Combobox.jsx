@@ -1,5 +1,5 @@
 import { useId, useMemo, useRef, useState } from 'react';
-import { X } from '@/components/ui/icons';
+import { Plus, X } from '@/components/ui/icons';
 import { cx } from './cx';
 import styles from './Combobox.module.scss';
 
@@ -10,6 +10,9 @@ const MAX_RESULTS = 80;
  * Champ de recherche avec suggestions (motif ARIA « combobox »), en sélection simple ou multiple.
  * - options : [{ value, label, description?, image?, color? }]
  * - value   : valeur (simple) ou tableau de valeurs (`multiple`)
+ * - onCreate : facultatif, `async (nom) => valeur | null` : propose « Créer « nom » » quand aucune option
+ *              ne porte exactement ce nom ; la valeur renvoyée est choisie (null : rien à choisir)
+ * - createLabel : libellé de cette proposition, `(nom) => texte`
  * Clavier : ↑ ↓ pour naviguer, Entrée pour choisir, Échap pour fermer, Retour arrière pour retirer la dernière puce.
  */
 export function Combobox({
@@ -19,6 +22,8 @@ export function Combobox({
   multiple = false,
   placeholder = 'Rechercher…',
   emptyText = 'Aucun résultat',
+  onCreate,
+  createLabel = (name) => `Créer « ${name} »`,
   id,
   className,
   ...aria
@@ -28,6 +33,7 @@ export function Combobox({
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState('');
   const [active, setActive] = useState(0);
+  const [creating, setCreating] = useState(false);
 
   const selected = useMemo(() => {
     const values = multiple ? value || [] : value == null ? [] : [value];
@@ -42,7 +48,25 @@ export function Combobox({
       .slice(0, MAX_RESULTS);
   }, [options, query, value, multiple]);
 
-  const choose = (option) => {
+  // Proposition de création, en fin de liste, si le nom tapé n'existe pas déjà
+  const newName = query.trim().replace(/\s+/g, ' ');
+  const canCreate = Boolean(onCreate) && Boolean(newName) && !options.some((o) => normalize(o.label) === normalize(newName));
+  const items = canCreate ? [...results, { value: '__create__', create: true, label: createLabel(newName) }] : results;
+
+  const choose = async (option) => {
+    if (option.create) {
+      if (creating) return;
+      setCreating(true);
+      try {
+        const created = await onCreate(newName);
+        if (created != null) return choose({ value: created });
+        setQuery('');
+        setActive(0);
+      } finally {
+        setCreating(false);
+      }
+      return;
+    }
     if (multiple) {
       onChange([...(value || []), option.value]);
       setQuery('');
@@ -60,14 +84,14 @@ export function Combobox({
     if (e.key === 'ArrowDown') {
       e.preventDefault();
       setOpen(true);
-      setActive((i) => Math.min(i + 1, results.length - 1));
+      setActive((i) => Math.min(i + 1, items.length - 1));
     } else if (e.key === 'ArrowUp') {
       e.preventDefault();
       setActive((i) => Math.max(i - 1, 0));
     } else if (e.key === 'Enter') {
-      if (open && results[active]) {
+      if (open && items[active]) {
         e.preventDefault();
-        choose(results[active]);
+        choose(items[active]);
       }
     } else if (e.key === 'Escape') {
       if (open) {
@@ -81,7 +105,7 @@ export function Combobox({
 
   // Sélection simple : le champ affiche l'option choisie tant qu'on ne tape pas
   const inputValue = !multiple && !open ? selected[0]?.label || '' : query;
-  const activeId = open && results[active] ? `${listId}-${active}` : undefined;
+  const activeId = open && items[active] ? `${listId}-${active}` : undefined;
 
   return (
     <div
@@ -131,18 +155,20 @@ export function Combobox({
 
       {open && (
         <ul id={listId} role="listbox" aria-multiselectable={multiple || undefined} className={styles.listbox}>
-          {results.length === 0 && <li className={styles.empty}>{emptyText}</li>}
-          {results.map((o, i) => (
+          {items.length === 0 && <li className={styles.empty}>{emptyText}</li>}
+          {items.map((o, i) => (
             <li
               key={o.value}
               id={`${listId}-${i}`}
               role="option"
               aria-selected={i === active}
-              className={cx(styles.option, i === active && styles.active)}
+              aria-disabled={(o.create && creating) || undefined}
+              className={cx(styles.option, i === active && styles.active, o.create && styles.create)}
               onMouseDown={(e) => e.preventDefault()} // garde le focus dans le champ
               onMouseEnter={() => setActive(i)}
               onClick={() => choose(o)}
             >
+              {o.create && <Plus aria-hidden className={styles.createIcon} />}
               {o.image !== undefined &&
                 (o.image ? <img src={o.image} alt="" className={styles.optionImage} loading="lazy" /> : <span className={styles.optionImage} />)}
               {o.color && <span className={styles.optionDot} style={{ background: o.color }} aria-hidden />}

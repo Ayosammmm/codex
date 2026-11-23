@@ -2,6 +2,8 @@ import { X } from '@/components/ui/icons';
 import { TRAIT_GROUPS, TRAIT_MAX, TRAIT_MIN } from '@/config/characters';
 import { Button } from '@/components/ui/Button';
 import { cx } from '@/components/ui/cx';
+import { Tooltip } from '@/components/ui/Tooltip';
+import { TraitQuestions } from './TraitQuestions';
 import styles from './TraitsField.module.scss';
 
 const formatValue = (v) => (v == null ? '—' : v > 0 ? `+${v}` : v < 0 ? `−${-v}` : '0');
@@ -35,8 +37,12 @@ export function TraitsField({ value, onChange }) {
               {group.traits.map((t) => {
                 const v = value[t.key];
                 return (
-                  <div
+                  // Infobulle : questions à se poser pour placer le curseur
+                  <Tooltip
+                    as="div"
+                    wide
                     key={t.key}
+                    content={<TraitQuestions trait={t} />}
                     className={cx(styles.trait, v == null && styles.unset, v < 0 && styles.leanWeak, v > 0 && styles.leanStrong)}
                   >
                     <div className={styles.labels} aria-hidden>
@@ -68,7 +74,7 @@ export function TraitsField({ value, onChange }) {
                         <X aria-hidden />
                       </button>
                     </div>
-                  </div>
+                  </Tooltip>
                 );
               })}
             </div>

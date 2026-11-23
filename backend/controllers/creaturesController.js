@@ -10,7 +10,7 @@ const IMAGE_FOLDERS = { image: "creatures/images", background: "creatures/backgr
 
 const includes = [
   { model: Place, as: "habitats", attributes: ["id", "name", "banner", "background", "colors"], through: { attributes: [] } },
-  { model: PowerRank, as: "powerRank", attributes: ["id", "name", "color", "position"] },
+  { model: PowerRank, as: "powerRank", attributes: ["id", "name", "color", "description", "position"] },
 ];
 
 // Valeurs autorisées des listes (celles du modèle)

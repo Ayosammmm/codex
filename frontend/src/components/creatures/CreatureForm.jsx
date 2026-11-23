@@ -28,6 +28,7 @@ import form from '@/components/entity/EntityForm.module.scss';
 import { useImagePreview } from '@/components/entity/useImagePreview';
 import { universePath } from '@/utils/universe';
 import styles from './CreatureForm.module.scss';
+import { useQuickCreateId } from '@/components/entity/useQuickCreate';
 
 const PHYSICAL = [
   { key: 'speed', label: 'Vitesse', placeholder: 'Ex. 60 km/h, très rapide' },
@@ -42,6 +43,7 @@ const PHYSICAL = [
  * - `dangerZone` : zone de suppression (édition uniquement)
  */
 export function CreatureForm({ universe, creature, state, refs, modules, errors, modFields, collections, editors, dangerZone }) {
+  const createPlace = useQuickCreateId('places', universe.id);
   const { form: f, update, images, setImage } = state;
   const toast = useToast();
   const isEdit = Boolean(creature?.id);
@@ -99,7 +101,7 @@ export function CreatureForm({ universe, creature, state, refs, modules, errors,
                 </Field>
               )}
               <Field label="Habitats" hint="Les lieux où l’on rencontre cette créature.">
-                {(props) => <Combobox {...props} multiple options={refs.places} value={f.placeIds} onChange={(placeIds) => update({ placeIds })} placeholder="Ajouter un lieu…" />}
+                {(props) => <Combobox {...props} multiple options={refs.places} value={f.placeIds} onChange={(placeIds) => update({ placeIds })} onCreate={createPlace} createLabel={(name) => `Créer le lieu « ${name} »`} placeholder="Ajouter un lieu…" />}
               </Field>
             </div>
           </div>

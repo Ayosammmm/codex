@@ -2,6 +2,7 @@ import { IMG, uploadUrl } from '@/api/client';
 import { Link } from 'react-router';
 import { characterName } from '@/config/characters';
 import { Badge } from '@/components/ui/Badge';
+import { ReferenceBadge } from '@/components/entity/ReferenceBadge';
 import { entityColorVars } from '@/theme/universeTheme';
 import { CharacterAvatar } from './CharacterAvatar';
 import { NameCell, dash } from '@/components/entity/EntityTable';
@@ -15,8 +16,8 @@ function CharacterBadges({ character, show }) {
     <div className={styles.badges}>
       {c.statuses && <Badge color={c.statuses.color}>{c.statuses.name}</Badge>}
       {c.genders && <Badge color={c.genders.color}>{c.genders.name}</Badge>}
-      {c.alignments && <Badge color={c.alignments.color}>{c.alignments.name}</Badge>}
-      {show.ranks && c.power_ranks && <Badge color={c.power_ranks.color}>{c.power_ranks.name}</Badge>}
+      <ReferenceBadge item={c.alignments} />
+      {show.ranks && <ReferenceBadge item={c.power_ranks} />}
       {show.groups && c.groups?.map((g) => <Badge key={`g${g.id}`} color="var(--secondary)">{g.name}</Badge>)}
       {show.species && c.species?.map((s) => <Badge key={`s${s.id}`} color="var(--tertiary)">{s.name}</Badge>)}
     </div>
@@ -94,12 +95,12 @@ export const characterColumns = ({ linkTo, show }) =>
     },
     {
       key: 'alignment', label: 'Alignement', sortKey: 'alignment',
-      render: (c) => (c.alignments ? <Badge color={c.alignments.color}>{c.alignments.name}</Badge> : dash),
+      render: (c) => (c.alignments ? <ReferenceBadge item={c.alignments} /> : dash),
       edit: { field: 'alignment_id', type: 'ref', criterion: 'alignment' },
     },
     show.ranks && {
       key: 'rank', label: 'Rang', sortKey: 'rank',
-      render: (c) => (c.power_ranks ? <Badge color={c.power_ranks.color}>{c.power_ranks.name}</Badge> : dash),
+      render: (c) => (c.power_ranks ? <ReferenceBadge item={c.power_ranks} /> : dash),
       edit: { field: 'rank_id', type: 'ref', criterion: 'rank' },
     },
     show.groups && {

@@ -1,0 +1,32 @@
+@use '@/styles/mixins' as *;
+
+// L'étiquette garde son comportement (troncature) dans son conteneur
+.trigger {
+  display: inline-flex;
+  max-width: 100%;
+  min-width: 0;
+  cursor: help;
+}
+
+.tip {
+  display: flex;
+  flex-direction: column;
+  gap: space(1);
+}
+
+.name {
+  font-weight: 600;
+}
+
+// Texte riche sur fond inversé : mêmes couleurs que l'infobulle
+.text {
+  line-height: 1.45;
+
+  :global(*) {
+    color: inherit;
+  }
+
+  img {
+    display: none;
+  }
+}

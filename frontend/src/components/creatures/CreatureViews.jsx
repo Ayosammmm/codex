@@ -3,6 +3,7 @@ import { Link } from 'react-router';
 import { MapPin, Ruler } from '@/components/ui/icons';
 import { ACTIVITY_CYCLES, DIETS, INTELLIGENCE_MAX, TEMPERAMENTS, creatureImage, formatSize, temperamentColor } from '@/config/creatures';
 import { Badge } from '@/components/ui/Badge';
+import { ReferenceBadge } from '@/components/entity/ReferenceBadge';
 import { EntityBanner } from '@/components/entity/EntityBanner';
 import { NameCell, dash } from '@/components/entity/EntityTable';
 import { entityColorVars } from '@/theme/universeTheme';
@@ -19,7 +20,7 @@ export function CreatureGallery({ creatures, linkTo, showRanks }) {
               <EntityBanner src={creatureImage(c, IMG.card)} className={styles.image} />
               {showRanks && c.powerRank && (
                 <span className={styles.rank}>
-                  <Badge color={c.powerRank.color}>{c.powerRank.name}</Badge>
+                  <ReferenceBadge item={c.powerRank} />
                 </span>
               )}
             </span>
@@ -60,7 +61,7 @@ export const creatureColumns = ({ linkTo, showRanks }) =>
     },
     showRanks && {
       key: 'rank', label: 'Rang', sortKey: 'rank',
-      render: (c) => (c.powerRank ? <Badge color={c.powerRank.color}>{c.powerRank.name}</Badge> : dash),
+      render: (c) => (c.powerRank ? <ReferenceBadge item={c.powerRank} /> : dash),
       edit: { field: 'powerRankId', type: 'ref', criterion: 'rank' },
     },
     { key: 'size', label: 'Taille', sortKey: 'size', render: (c) => formatSize(c) || dash },

@@ -12,6 +12,7 @@ import {
   temperamentColor,
 } from '@/config/creatures';
 import { Badge } from '@/components/ui/Badge';
+import { ReferenceBadge } from '@/components/entity/ReferenceBadge';
 import { RichText } from '@/components/ui/RichText';
 import { EntityBanner } from '@/components/entity/EntityBanner';
 import layout from '@/components/entity/InfoboxSheet.module.scss';
@@ -46,7 +47,7 @@ export function CreatureSheet({ universe, creature: c, modules = {}, actions }) 
   const weaknesses = plainText(c.naturalWeaknesses) || c.naturalWeaknesses?.trim();
 
   const facts = [
-    modules.ranks && c.powerRank && { label: 'Rang', value: <Badge color={c.powerRank.color}>{c.powerRank.name}</Badge> },
+    modules.ranks && c.powerRank && { label: 'Rang', value: <ReferenceBadge item={c.powerRank} focusable /> },
     formatSize(c) && { label: 'Taille', value: formatSize(c) },
     formatWeight(c) && { label: 'Poids', value: formatWeight(c) },
     formatLife(c) && { label: 'Longévité', value: formatLife(c) },

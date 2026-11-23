@@ -20,6 +20,7 @@ import { descendantIds } from '@/components/entity/tree';
 import { MembersField } from './MembersField';
 import { RolesField } from './RolesField';
 import styles from './GroupForm.module.scss';
+import { useQuickCreateId } from '@/components/entity/useQuickCreate';
 
 
 /**
@@ -28,6 +29,7 @@ import styles from './GroupForm.module.scss';
  * - `dangerZone` : zone de suppression (édition uniquement)
  */
 export function GroupForm({ universe, group, state, refs, errors, sound, modFields, collections, editors, dangerZone }) {
+  const createPlace = useQuickCreateId('places', universe.id);
   const { form: f, update, images, setImage } = state;
   const toast = useToast();
   const isEdit = Boolean(group?.id);
@@ -120,7 +122,7 @@ export function GroupForm({ universe, group, state, refs, errors, sound, modFiel
 
         <FormSection id="lieux" title="Lieux contrôlés" description="Les territoires ou bâtiments sous l’autorité du groupe. Leurs sous-lieux sont contrôlés aussi.">
           <Field label="Lieux">
-            {(props) => <Combobox {...props} multiple options={refs.places} value={f.placeIds} onChange={(placeIds) => update({ placeIds })} placeholder="Ajouter un lieu…" />}
+            {(props) => <Combobox {...props} multiple options={refs.places} value={f.placeIds} onChange={(placeIds) => update({ placeIds })} onCreate={createPlace} createLabel={(name) => `Créer le lieu « ${name} »`} placeholder="Ajouter un lieu…" />}
           </Field>
         </FormSection>
 

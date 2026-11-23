@@ -14,8 +14,10 @@ import {
 } from '@/config/characters';
 import { groupRoles, memberRole, roleName } from '@/config/groups';
 import { Badge } from '@/components/ui/Badge';
+import { ReferenceBadge } from '@/components/entity/ReferenceBadge';
 import { RichText } from '@/components/ui/RichText';
 import { cx } from '@/components/ui/cx';
+import { Tooltip } from '@/components/ui/Tooltip';
 import { entityColorVars } from '@/theme/universeTheme';
 import { plainText, universePath } from '@/utils/universe';
 import { PhotoGallery } from '@/components/entity/PhotoGallery';
@@ -27,11 +29,12 @@ import { CharacterAppearances } from './CharacterAppearances';
 import { CharacterRoleplaySection } from '@/components/roleplay/RoleplaySections';
 import { CharacterAvatar } from './CharacterAvatar';
 import { CharacterTraits } from './CharacterTraits';
+import { TraitQuestions } from './TraitQuestions';
 import styles from './CharacterSheet.module.scss';
 
 const STORY_FIELDS = [
   { key: 'powers', id: 'pouvoirs', label: 'Pouvoirs et capacités', module: 'powers' },
-  { key: 'personality', id: 'psychologie', label: 'Profil psychologique' },
+  { key: 'personality', id: 'motivations', label: 'Motivations, peurs et failles' },
   { key: 'story', id: 'histoire', label: 'Histoire' },
   { key: 'extras', id: 'notes', label: 'Notes et extras' },
 ];
@@ -64,8 +67,8 @@ export function CharacterSheet({ universe, character: c, modules, actions, formS
     c.age != null && c.age > 0 && { label: 'Âge', value: `${c.age} ans` },
     c.genders && { label: 'Genre', value: <Badge color={c.genders.color}>{c.genders.name}</Badge> },
     c.statuses && { label: 'Statut', value: <Badge color={c.statuses.color}>{c.statuses.name}</Badge> },
-    c.alignments && { label: 'Alignement', value: <Badge color={c.alignments.color}>{c.alignments.name}</Badge> },
-    modules.ranks && c.power_ranks && { label: 'Rang', value: <Badge color={c.power_ranks.color}>{c.power_ranks.name}</Badge> },
+    c.alignments && { label: 'Alignement', value: <ReferenceBadge item={c.alignments} focusable /> },
+    modules.ranks && c.power_ranks && { label: 'Rang', value: <ReferenceBadge item={c.power_ranks} focusable /> },
     modules.groups && c.groups?.length > 0 && {
       label: c.groups.length > 1 ? 'Groupes' : 'Groupe',
       value: (
@@ -265,7 +268,7 @@ function Traits({ character }) {
                 const v = character[t.key];
                 const pole = v >= 0 ? t.strength : t.weakness;
                 return (
-                  <li key={t.key} className={cx(styles.trait, v < 0 && styles.weak)}>
+                  <Tooltip as="li" wide focusable key={t.key} content={<TraitQuestions trait={t} />} className={cx(styles.trait, v < 0 && styles.weak)}>
                     <span className={styles.traitLabels}>
                       <span className={cx(v < 0 && styles.traitActive)}>{t.weakness}</span>
                       <span className={cx(v > 0 && styles.traitActive)}>{t.strength}</span>
@@ -281,7 +284,7 @@ function Traits({ character }) {
                     >
                       <span className={styles.traitFill} style={{ '--amount': Math.abs(v) / TRAIT_MAX }} />
                     </span>
-                  </li>
+                  </Tooltip>
                 );
               })}
             </ul>

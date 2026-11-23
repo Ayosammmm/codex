@@ -21,6 +21,7 @@ import { GroupMembershipsField } from './GroupMembershipsField';
 import { TraitsField } from './TraitsField';
 import { CharacterTraits } from './CharacterTraits';
 import { useImagePreview } from '@/components/entity/useImagePreview';
+import { useQuickCreateId } from '@/components/entity/useQuickCreate';
 import styles from '@/components/entity/EntityForm.module.scss';
 
 /**
@@ -39,6 +40,9 @@ export function CharacterForm({ universe, character, state, refs, modules, error
   const avatar = useImagePreview(character?.avatar, images.avatar);
   const isEdit = Boolean(character?.id);
   const shared = !isForm; // sections communes à toutes les formes
+  // Appartenances : une espèce ou un lieu absent de la liste se crée en tapant son nom
+  const createSpecie = useQuickCreateId('species', universe.id);
+  const createPlace = useQuickCreateId('places', universe.id);
 
   // Personnages de l'univers par id (avatars des relations)
   const charactersById = useMemo(() => new Map((refs.allCharacters || []).map((c) => [c.id, c])), [refs.allCharacters]);
@@ -142,24 +146,24 @@ export function CharacterForm({ universe, character, state, refs, modules, error
           modules.species && (
             <FormSection id="appartenances" title="Espèces" description="Les espèces de cette forme. Groupes et lieux d’origine sont communs à toutes les formes.">
               <Field label="Espèces">
-                {(props) => <Combobox {...props} multiple options={refs.species} value={form.specieIds} onChange={(specieIds) => update({ specieIds })} placeholder="Ajouter une espèce…" />}
+                {(props) => <Combobox {...props} multiple options={refs.species} value={form.specieIds} onChange={(specieIds) => update({ specieIds })} onCreate={createSpecie} createLabel={(name) => `Créer l’espèce « ${name} »`} placeholder="Ajouter une espèce…" />}
               </Field>
             </FormSection>
           )
         ) : (
         <FormSection id="appartenances" title="Appartenances" description="Les groupes, espèces et lieux auxquels le personnage est rattaché.">
           {modules.groups && (
-            <Field label="Groupes" hint="Le rôle proposé dépend des rôles définis dans chaque groupe.">
+            <Field label="Groupes" hint="Le rôle proposé dépend des rôles définis dans chaque groupe. Un groupe absent de la liste peut être créé en tapant son nom.">
               {(props) => <GroupMembershipsField {...props} universe={universe} options={refs.groups} value={form.groups} onChange={(groups) => update({ groups })} />}
             </Field>
           )}
           {modules.species && (
             <Field label="Espèces">
-              {(props) => <Combobox {...props} multiple options={refs.species} value={form.specieIds} onChange={(specieIds) => update({ specieIds })} placeholder="Ajouter une espèce…" />}
+              {(props) => <Combobox {...props} multiple options={refs.species} value={form.specieIds} onChange={(specieIds) => update({ specieIds })} onCreate={createSpecie} createLabel={(name) => `Créer l’espèce « ${name} »`} placeholder="Ajouter une espèce…" />}
             </Field>
           )}
           <Field label="Lieux d’origine">
-            {(props) => <Combobox {...props} multiple options={refs.places} value={form.placeIds} onChange={(placeIds) => update({ placeIds })} placeholder="Ajouter un lieu…" />}
+            {(props) => <Combobox {...props} multiple options={refs.places} value={form.placeIds} onChange={(placeIds) => update({ placeIds })} onCreate={createPlace} createLabel={(name) => `Créer le lieu « ${name} »`} placeholder="Ajouter un lieu…" />}
           </Field>
         </FormSection>
         )}
@@ -170,8 +174,8 @@ export function CharacterForm({ universe, character, state, refs, modules, error
               {(props) => <RichTextEditor {...props} label="Pouvoirs et capacités" value={form.powers} onChange={(powers) => update({ powers })} />}
             </Field>
           )}
-          <Field label="Profil psychologique">
-            {(props) => <RichTextEditor {...props} label="Profil psychologique" value={form.personality} onChange={(personality) => update({ personality })} />}
+          <Field label="Motivations, peurs et failles">
+            {(props) => <RichTextEditor {...props} label="Motivations, peurs et failles" value={form.personality} onChange={(personality) => update({ personality })} />}
           </Field>
           <Field label="Histoire">
             {(props) => <RichTextEditor {...props} label="Histoire" minHeight="12rem" value={form.story} onChange={(story) => update({ story })} />}
