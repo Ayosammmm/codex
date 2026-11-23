@@ -1,3 +1,4 @@
+const path = require("path");
 const express = require("express");
 const cors = require("cors");
 const sequelize = require("./config/database");
@@ -100,6 +101,14 @@ app.use("/api/image-proxy", imageProxyRoutes);
 app.use("/uploads", serveThumbnail, express.static("uploads"));
 // Fichiers des mods installés (pages en iframe isolée, sans accès à la session : voir services/modFiles.js)
 app.use("/mod-files", serveModFiles);
+
+// Frontend buildé (npm run build dans frontend/) : servi par le même serveur
+const FRONT_DIST = path.resolve(__dirname, "../frontend/dist");
+app.use(express.static(FRONT_DIST));
+// SPA (createBrowserRouter) : toute URL hors API/fichiers renvoie index.html
+app.get(/^\/(?!api|uploads|mod-files)/, (req, res, next) => {
+  res.sendFile(path.join(FRONT_DIST, "index.html"), (err) => err && next());
+});
 
 // Erreurs non gérées par les contrôleurs (upload refusé, JSON trop volumineux...) : réponse JSON
 app.use((err, req, res, next) => {
