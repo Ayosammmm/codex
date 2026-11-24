@@ -24,7 +24,7 @@ export const MODULES = [
   { key: 'personality', label: 'Personnalité', icon: Brain, parent: 'characters', defaultEnabled: false,
     legacyFlag: 'personalityModuleEnabled',
     description: '24 traits de caractère, des forces aux faiblesses.' },
-  { key: 'relations', path: 'dynamiques', navLabel: 'Dynamiques', label: 'Relations', icon: HeartHandshake, parent: 'characters', defaultEnabled: true,
+  { key: 'relations', path: 'dynamiques', navLabel: '(WIP) Dynamiques', label: 'Relations', icon: HeartHandshake, parent: 'characters', defaultEnabled: true,
     description: 'Liens entre personnages : famille, amitié, rivalité…' },
 
   { key: 'places', path: 'lieux', label: 'Lieux', icon: MapPin, core: true,

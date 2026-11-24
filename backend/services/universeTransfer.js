@@ -21,7 +21,6 @@
  */
 const fs = require('fs');
 const path = require('path');
-const crypto = require('crypto');
 const { Op } = require('sequelize');
 const sequelize = require('../config/database');
 
@@ -173,9 +172,13 @@ const makeFileCopier = (readFile, written) => (uploadPath) => {
 
   const dir = path.dirname(original);
   fs.mkdirSync(dir, { recursive: true });
-  const filename = `${Date.now()}-${crypto.randomBytes(6).toString('hex')}${ext}`;
-  const target = path.join(dir, filename);
-  fs.writeFileSync(target, buffer);
+  // Nom d'origine conservé (sans son préfixe horodaté) : les sons affichent ce nom dans l'interface
+  const base = path.basename(uploadPath).replace(/^\d+-/, '') || `fichier${ext}`;
+  let stamp = Date.now();
+  let target;
+  // Préfixe numérique unique (plusieurs fichiers du même nom dans la même milliseconde)
+  while (fs.existsSync((target = path.join(dir, `${stamp}-${base}`)))) stamp++;
+  fs.writeFileSync(target, buffer, { flag: 'wx' });
   written.push(target);
 
   return '/uploads/' + path.relative(UPLOADS_ROOT, target).split(path.sep).join('/');

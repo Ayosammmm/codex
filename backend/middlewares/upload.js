@@ -31,8 +31,14 @@ function originalName(file) {
   return name.includes("\uFFFD") ? file.originalname : name;
 }
 
-/** Nom d'enregistrement : horodatage + nom d'origine sans espaces. */
-const storedName = (file) => Date.now() + "-" + originalName(file).replace(/\s+/g, "_");
+/**
+ * Nom d'enregistrement : horodatage + nom d'origine. Les sons gardent leurs espaces (nom affiché dans l'interface),
+ * les autres fichiers les remplacent par « _ ».
+ */
+const storedName = (file) => {
+  const name = originalName(file);
+  return Date.now() + "-" + (isAudio(file) ? name.replace(/\s+/g, " ").trim() : name.replace(/\s+/g, "_"));
+};
 
 // Fonction pour créer un middleware multer avec un sous-dossier spécifique
 function createUploadMiddleware(subfolder = "", useIdNaming = false) {
