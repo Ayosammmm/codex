@@ -47,9 +47,12 @@ const EXTENSIONS = [
 // Style du paragraphe courant (liste déroulante)
 const BLOCKS = [
   { value: 'paragraph', label: 'Paragraphe', run: (c) => c.setParagraph(), active: (e) => e.isActive('paragraph') },
-  { value: 'h2', label: 'Titre', run: (c) => c.setHeading({ level: 2 }), active: (e) => e.isActive('heading', { level: 2 }) },
-  { value: 'h3', label: 'Sous-titre', run: (c) => c.setHeading({ level: 3 }), active: (e) => e.isActive('heading', { level: 3 }) },
-  { value: 'h4', label: 'Petit titre', run: (c) => c.setHeading({ level: 4 }), active: (e) => e.isActive('heading', { level: 4 }) },
+  ...[1, 2, 3, 4, 5, 6].map((level) => ({
+    value: `h${level}`,
+    label: `Titre ${level}`,
+    run: (c) => c.setHeading({ level }),
+    active: (e) => e.isActive('heading', { level }),
+  })),
 ];
 
 // Groupes de boutons, séparés par un trait. `key` : identifiant de l'état actif / disponible.
