@@ -7,7 +7,7 @@ const required = ["DB_HOST", "DB_NAME", "DB_USER", "JWT_SECRET"];
 const missing = required.filter((key) => !process.env[key]);
 if (process.env.DB_PASSWORD === undefined) missing.push("DB_PASSWORD");
 if (missing.length) {
-  throw new Error(`Configuration manquante dans backend/.env : ${missing.join(", ")} (voir backend/.env.example)`);
+  throw new Error(`Configuration manquante dans le .env à la racine du projet : ${missing.join(", ")} (voir .env.example)`);
 }
 
 const sequelize = new Sequelize(process.env.DB_NAME, process.env.DB_USER, process.env.DB_PASSWORD, {

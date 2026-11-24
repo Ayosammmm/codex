@@ -12,7 +12,7 @@ require("./models/Event");
 require("./models/EpisodeCharacter");
 require("./models/Story");
 require("./models/EntityPhoto");
-require("./models/User");
+const User = require("./models/User");
 require("./models/EntityEditor");
 require("./models/EntityCollection");
 const { upgradeMessagesSchema } = require("./models/Message");
@@ -118,7 +118,8 @@ app.use((err, req, res, next) => {
   res.status(status).json({ error: err.message || "Erreur serveur" });
 });
 
-sequelize.sync({ alter: true }) // crée/maj la table automatiquement
+User.dropDuplicateIndexes() // index en double des anciens démarrages (voir models/User.js)
+  .then(() => sequelize.sync({ alter: true })) // crée/maj la table automatiquement
   .then(upgradeMessagesSchema) // colonnes que `alter` ne met pas à jour (voir models/Message.js)
   .then(() => console.log("DB connected"))
   .then(bootstrapAdmin) // premier démarrage : super admin depuis le .env
