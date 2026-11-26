@@ -1,11 +1,8 @@
 // --- Rôles d'un groupe : [{ key, name, commands: [clés des rôles commandés directement] }] ---
 // Les rôles par défaut ont leur nom pour clé (compatibilité avec les anciens membres).
 export const DEFAULT_ROLES = [
-  { key: 'Chef', name: 'Chef', commands: ['Sous-chef'] },
-  { key: 'Sous-chef', name: 'Sous-chef', commands: ['Lieutenant'] },
-  { key: 'Lieutenant', name: 'Lieutenant', commands: ['Membre'] },
-  { key: 'Membre', name: 'Membre', commands: ['Recrue'] },
-  { key: 'Recrue', name: 'Recrue', commands: [] },
+  { key: 'Chef', name: 'Chef', commands: ['Membre'] },
+  { key: 'Membre', name: 'Membre', commands: [] },
 ];
 export const DEFAULT_MEMBER_ROLE = 'Membre';
 

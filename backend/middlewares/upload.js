@@ -1,6 +1,7 @@
 const multer = require("multer");
 const path = require("path");
 const fs = require("fs");
+const { MAX_GIF_SIZE, processImages } = require("../services/gifCompression");
 
 // Chemin de base vers le dossier uploads
 const baseUploadDir = path.join(__dirname, "..", "uploads");
@@ -70,7 +71,7 @@ function createUploadMiddleware(subfolder = "", useIdNaming = false) {
     },
   });
 
-  return multer({
+  return withImageProcessing(multer({
     storage,
     fileFilter: function (req, file, cb) {
       if (!file.mimetype.startsWith("image/")) {
@@ -79,9 +80,25 @@ function createUploadMiddleware(subfolder = "", useIdNaming = false) {
       cb(null, true);
     },
     limits: {
-      fileSize: 5 * 1024 * 1024, // 5 Mo max
+      // 5 Mo max (MAX_IMAGE_SIZE, vérifié après réception) ; les GIF passent jusqu'à 20 Mo, puis sont compressés
+      fileSize: MAX_GIF_SIZE,
     },
-  });
+  }));
+}
+
+/**
+ * Enchaîne le traitement des images reçues (voir services/gifCompression.js) après chaque middleware
+ * de l'instance multer (single, array, fields, any). `fields` : champs d'image à traiter (tous si absent).
+ */
+function withImageProcessing(instance, fields) {
+  const after = (middleware) => (req, res, next) =>
+    middleware(req, res, (err) => {
+      if (err) return next(err);
+      processImages(req, MAX_IMAGE_SIZE, fields).then(() => next(), next);
+    });
+  const wrapped = Object.create(instance);
+  for (const method of ["single", "array", "fields", "any"]) wrapped[method] = (...args) => after(instance[method](...args));
+  return wrapped;
 }
 
 // --- Sons (module « Son ») : fichiers audio, 20 Mo max ---
@@ -120,7 +137,8 @@ function createAttachmentsMiddleware({ imageFolder, soundFolder }) {
     _handleFile: (req, file, cb) => storages[file.fieldname]._handleFile(req, file, cb),
     _removeFile: (req, file, cb) => storages[file.fieldname]._removeFile(req, file, cb),
   };
-  return multer({
+  // Image : GIF compressé, autres images refusées au-delà de 5 Mo (voir services/gifCompression.js)
+  return withImageProcessing(multer({
     storage,
     fileFilter: (req, file, cb) => {
       if (file.fieldname === "image" && file.mimetype.startsWith("image/")) return cb(null, true);
@@ -128,7 +146,7 @@ function createAttachmentsMiddleware({ imageFolder, soundFolder }) {
       cb(new Error(file.fieldname === "sound" ? "Le fichier doit être un son (mp3, ogg, wav…)" : "Le fichier doit être une image"));
     },
     limits: { fileSize: MAX_AUDIO_SIZE },
-  }).fields([{ name: "image", maxCount: 1 }, { name: "sound", maxCount: 1 }]);
+  }), ["image"]).fields([{ name: "image", maxCount: 1 }, { name: "sound", maxCount: 1 }]);
 }
 
 // Middleware par défaut (pour rétrocompatibilité)
