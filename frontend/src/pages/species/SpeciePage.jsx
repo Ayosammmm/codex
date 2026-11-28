@@ -23,7 +23,7 @@ function SpecieView({ universe, specie }) {
   const subspecies = species.filter((s) => s.parentId === specie.id).sort((a, b) => a.name.localeCompare(b.name, 'fr'));
 
   return (
-    <EntityThemeZone universe={universe} colors={specie.colors} background={uploadUrl(specie.background)} backgroundColor={specie.backgroundColor}>
+    <EntityThemeZone tinted universe={universe} colors={specie.colors} background={uploadUrl(specie.background)} backgroundColor={specie.backgroundColor}>
       <main className={`${page.main} ${page.mainSpaced}`}>
         <Link to={universePath(universe, 'especes')} className={page.backLink}>
           <ArrowLeft aria-hidden /> Espèces

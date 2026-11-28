@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { Link } from 'react-router';
 import { ArrowLeft, CircleAlert, Pencil, Trash2, UserPlus, UsersRound } from '@/components/ui/icons';
 import { useCreateUser, useDeleteUser, useUpdateUser, useUsers } from '@/api/users';
@@ -13,6 +13,7 @@ import { Select } from '@/components/ui/Select';
 import { useToast } from '@/components/ui/Toast';
 import page from '../Page.module.scss';
 import styles from './UsersPage.module.scss';
+import { TITLE_LEVEL, usePageTitle } from '@/utils/usePageTitle';
 
 const ROLE_COLORS = { superadmin: '#b45309', admin: '#7c3aed', editor: '#0e7490', reader: '#64748b' };
 
@@ -25,12 +26,7 @@ export default function UsersPage() {
   const [editing, setEditing] = useState(null); // compte, ou 'new'
   const [deleting, setDeleting] = useState(null);
 
-  useEffect(() => {
-    document.title = 'Comptes · Codex';
-    return () => {
-      document.title = 'Codex';
-    };
-  }, []);
+  usePageTitle('Comptes', TITLE_LEVEL.page);
 
   const list = users.data || [];
   const counts = Object.fromEntries(ROLES.map((r) => [r.value, list.filter((u) => u.role === r.value).length]));

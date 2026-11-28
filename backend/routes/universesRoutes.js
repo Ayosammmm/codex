@@ -19,6 +19,8 @@ router.put("/:id", universesController.update);
 router.delete("/:id", universesController.delete);
 router.get("/:id/export", universesController.export);
 router.post("/:id/duplicate", universesController.duplicate);
+// Textes riches avec liens automatiques vers les entités (voir services/richLinks.js)
+router.post("/:id/rich-links", universesController.saveRichLinks);
 
 for (const [field, folder] of Object.entries(IMAGE_FOLDERS)) {
   const upload = createUploadMiddleware(folder, true);

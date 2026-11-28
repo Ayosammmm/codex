@@ -129,6 +129,47 @@ messages.extendMessages({
 });
 
 // ---------------------------------------------------------------------------
+// Scènes
+// ---------------------------------------------------------------------------
+
+/**
+ * Scènes pour l'API : champs de la scène, avec le nombre de messages, leurs dates (premier / dernier),
+ * les personnages qui y parlent et les épisodes liés.
+ */
+async function serializeScenes(scenes) {
+  scenes = scenes.filter(Boolean);
+  if (!scenes.length) return [];
+  const ids = scenes.map((s) => s.id);
+  const stats = await RpMessage.findAll({
+    attributes: ['sceneId', [fn('COUNT', col('id')), 'count'], [fn('MIN', col('createdAt')), 'firstAt'], [fn('MAX', col('createdAt')), 'lastAt']],
+    where: { sceneId: ids },
+    group: ['sceneId'],
+    raw: true,
+  });
+  const [speakerRows] = await sequelize.query(
+    'SELECT DISTINCT m.sceneId, mc.characterId FROM rp_messages m JOIN rp_message_characters mc ON mc.messageId = m.id WHERE m.sceneId IN (:ids)',
+    { replacements: { ids } },
+  );
+  const episodes = await RpSceneEpisode.findAll({ where: { sceneId: ids }, raw: true });
+  return scenes.map((s) => {
+    const stat = stats.find((r) => r.sceneId === s.id);
+    return {
+      id: s.id,
+      placeId: s.placeId,
+      standalone: s.standalone,
+      title: s.title,
+      description: s.description,
+      createdBy: s.createdBy,
+      messageCount: Number(stat?.count || 0),
+      firstAt: stat?.firstAt || null,
+      lastAt: stat?.lastAt || null,
+      characterIds: speakerRows.filter((r) => r.sceneId === s.id).map((r) => r.characterId),
+      episodeIds: episodes.filter((e) => e.sceneId === s.id).map((e) => e.episodeId),
+    };
+  });
+}
+
+// ---------------------------------------------------------------------------
 // Messages des fils
 // ---------------------------------------------------------------------------
 

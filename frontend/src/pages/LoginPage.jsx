@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { Navigate, useNavigate, useSearchParams } from 'react-router';
 import { LogIn } from '@/components/ui/icons';
 import { useAuth } from '@/auth/auth';
@@ -7,6 +7,7 @@ import { ColorModeToggle } from '@/components/layout/ColorModeToggle';
 import { Button } from '@/components/ui/Button';
 import { Field, Input } from '@/components/ui/Field';
 import styles from './LoginPage.module.scss';
+import { TITLE_LEVEL, usePageTitle } from '@/utils/usePageTitle';
 
 /** Connexion (/connexion). Pas d'inscription : les comptes sont créés par un admin. */
 export default function LoginPage() {
@@ -22,12 +23,7 @@ export default function LoginPage() {
   const retour = params.get('retour');
   const target = retour?.startsWith('/') && !retour.startsWith('//') ? retour : '/';
 
-  useEffect(() => {
-    document.title = 'Connexion · Codex';
-    return () => {
-      document.title = 'Codex';
-    };
-  }, []);
+  usePageTitle('Connexion', TITLE_LEVEL.page);
 
   if (status === 'authenticated') return <Navigate to={target} replace />;
 

@@ -16,7 +16,7 @@ export default function StoryPage() {
   return (
     <StoryLoader>
       {(story, universe) => (
-        <EntityThemeZone universe={universe} colors={story.colors} background={uploadUrl(story.background)} backgroundColor={story.backgroundColor}>
+        <EntityThemeZone tinted universe={universe} colors={story.colors} background={uploadUrl(story.background)} backgroundColor={story.backgroundColor}>
           <main className={`${page.main} ${page.mainSpaced}`}>
             <Link to={universePath(universe, 'histoires')} className={page.backLink}>
               <ArrowLeft aria-hidden /> Histoires

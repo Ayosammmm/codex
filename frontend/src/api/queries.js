@@ -1,6 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { universesApi, UNIVERSE_IMAGE_FIELDS } from './universes';
 import { RESOURCES, characterFormsApi, photosApi } from './resources';
+import { autoLinkValues } from '@/utils/autoLink';
 
 export const universeKeys = {
   all: ['universes'],
@@ -106,10 +107,11 @@ export const useEntity = (resource, id, { universeId } = {}) => {
     queryFn: () => RESOURCES[resource].get(id),
     enabled: Number(id) > 0,
     retry: (count, error) => error.status !== 404 && count < 2,
-    // Affichage immédiat depuis la liste si elle est déjà chargée
-    initialData: () =>
+    // Affichage immédiat depuis la liste si elle est déjà chargée, en attendant la fiche complète.
+    // Pas initialData : la version de liste est allégée (ex. formes d'un personnage sans fond, textes ni
+    // références), elle serait gardée comme fiche complète tant qu'elle reste « fraîche ».
+    placeholderData: () =>
       universeId ? queryClient.getQueryData(entityKeys.list(resource, universeId))?.find((e) => e.id === Number(id)) : undefined,
-    initialDataUpdatedAt: () => (universeId ? queryClient.getQueryState(entityKeys.list(resource, universeId))?.dataUpdatedAt : undefined),
   });
 };
 
@@ -120,8 +122,10 @@ export const useEntity = (resource, id, { universeId } = {}) => {
 export const useSaveEntity = (resource) => {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: async ({ id, values, images = {} }) => {
+    mutationFn: async ({ id, values: raw, images = {} }) => {
       const api = RESOURCES[resource];
+      // Noms d'entités cités dans les champs riches : transformés en liens (voir utils/autoLink.js)
+      const values = await autoLinkValues(queryClient, resource, raw, { id });
       let entity = id ? await api.update(id, values) : await api.create(values);
       for (const [field, value] of Object.entries(images)) {
         if (value) await api.uploadImage(entity.id, field, value);
@@ -193,7 +197,10 @@ export const useCharacterFormMutations = (characterId) => {
   const onError = () => queryClient.invalidateQueries({ queryKey: entityKeys.detail('characters', characterId) });
   const add = useMutation({ mutationFn: (data) => characterFormsApi.create(characterId, data), onSuccess, onError });
   const save = useMutation({
-    mutationFn: async ({ formId, values, images = {} }) => {
+    mutationFn: async ({ formId, values: raw, images = {} }) => {
+      // Liens automatiques (voir utils/autoLink.js) : la forme n'est jamais liée à son propre personnage
+      const universeId = queryClient.getQueryData(entityKeys.detail('characters', characterId))?.universe_id;
+      const values = await autoLinkValues(queryClient, 'characters', raw, { id: characterId, universeId });
       let character = await characterFormsApi.update(characterId, formId, values);
       for (const [field, value] of Object.entries(images)) {
         character = value

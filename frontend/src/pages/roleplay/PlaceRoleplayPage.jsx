@@ -21,6 +21,7 @@ import { activeEffects } from '@/components/messages/commands';
 import { MessageBackdrop } from '@/components/messages/MessageBackdrop';
 import styles from '@/components/messages/Messages.module.scss';
 import { universePath } from '@/utils/universe';
+import { usePageTitle } from '@/utils/usePageTitle';
 
 // Volume des sons joués à l'arrivée d'un message (chaque lecteur se règle ensuite à part)
 const ARRIVING_SOUND_VOLUME = 0.5;
@@ -51,6 +52,7 @@ export default function PlaceRoleplayPage() {
   const { data: places = [], isPending: placesPending } = useEntityList('places', universe.id);
   const { data: characters = [] } = useEntityList('characters', universe.id);
   const place = places.find((p) => p.id === Number(placeId));
+  usePageTitle(place?.name);
   const placesById = useMemo(() => new Map(places.map((p) => [p.id, p])), [places]);
   const charactersById = useMemo(() => new Map(characters.map((c) => [c.id, c])), [characters]);
   const playable = useMemo(

@@ -3,9 +3,11 @@ import { Compass } from '@/components/ui/icons';
 import { AppHeader } from '@/components/layout/AppHeader';
 import { Button } from '@/components/ui/Button';
 import { EmptyState } from '@/components/ui/Feedback';
+import { TITLE_LEVEL, usePageTitle } from '@/utils/usePageTitle';
 import page from './Page.module.scss';
 
 export default function NotFoundPage() {
+  usePageTitle('Page introuvable', TITLE_LEVEL.page);
   return (
     <>
       <AppHeader />

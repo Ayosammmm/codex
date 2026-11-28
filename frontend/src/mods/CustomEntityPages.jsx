@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Link, useNavigate, useOutletContext, useParams } from 'react-router';
+import { Link, useNavigate, useOutletContext, useParams, useLocation } from 'react-router';
 import { ArrowLeft, CircleAlert, Pencil, Plus, PowerOff, Trash2 } from '@/components/ui/icons';
 import { useDeleteEntity, useEntity, useSaveEntity } from '@/api/queries';
 import { usePermissions } from '@/auth/auth';
@@ -37,6 +37,7 @@ import { fieldCriteria, fieldSorts, valueText } from './modFields';
 import { useUniverseMods } from './modsContext';
 import { typeNoun } from './nouns';
 import { useCustomEntityForm } from './useCustomEntityForm';
+import { TITLE_LEVEL, usePageTitle } from '@/utils/usePageTitle';
 
 const collator = new Intl.Collator('fr', { sensitivity: 'base', numeric: true });
 const byText = (get) => (a, b) => collator.compare(get(a) || '￿', get(b) || '￿');
@@ -49,6 +50,7 @@ function useModSection() {
   const { ready, findTypeByPath, findPageByPath, installed } = useUniverseMods();
   const type = findTypeByPath(modId, modPath);
   const modPage = type ? null : findPageByPath(modId, modPath);
+  usePageTitle(type?.plural || modPage?.label, TITLE_LEVEL.section);
   let fallback = null;
   if (!ready) fallback = <Spinner label="Chargement des mods…" />;
   else if (!type && !modPage) {
@@ -195,8 +197,11 @@ function CustomEntitiesList({ universe, type }) {
 /** Charge l'entité de l'URL (:entityId) et vérifie qu'elle est bien du type de la page. */
 function CustomEntityLoader({ universe, type, children }) {
   const { entityId } = useParams();
-  const { data: entity, isPending, error } = useEntity('customEntities', entityId, { universeId: universe.id });
-  if (isPending) return <Spinner label="Chargement de la fiche…" />;
+  const { data: entity, isPending, isPlaceholderData, error } = useEntity('customEntities', entityId, { universeId: universe.id });
+  usePageTitle(entity?.name);
+  // Édition : le formulaire attend la fiche complète (voir EntityLoader)
+  const editing = useLocation().pathname.endsWith('/modifier');
+  if (isPending || (editing && isPlaceholderData)) return <Spinner label="Chargement de la fiche…" />;
   const wrongType = entity && (entity.modId !== type.modId || entity.typeKey !== type.key);
   if (error || !entity || wrongType) {
     const notFound = wrongType || error?.status === 404;
@@ -234,7 +239,7 @@ function CustomEntityView({ universe, type, entity }) {
   const children = siblings.filter((e) => e.parentId === entity.id).sort((a, b) => a.name.localeCompare(b.name, 'fr'));
 
   return (
-    <EntityThemeZone universe={universe} colors={entity.colors} background={uploadUrl(entity.background)} backgroundColor={entity.backgroundColor}>
+    <EntityThemeZone tinted universe={universe} colors={entity.colors} background={uploadUrl(entity.background)} backgroundColor={entity.backgroundColor}>
       <main className={`${page.main} ${page.mainSpaced}`}>
         <Link to={universePath(universe, type.basePath)} className={page.backLink}>
           <ArrowLeft aria-hidden /> {type.plural}

@@ -4,6 +4,7 @@ import { IMG, uploadUrl } from '@/api/client';
 import { characterName } from '@/config/characters';
 import { groupRoles, memberCount, memberRole, roleRanker } from '@/config/groups';
 import { AvatarStack, EntityBanner } from '@/components/entity/EntityBanner';
+import { EntityTree } from '@/components/entity/EntityTree';
 import { entityColorVars } from '@/theme/universeTheme';
 import { plural } from '@/utils/universe';
 import { GroupLogo } from './GroupLogo';
@@ -93,3 +94,18 @@ export const groupColumns = ({ linkTo }) => [
     },
   },
 ];
+
+// ---------------------------------------------------------------------------
+
+/** Arborescence des groupes et sous-groupes (voir EntityTree) : logo, à défaut bannière. */
+export const GroupTree = ({ groups, linkTo }) => (
+  <EntityTree
+    items={groups}
+    linkTo={linkTo}
+    image={(g, size) => uploadUrl(g.image || g.banner, size)}
+    subtitle={(g) => g.type?.name}
+    childNoun={['sous-groupe', 'sous-groupes']}
+    members={(g) => leadingMembers(g).slice(0, 3)}
+    memberCount={memberCount}
+  />
+);

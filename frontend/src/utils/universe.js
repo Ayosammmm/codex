@@ -14,10 +14,11 @@ export const parseUniverseRef = (ref) => {
   return Number.isInteger(id) && id > 0 ? id : null;
 };
 
-/** Texte brut (les descriptions peuvent contenir du HTML venant de l'éditeur riche). */
+/** Texte brut (les descriptions peuvent contenir du HTML venant de l'éditeur riche). Spoilers masqués (« ▒▒▒ »). */
 export const plainText = (html = '') => {
   if (!html) return '';
   const doc = new DOMParser().parseFromString(html, 'text/html');
+  for (const spoiler of doc.querySelectorAll('[data-spoiler]')) spoiler.textContent = '▒▒▒';
   return doc.body.textContent?.replace(/\s+/g, ' ').trim() || '';
 };
 

@@ -177,4 +177,35 @@
   .tableWrapper {
     overflow-x: auto;
   }
+
+  // Spoiler (comme sur Discord) : repéré dans l'éditeur, masqué à l'affichage jusqu'au clic (voir RichText.jsx)
+  .spoiler {
+    border-radius: var(--r-sm);
+    padding: 0 0.15em;
+    background: color-mix(in oklab, var(--fg) 12%, transparent);
+    box-decoration-break: clone;
+    -webkit-box-decoration-break: clone;
+  }
+
+  &:not([contenteditable='true']) .spoiler:not(.is-revealed) {
+    background: var(--fg-muted);
+    color: transparent;
+    cursor: pointer;
+    user-select: none;
+    transition: background 0.15s;
+
+    // Texte coloré, liens, images… : masqués aussi
+    * {
+      visibility: hidden;
+    }
+
+    &:hover {
+      background: var(--fg);
+    }
+
+    &:focus-visible {
+      outline: 2px solid var(--primary);
+      outline-offset: 1px;
+    }
+  }
 }

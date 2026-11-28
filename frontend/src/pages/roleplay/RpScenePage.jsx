@@ -14,6 +14,7 @@ import { continuesMessage, formatRpDate } from '@/components/messages/markup';
 import styles from '@/components/messages/Messages.module.scss';
 import { plural, universePath } from '@/utils/universe';
 import page from '../Page.module.scss';
+import { usePageTitle } from '@/utils/usePageTitle';
 
 /**
  * Lecture d'une scène (/roleplay/scenes/:sceneId), sans modification : titre, épisodes, messages et suppression
@@ -47,6 +48,7 @@ export default function RpScenePage() {
       return params;
     });
   const { data: scene, isPending, error } = useScene(sceneId);
+  usePageTitle(scene?.title);
   const { data: places = [] } = useEntityList('places', universe.id);
   const { data: characters = [] } = useEntityList('characters', universe.id);
   const { data: episodes = [] } = useEntityList('episodes', universe.id, { enabled: storiesOn });

@@ -12,9 +12,11 @@ import styles from './CreateUniversePage.module.scss';
 import { useUniverseForm } from '@/components/universe/useUniverseForm';
 import { useUnsavedChangesGuard } from '@/components/universe/useUnsavedChangesGuard';
 import { universePath } from '@/utils/universe';
+import { TITLE_LEVEL, usePageTitle } from '@/utils/usePageTitle';
 import page from './Page.module.scss';
 
 export default function CreateUniversePage() {
+  usePageTitle('Nouvel univers', TITLE_LEVEL.page);
   const state = useUniverseForm(null);
   const save = useSaveUniverse();
   const navigate = useNavigate();

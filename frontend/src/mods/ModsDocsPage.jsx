@@ -6,6 +6,7 @@ import page from '@/pages/Page.module.scss';
 import { ModIcon } from './ModIcon';
 import { MOD_ICON_NAMES } from './modIcons';
 import styles from './ModsDocs.module.scss';
+import { TITLE_LEVEL, usePageTitle } from '@/utils/usePageTitle';
 
 /** Documentation des mods (/mods/documentation), ouverte depuis la page d'installation des mods. */
 
@@ -157,12 +158,7 @@ function Table({ head, rows }) {
 export default function ModsDocsPage() {
   const [active, setActive] = useState(SECTIONS[0][0]);
 
-  useEffect(() => {
-    document.title = 'Documentation des mods · Codex';
-    return () => {
-      document.title = 'Codex';
-    };
-  }, []);
+  usePageTitle('Documentation des mods', TITLE_LEVEL.page);
 
   // Sommaire : section en cours de lecture
   useEffect(() => {

@@ -24,7 +24,7 @@ function GroupView({ universe, group }) {
   const subgroups = groups.filter((g) => g.parentId === group.id).sort((a, b) => a.name.localeCompare(b.name, 'fr'));
 
   return (
-    <EntityThemeZone universe={universe} colors={group.colors} background={uploadUrl(group.background)} backgroundColor={group.backgroundColor}>
+    <EntityThemeZone tinted universe={universe} colors={group.colors} background={uploadUrl(group.background)} backgroundColor={group.backgroundColor}>
       <main className={`${page.main} ${page.mainSpaced}`}>
         <Link to={universePath(universe, 'groupes')} className={page.backLink}>
           <ArrowLeft aria-hidden /> Groupes

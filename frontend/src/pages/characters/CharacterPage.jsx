@@ -54,7 +54,7 @@ function CharacterView({ universe, character: base }) {
       : null;
 
   return (
-    <EntityThemeZone universe={universe} colors={character.colors} background={uploadUrl(character.background)}>
+    <EntityThemeZone tinted universe={universe} colors={character.colors} background={uploadUrl(character.background)}>
       <main className={`${page.main} ${page.mainSpaced}`}>
         <Link to={universePath(universe, 'personnages')} className={page.backLink}>
           <ArrowLeft aria-hidden /> Personnages

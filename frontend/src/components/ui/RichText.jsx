@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import DOMPurify from 'dompurify';
-import { EditorContent, useEditor, useEditorState } from '@tiptap/react';
+import { useNavigate } from 'react-router';
+import { EditorContent, Mark, markInputRule, markPasteRule, mergeAttributes, useEditor, useEditorState } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
 import Image from '@tiptap/extension-image';
 import { TextStyle, Color, BackgroundColor } from '@tiptap/extension-text-style';
@@ -10,7 +11,7 @@ import { Superscript as SuperscriptMark } from '@tiptap/extension-superscript';
 import { TaskList, TaskItem } from '@tiptap/extension-list';
 import { TableKit } from '@tiptap/extension-table';
 import {
-  AlignCenter, AlignJustify, AlignLeft, AlignRight, Baseline, Bold, Code, Highlighter, ImageIcon, Italic, Link,
+  AlignCenter, AlignJustify, AlignLeft, AlignRight, Baseline, Bold, Code, EyeOff, ImageIcon, Italic, Link,
   List, ListOrdered, ListTodo, Quote, Redo2, RemoveFormatting, SeparatorHorizontal, SquareCode, Strikethrough,
   Subscript, Superscript, Table2, Underline, Undo2,
 } from '@/components/ui/icons';
@@ -19,15 +20,72 @@ import { cx } from './cx';
 import { transformPastedHTML } from './pasteLineBreaks';
 import styles from './RichText.module.scss';
 
+// Spoilers affichés : atteignables au clavier et annoncés comme un bouton tant qu'ils sont masqués
+DOMPurify.addHook('afterSanitizeAttributes', (node) => {
+  if (node.hasAttribute?.('data-spoiler')) {
+    node.setAttribute('tabindex', '0');
+    node.setAttribute('role', 'button');
+    node.setAttribute('aria-label', 'Spoiler masqué : activer pour afficher');
+  }
+});
+
+/** Révèle un spoiler (clic, Entrée ou Espace) ; renvoie `true` s'il était masqué. */
+function revealSpoiler(target) {
+  const spoiler = target.closest?.('[data-spoiler]:not(.is-revealed)');
+  if (!spoiler) return false;
+  spoiler.classList.add('is-revealed');
+  for (const attr of ['tabindex', 'role', 'aria-label']) spoiler.removeAttribute(attr);
+  return true;
+}
+
 /** Affiche du HTML venant de l'éditeur, après assainissement (les univers peuvent être importés). */
 export function RichText({ html, className }) {
+  const navigate = useNavigate();
   if (!html) return null;
-  return <div className={cx('rich-text', className)} dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(html) }} />;
+  const onClick = (e) => {
+    // Clic sur un spoiler masqué : le révèle sans suivre un éventuel lien qu'il contient
+    if (revealSpoiler(e.target)) return e.preventDefault();
+    // Lien vers une page d'un univers (ex. liens automatiques vers les fiches, voir utils/autoLink.js) :
+    // même onglet, sans recharger. Ctrl / Cmd / Maj / clic du milieu : comportement normal du navigateur.
+    const link = e.target.closest?.('a[href^="/univers/"]');
+    if (!link || e.button !== 0 || e.ctrlKey || e.metaKey || e.shiftKey || e.altKey) return;
+    e.preventDefault();
+    navigate(link.getAttribute('href'));
+  };
+  return (
+    // Délégation : les spoilers masqués ont role="button" et tabindex (hook DOMPurify ci-dessus)
+    <div
+      className={cx('rich-text', className)}
+      dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(html) }}
+      onClick={onClick}
+      onKeyDown={(e) => (e.key === 'Enter' || e.key === ' ') && revealSpoiler(e.target) && e.preventDefault()}
+    />
+  );
 }
+
+/**
+ * Spoiler, comme sur Discord : texte masqué jusqu'au clic à l'affichage (voir RichText), visible dans l'éditeur.
+ * Enregistré en <span data-spoiler>. Saisie rapide : ||texte|| (aussi au collage).
+ */
+const Spoiler = Mark.create({
+  name: 'spoiler',
+  parseHTML: () => [{ tag: 'span[data-spoiler]' }],
+  renderHTML: ({ HTMLAttributes }) => ['span', mergeAttributes(HTMLAttributes, { 'data-spoiler': '', class: 'spoiler' }), 0],
+  addCommands() {
+    return { toggleSpoiler: () => ({ commands }) => commands.toggleMark(this.name) };
+  },
+  addInputRules() {
+    return [markInputRule({ find: /(?:^|\s)(\|\|(?!\s)([^|]+?)\|\|)$/, type: this.type })];
+  },
+  addPasteRules() {
+    return [markPasteRule({ find: /(?:^|\s)(\|\|(?!\s)([^|]+?)\|\|)/g, type: this.type })];
+  },
+});
 
 const EXTENSIONS = [
   StarterKit.configure({ link: { openOnClick: false, defaultProtocol: 'https' } }),
   // Image / TextStyle / couleurs : conservent aussi la mise en forme des descriptions créées avec la v2
+  // (BackgroundColor : plus d'outil de surlignage, mais les fonds déjà enregistrés restent affichés)
   Image,
   TextStyle,
   Color,
@@ -38,6 +96,7 @@ const EXTENSIONS = [
   TaskList,
   TaskItem.configure({ nested: true }),
   TableKit.configure({ table: { resizable: false } }),
+  Spoiler,
 ];
 
 // ---------------------------------------------------------------------------
@@ -65,8 +124,9 @@ const TOOL_GROUPS = [
     { key: 'superscript', label: 'Exposant', icon: Superscript, run: (c) => c.toggleSuperscript() },
     { key: 'subscript', label: 'Indice', icon: Subscript, run: (c) => c.toggleSubscript() },
     { key: 'code', label: 'Code', icon: Code, run: (c) => c.toggleCode() },
+    { key: 'spoiler', label: 'Spoiler (ou ||texte||)', icon: EyeOff, run: (c) => c.toggleSpoiler() },
   ],
-  ['textColor', 'highlight', { key: 'clear', label: 'Effacer la mise en forme', icon: RemoveFormatting, run: (c) => c.unsetAllMarks() }],
+  ['textColor', { key: 'clear', label: 'Effacer la mise en forme', icon: RemoveFormatting, run: (c) => c.unsetAllMarks() }],
   [
     { key: 'alignLeft', label: 'Aligner à gauche', icon: AlignLeft, run: (c) => c.setTextAlign('left'), active: (e) => e.isActive({ textAlign: 'left' }) },
     { key: 'alignCenter', label: 'Centrer', icon: AlignCenter, run: (c) => c.setTextAlign('center'), active: (e) => e.isActive({ textAlign: 'center' }) },
@@ -108,10 +168,6 @@ const PALETTE = [
   { label: 'Rose', value: '#db2777' },
   { label: 'Gris', value: '#6b7280' },
 ];
-// Surlignage : couleur à 30 % d'opacité. Hex avec alpha pour la palette ; color-mix pour les couleurs
-// du thème (les navigateurs réécrivent color-mix avec une couleur fixe, mais pas avec une variable).
-const highlightOf = (color) => (color.startsWith('#') ? `${color}4d` : `color-mix(in oklab, ${color} 30%, transparent)`);
-
 /** Compare deux couleurs CSS (le navigateur normalise #dc2626 en rgb(220, 38, 38) au rechargement). */
 const normalizeColor = (color) => {
   if (!color) return '';
@@ -126,7 +182,6 @@ const selectToolbarState = ({ editor: e }) => {
   const state = {
     block: BLOCKS.find((b) => b.active(e))?.value ?? '',
     textColor: e.getAttributes('textStyle').color || null,
-    highlight: e.getAttributes('textStyle').backgroundColor || null,
     link: e.getAttributes('link').href || null,
     inTable: e.isActive('table'),
     active: {},
@@ -178,10 +233,7 @@ export function RichTextEditor({ value, onChange, label, id, minHeight = '8rem',
 
   const renderTool = (tool) => {
     if (tool === 'textColor') {
-      return <ColorTool key={tool} label="Couleur du texte" icon={Baseline} value={state?.textColor} kind="text" run={run} />;
-    }
-    if (tool === 'highlight') {
-      return <ColorTool key={tool} label="Surlignage" icon={Highlighter} value={state?.highlight} kind="highlight" run={run} />;
+      return <ColorTool key={tool} label="Couleur du texte" icon={Baseline} value={state?.textColor} run={run} />;
     }
     if (tool === 'link') return <LinkTool key={tool} editor={editor} href={state?.link} run={run} />;
     if (tool === 'image') return <ImageTool key={tool} run={run} />;
@@ -294,11 +346,11 @@ function ToolPopover({ label, icon, pressed, swatch, children }) {
   );
 }
 
-function ColorTool({ label, icon, value, kind, run }) {
-  const isText = kind === 'text';
-  const apply = (color) => run((c) => (isText ? c.setColor(color) : c.setBackgroundColor(color)));
-  const reset = () => run((c) => (isText ? c.unsetColor() : c.unsetBackgroundColor()));
-  const toValue = (color) => (isText ? color : highlightOf(color));
+/** Couleur du texte : couleurs de l'univers, palette ou couleur libre. */
+function ColorTool({ label, icon, value, run }) {
+  const apply = (color) => run((c) => c.setColor(color));
+  const reset = () => run((c) => c.unsetColor());
+  const toValue = (color) => color;
   const current = normalizeColor(value);
 
   const swatchList = (colors, close) => (
@@ -351,7 +403,7 @@ function ColorTool({ label, icon, value, kind, run }) {
                 close();
               }}
             >
-              {isText ? 'Par défaut' : 'Aucun'}
+              Par défaut
             </button>
           </div>
         </>

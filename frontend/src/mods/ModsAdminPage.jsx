@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useRef, useState } from 'react';
 import { Link } from 'react-router';
 import { ArrowLeft, BookOpen, CircleAlert, Puzzle, Trash2, Upload } from '@/components/ui/icons';
 import { useInstallMod, useMods, useRemoveMod } from '@/api/mods';
@@ -12,6 +12,7 @@ import page from '@/pages/Page.module.scss';
 import { ModContents } from './ModContents';
 import { ModIcon } from './ModIcon';
 import styles from './Mods.module.scss';
+import { TITLE_LEVEL, usePageTitle } from '@/utils/usePageTitle';
 
 const MANIFEST_EXAMPLE = `{
   "id": "artefacts",
@@ -45,12 +46,7 @@ export default function ModsAdminPage() {
   const [dragging, setDragging] = useState(false);
   const [removing, setRemoving] = useState(null);
 
-  useEffect(() => {
-    document.title = 'Mods · Codex';
-    return () => {
-      document.title = 'Codex';
-    };
-  }, []);
+  usePageTitle('Mods', TITLE_LEVEL.page);
 
   const send = (file) => {
     if (!file) return;

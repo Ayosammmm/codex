@@ -58,11 +58,11 @@ app.use(cors());
 // L'import d'univers et l'installation d'un mod lisent eux-mêmes le corps brut (archive ZIP) : pas de parsing ici
 const RAW_BODY = new Set(["/api/universes/import", "/api/mods"]);
 const jsonParser = express.json();
-// Données des pages de mods (ex. simulations complètes) : corps plus volumineux
+// Données des pages de mods (ex. simulations complètes), textes riches en lot : corps plus volumineux
 const largeJsonParser = express.json({ limit: "5mb" });
 app.use((req, res, next) => {
   if (RAW_BODY.has(req.path) && req.method === "POST") return next();
-  if (req.path.startsWith("/api/mod-records")) return largeJsonParser(req, res, next);
+  if (req.path.startsWith("/api/mod-records") || req.path.endsWith("/rich-links")) return largeJsonParser(req, res, next);
   return jsonParser(req, res, next);
 });
 

@@ -2,6 +2,7 @@ const Univers = require('../models/Univers');
 const { seedUniverseDefaults } = require('../services/universeDefaults');
 const transfer = require('../services/universeTransfer');
 const universeArchive = require('../services/universeArchive');
+const { saveRichTexts } = require('../services/richLinks');
 
 // Anciens booléens conservés pour compatibilité, synchronisés avec l'objet `modules`
 const LEGACY_FLAGS = {
@@ -249,3 +250,13 @@ exports.duplicate = async (req, res) => {
   }
 };
 
+// Liens automatiques vers les entités (paramètres de l'univers) : textes riches réécrits par le frontend
+exports.saveRichLinks = async (req, res) => {
+  try {
+    const universe = await Univers.findByPk(req.params.id);
+    if (!universe) return res.status(404).json({ error: 'Univers non trouvé' });
+    res.json({ saved: await saveRichTexts(universe.id, req.body?.updates) });
+  } catch (error) {
+    sendError(res, error, 'saveRichLinks');
+  }
+};

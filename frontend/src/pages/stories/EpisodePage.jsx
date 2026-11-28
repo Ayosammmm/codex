@@ -16,7 +16,7 @@ export default function EpisodePage() {
   return (
     <EpisodeLoader>
       {({ story, episode, universe }) => (
-        <EntityThemeZone universe={universe} colors={story.colors} {...episodeBackdrop(episode, story)}>
+        <EntityThemeZone tinted universe={universe} colors={story.colors} {...episodeBackdrop(episode, story)}>
           <main className={`${page.main} ${page.mainSpaced}`}>
             <Link to={universePath(universe, `histoires/${story.id}`)} className={page.backLink}>
               <ArrowLeft aria-hidden /> {story.name}

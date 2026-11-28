@@ -39,7 +39,7 @@ function PlaceView({ universe, place }) {
   };
 
   return (
-    <EntityThemeZone universe={universe} colors={place.colors} background={uploadUrl(place.background)} backgroundColor={place.backgroundColor}>
+    <EntityThemeZone tinted universe={universe} colors={place.colors} background={uploadUrl(place.background)} backgroundColor={place.backgroundColor}>
       <main className={`${page.main} ${page.mainSpaced}`}>
         <Link to={universePath(universe, 'lieux')} className={page.backLink}>
           <ArrowLeft aria-hidden /> Lieux

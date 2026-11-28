@@ -5,7 +5,7 @@ import { CharacterAvatar } from '@/components/characters/CharacterAvatar';
 import { characterName } from '@/config/characters';
 import { cx } from '@/components/ui/cx';
 import { universePath } from '@/utils/universe';
-import { BOLD_CLOSE, BOLD_OPEN, formatRpDate, parseRp, shoutLevel } from './markup';
+import { BOLD_CLOSE, BOLD_OPEN, formatRpDate, frenchSpacing, parseRp, shoutLevel } from './markup';
 import { useAutoGrow } from './autoGrow';
 import { messageSpeakers } from './unknownSpeakers';
 import { MessageImage } from './MessageImage';
@@ -19,8 +19,9 @@ import styles from './Messages.module.scss';
 
 const BOLD_SPLIT = new RegExp(`([${BOLD_OPEN}${BOLD_CLOSE}])`);
 
-/** Texte d'un passage, avec ses parties en gras (**…**, marquées par parseRp). */
-export function MessageText({ text }) {
+/** Texte d'un passage, avec ses parties en gras (**…**, marquées par parseRp) et l'espace insécable devant ? et ! */
+export function MessageText({ text: raw }) {
+  const text = frenchSpacing(raw);
   if (!text.includes(BOLD_OPEN) && !text.includes(BOLD_CLOSE)) return text;
   let bold = false;
   return text.split(BOLD_SPLIT).map((part, i) => {

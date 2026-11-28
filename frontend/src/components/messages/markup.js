@@ -35,6 +35,15 @@ export const BOLD_OPEN = '\uE000';
 export const BOLD_CLOSE = '\uE001';
 const BOLD = /\*\*([^*\n]+?)\*\*/g;
 
+/**
+ * Typographie française : espace insécable devant « ? » et « ! » quand ils suivent un mot
+ * (« Quoi?! » → « Quoi ?! », « Quoi ? » → espace rendue insécable). Les espaces déjà là sont remplacées ;
+ * un « ? » seul, ou après un autre signe (« … ? »), reste tel quel. Les marques de gras (**…**) entre le mot
+ * et le signe sont gardées à leur place.
+ */
+const NBSP_BEFORE_MARK = new RegExp(`([\\p{L}\\p{N}][${BOLD_OPEN}${BOLD_CLOSE}]*)[ \\u00A0\\u202F]*([${BOLD_OPEN}${BOLD_CLOSE}]*[?!])`, 'gu');
+export const frenchSpacing = (text) => text.replace(NBSP_BEFORE_MARK, '$1\u00A0$2');
+
 
 const PATTERN = /\(\(([\s\S]+?)\)\)|\{([^{}\n]+?)\}|\*([^*\n]+?)\*|«\s*([\s\S]+?)\s*»|“([\s\S]+?)”|"([^"]+?)"|\(([^()]+?)\)|~([^~\n]+?)~/g;
 const GROUP_TYPES = [null, 'hrp', 'sound', 'action', 'dialogue', 'dialogue', 'dialogue', 'thought', 'whisper'];

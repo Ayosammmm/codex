@@ -1,5 +1,8 @@
 .root {
   position: relative;
+  --zone-surface: var(--surface);
+  --zone-surface-2: var(--surface-2);
+  --zone-surface-3: var(--surface-3);
   isolation: isolate;
   min-height: 100dvh;
 
@@ -17,4 +20,14 @@
   background:
     linear-gradient(var(--scrim), var(--scrim)),
     var(--zone-bg);
+}
+
+// Fiches (prop `tinted`) : encadrés teintés de la couleur principale de l'entité.
+// `display: contents` : n'ajoute pas de boîte, seulement les variables. Les --surface lues ici sont
+// celles du thème, héritées du parent : pas de référence circulaire.
+.tinted {
+  display: contents;
+  --surface: color-mix(in oklab, var(--entity-primary) 12%, var(--zone-surface));
+  --surface-2: color-mix(in oklab, var(--entity-primary) 16%, var(--zone-surface-2));
+  --surface-3: color-mix(in oklab, var(--entity-primary) 20%, var(--zone-surface-3));
 }

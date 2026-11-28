@@ -7,7 +7,7 @@ import { EmptyState, Spinner } from '@/components/ui/Feedback';
 import { GroupedSections } from '@/components/entity/GroupedSections';
 import { ListToolbar } from '@/components/entity/ListToolbar';
 import { groupItems, useListState } from '@/components/entity/useListState';
-import { GroupGallery, groupColumns } from '@/components/groups/GroupViews';
+import { GroupGallery, groupColumns, GroupTree } from '@/components/groups/GroupViews';
 import { EntityTable } from '@/components/entity/EntityTable';
 import { TableControls } from '@/components/entity/TableControls';
 import { useTableState } from '@/components/entity/useTableState';
@@ -19,9 +19,9 @@ import styles from '../ListPage.module.scss';
 import { useGroupReferences } from './useGroupReferences';
 import { usePermissions } from '@/auth/auth';
 
-const VIEWS = ['gallery', 'table'];
+const VIEWS = ['gallery', 'tree', 'table'];
 
-/** Archive des groupes d'un univers : recherche, tri, filtres, regroupement, galerie ou tableau. */
+/** Archive des groupes d'un univers : recherche, tri, filtres, regroupement ; galerie, arborescence ou tableau. */
 export default function GroupsPage() {
   const { canCreate } = usePermissions();
   const { universe } = useOutletContext();
@@ -39,12 +39,13 @@ export default function GroupsPage() {
   // Tableau seul : la page tient dans l'écran et seul le tableau défile
   const fitScreen = state.view === 'table' && !groupCriterion && results.length > 0;
 
-  const renderView = (items) =>
-    state.view === 'table' ? (
-      <EntityTable items={items} columns={columns} linkTo={linkTo} sort={{ key: state.sort, dir: state.dir }} onSort={actions.sortBy} fill={fitScreen} table={table} />
-    ) : (
-      <GroupGallery groups={items} linkTo={linkTo} />
-    );
+  const renderView = (items) => {
+    if (state.view === 'table') {
+      return <EntityTable items={items} columns={columns} linkTo={linkTo} sort={{ key: state.sort, dir: state.dir }} onSort={actions.sortBy} fill={fitScreen} table={table} />;
+    }
+    if (state.view === 'tree') return <GroupTree groups={items} linkTo={linkTo} />;
+    return <GroupGallery groups={items} linkTo={linkTo} />;
+  };
 
   const newButton = canCreate && (
     <Button as={Link} to={universePath(universe, 'groupes/nouveau')} variant="primary" icon={Plus}>

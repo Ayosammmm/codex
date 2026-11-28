@@ -25,7 +25,7 @@ function EventView({ universe, event }) {
   const next = index >= 0 ? events[index + 1] || null : null;
 
   return (
-    <EntityThemeZone universe={universe} colors={event.colors} background={uploadUrl(event.background)} backgroundColor={event.backgroundColor}>
+    <EntityThemeZone tinted universe={universe} colors={event.colors} background={uploadUrl(event.background)} backgroundColor={event.backgroundColor}>
       <main className={`${page.main} ${page.mainSpaced}`}>
         <Link to={universePath(universe, 'evenements')} className={page.backLink}>
           <ArrowLeft aria-hidden /> Événements

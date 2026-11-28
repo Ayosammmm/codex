@@ -17,6 +17,7 @@ import { continuesMessage } from '@/components/messages/markup';
 import styles from '@/components/messages/Messages.module.scss';
 import { universePath } from '@/utils/universe';
 import page from '../Page.module.scss';
+import { usePageTitle } from '@/utils/usePageTitle';
 
 /**
  * Édition d'une scène (/roleplay/scenes/:sceneId/modifier) : titre, résumé, épisodes, et ses messages.
@@ -35,6 +36,7 @@ export default function RpSceneEditPage() {
   const soundOn = isModuleEnabled(getModulesState(universe), 'sound');
 
   const { data: scene, isPending, error } = useScene(sceneId);
+  usePageTitle(scene?.title);
   const { data: places = [] } = useEntityList('places', universe.id);
   const { data: characters = [] } = useEntityList('characters', universe.id);
   const { data: episodes = [] } = useEntityList('episodes', universe.id, { enabled: storiesOn });

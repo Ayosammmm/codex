@@ -9,6 +9,7 @@ import { FormActionBar } from '@/components/universe/FormActionBar';
 import { FormSection, UniverseForm } from '@/components/universe/UniverseForm';
 import { useUniverseForm } from '@/components/universe/useUniverseForm';
 import { useUniverseActions } from '@/components/universe/useUniverseActions';
+import { AutoLinkAction } from '@/components/universe/AutoLinkAction';
 import { useUnsavedChangesGuard } from '@/components/universe/useUnsavedChangesGuard';
 import page from './Page.module.scss';
 import styles from './UniverseSettingsPage.module.scss';
@@ -82,6 +83,11 @@ export default function UniverseSettingsPage() {
                   title="Dupliquer"
                   text="Crée un nouvel univers identique, pour expérimenter sans toucher à l’original."
                   action={<Button icon={Copy} onClick={() => actions.duplicate(universe)}>Dupliquer</Button>}
+                />
+                <ActionRow
+                  title="Liens vers les fiches"
+                  text="Dans toutes les fiches, transforme les noms d’entités cités dans les grands textes (description, histoire, notes…) en liens vers leur fiche. Les fiches enregistrées ensuite le font automatiquement."
+                  action={<AutoLinkAction universe={universe} />}
                 />
               </FormSection>
               <section id="suppression" aria-labelledby="danger-title" className={styles.danger}>

@@ -17,10 +17,27 @@ function keepsLineBreaks(node) {
  * normalement et transforme ces sauts de ligne en espaces : on les convertit en <br>.
  * - Texte avec un style `white-space: pre…` : ses sauts de ligne sont convertis.
  * - HTML sans aucune balise de structure (que du texte et du gras...) : idem, c'est forcément ce cas.
+ * Les couleurs et fonds du texte collé sont retirés (voir stripColors).
  */
+/**
+ * Couleurs du texte collé retirées (couleur et fond) : les messageries comme Discord les posent sur chaque ligne,
+ * aux couleurs de leur thème, et elles jurent avec celui de l'univers. La couleur se remet avec l'outil dédié.
+ */
+function stripColors(doc) {
+  for (const el of doc.body.querySelectorAll('[style]')) {
+    for (const prop of ['color', 'background', 'background-color']) el.style.removeProperty(prop);
+    if (!el.getAttribute('style').trim()) el.removeAttribute('style');
+  }
+  for (const el of doc.body.querySelectorAll('[color], [bgcolor]')) {
+    el.removeAttribute('color');
+    el.removeAttribute('bgcolor');
+  }
+}
+
 export function transformPastedHTML(html) {
-  if (!html.includes('\n')) return html;
   const doc = new DOMParser().parseFromString(html, 'text/html');
+  stripColors(doc);
+  if (!html.includes('\n')) return doc.body.innerHTML;
   const unstructured = !doc.body.querySelector(STRUCTURE);
   const walker = doc.createTreeWalker(doc.body, NodeFilter.SHOW_TEXT);
   const targets = [];

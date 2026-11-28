@@ -16,7 +16,7 @@ export default function CreaturePage() {
   return (
     <CreatureLoader>
       {(creature, universe) => (
-        <EntityThemeZone universe={universe} colors={creature.colors} background={uploadUrl(creature.background)} backgroundColor={creature.backgroundColor}>
+        <EntityThemeZone tinted universe={universe} colors={creature.colors} background={uploadUrl(creature.background)} backgroundColor={creature.backgroundColor}>
           <main className={`${page.main} ${page.mainSpaced}`}>
             <Link to={universePath(universe, 'bestiaire')} className={page.backLink}>
               <ArrowLeft aria-hidden /> Bestiaire

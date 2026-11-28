@@ -13,8 +13,26 @@ import { useColorModeScope } from '@/theme/ColorModeProvider';
 import { ThemeKeyContext } from '@/theme/themeKey';
 import { universeBackdropStyle, universeThemeProps } from '@/theme/universeTheme';
 import { parseUniverseRef, universeRef } from '@/utils/universe';
+import { TITLE_LEVEL, usePageTitle } from '@/utils/usePageTitle';
+import { MODULES, REFERENCES } from '@/config/modules';
 import page from './Page.module.scss';
 import styles from './UniverseLayout.module.scss';
+
+// Libellés des sections d'un univers, par segment d'URL (« (WIP) » retiré des libellés de navigation)
+const SECTION_LABELS = new Map([
+  ...MODULES.filter((m) => m.path).map((m) => [m.path, (m.navLabel || m.label).replace(/^\(WIP\)\s*/, '')]),
+  ...MODULES.flatMap((m) => m.extraNav || []).map((n) => [n.path, n.label]),
+  ...REFERENCES.map((r) => [r.path, r.label]),
+  ['parametres', 'Paramètres'],
+]);
+const ACTION_LABELS = { nouveau: 'Nouveau', modifier: 'Modifier' };
+
+/** Section (« Personnages », « Scènes »…) et action (« Nouveau », « Modifier ») d'après les segments après /univers/:ref. */
+function titleFromPath(segments) {
+  const parts = segments.filter(Boolean);
+  const section = SECTION_LABELS.get(parts.slice(0, 2).join('/')) || SECTION_LABELS.get(parts[0]) || null;
+  return { section, action: ACTION_LABELS[parts[parts.length - 1]] || null };
+}
 
 // Sidebar réduite (grand écran) : préférence mémorisée dans le navigateur
 const SIDEBAR_KEY = 'codex.sidebarCollapsed';
@@ -63,12 +81,11 @@ export default function UniverseLayout() {
     }
   }, [universe, ref, navigate, location.pathname, location.search]);
 
-  useEffect(() => {
-    document.title = universe ? `${universe.name} · Codex` : 'Codex';
-    return () => {
-      document.title = 'Codex';
-    };
-  }, [universe]);
+  // Titre de l'onglet : univers, section et action d'après l'URL ; le nom de la fiche vient de la page (voir usePageTitle)
+  const { section, action } = titleFromPath(location.pathname.split('/').slice(3));
+  usePageTitle(universe?.name, TITLE_LEVEL.universe);
+  usePageTitle(section, TITLE_LEVEL.section);
+  usePageTitle(action, TITLE_LEVEL.action);
 
   // Tiroir mobile : fermeture avec Échap
   useEffect(() => {
